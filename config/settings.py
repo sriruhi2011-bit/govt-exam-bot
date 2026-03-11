@@ -98,6 +98,28 @@ RSS_FEEDS = {
         "https://www.livemint.com/rss/economy",
     "Times of India":
         "https://timesofindia.indiatimes.com/rssfeeds/-2128936835.cms",
+        
+        # ── KARNATAKA PAPERS ──
+    "Deccan Herald - Karnataka":
+        "https://www.deccanherald.com/rss/karnataka.rss",
+    "Deccan Herald - Bengaluru":
+        "https://www.deccanherald.com/rss/bengaluru.rss",
+    "Deccan Herald - National":
+        "https://www.deccanherald.com/rss/national.rss",
+    "Deccan Herald - Business":
+        "https://www.deccanherald.com/rss/business.rss",
+    "Deccan Herald - Science":
+        "https://www.deccanherald.com/rss/science-and-environment.rss",
+    "The Hindu - Karnataka":
+        "https://www.thehindu.com/news/national/karnataka/feeder/default.rss",
+    "Indian Express - Bangalore":
+        "https://indianexpress.com/section/cities/bangalore/feed/",
+    "Times of India - Bengaluru":
+        "https://timesofindia.indiatimes.com/rssfeeds/4084533.cms",
+    "The New Indian Express - Karnataka":
+        "https://www.newindianexpress.com/rss/karnataka/rssfeed.xml",
+    "Bangalore Mirror":
+        "https://bangaloremirror.indiatimes.com/rssfeeds/4738792.cms",
 }
 
 # ════════════════════════════════════════════════════
@@ -162,5 +184,24 @@ SYLLABUS_CATEGORIES = {
         "nobel", "bharat ratna", "padma", "award", "appointed",
         "chief justice", "governor", "ambassador", "dronacharya",
         "arjuna award"
+    ],
+    "Karnataka & State Affairs": [
+        "karnataka", "bengaluru", "bangalore", "mysuru", "mysore",
+        "hubli", "dharwad", "mangalore", "mangaluru", "belagavi",
+        "belgaum", "gulbarga", "kalaburagi", "shimoga", "shivamogga",
+        "davangere", "bellary", "ballari", "raichur", "bidar",
+        "karwar", "udupi", "hassan", "mandya", "tumkur", "tumakuru",
+        "kolar", "chikkaballapur", "ramanagara", "kodagu", "coorg",
+        "BBMP", "BDA", "BMTC", "KSRTC", "namma metro",
+        "siddaramaiah", "chief minister karnataka", "KAS", "KPSC",
+        "karnataka high court", "vidhana soudha", "vidhan parishad",
+        "karnataka budget", "cauvery", "kaveri", "krishna river",
+        "tungabhadra", "western ghats karnataka", "bandipur",
+        "nagarhole", "kabini", "BR hills", "hampi", "pattadakal",
+        "aihole", "badami", "srirangapatna", "mysore palace",
+        "karnataka assembly", "karnataka governor",
+        "KPTCL", "BESCOM", "karnataka police",
+        "state PSC", "karnataka exam", "FDA", "SDA",
+        "kannada", "karnataka culture", "dasara", "ugadi"
     ],
 }
