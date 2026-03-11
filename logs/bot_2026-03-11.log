@@ -600,3 +600,17 @@
 2026-03-11 17:42:25 | excel | INFO | 💾 Updating master database...
 2026-03-11 17:42:26 | excel | INFO |    Master DB: 101 total news, 15 total questions
 2026-03-11 17:42:26 | main | INFO | DONE in 134 seconds
+2026-03-11 19:53:13 | ai_engine | INFO | AI Engine ready (using Groq)
+2026-03-11 19:53:24 | ai_engine | INFO | AI Engine ready (using Groq)
+2026-03-11 19:53:24 | main | INFO | Morning news already done today! Skipping.
+2026-03-11 20:09:36 | ai_engine | INFO |   Provider added: Google Gemini
+2026-03-11 20:09:36 | ai_engine | INFO |   Provider added: Groq
+2026-03-11 20:09:36 | ai_engine | INFO | AI Engine ready with 2 providers
+2026-03-11 20:09:48 | ai_engine | INFO |   Provider added: Google Gemini
+2026-03-11 20:09:48 | ai_engine | INFO |   Provider added: Groq
+2026-03-11 20:09:48 | ai_engine | INFO | AI Engine ready with 2 providers
+2026-03-11 20:09:49 | ai_engine | INFO |   Switching: Gemini -> Groq
+2026-03-11 20:10:20 | ai_engine | INFO |   Provider added: Google Gemini
+2026-03-11 20:10:20 | ai_engine | INFO |   Provider added: Groq
+2026-03-11 20:10:20 | ai_engine | INFO | AI Engine ready with 2 providers
+2026-03-11 20:10:21 | main | INFO | Morning news already done today! Skipping.

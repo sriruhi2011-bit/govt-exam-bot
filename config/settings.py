@@ -1,41 +1,51 @@
 # config/settings.py
-# THIS IS THE CONTROL PANEL — All settings in one place
 
 import os
-from datetime import datetime
 
 # ════════════════════════════════════════════════════
-#  STEP A: PASTE YOUR KEYS HERE (from my_keys.txt)
+#  API KEYS
+#  On your PC: uses the value after the comma
+#  On GitHub: reads from secrets (environment variable)
+#
+#  REPLACE each PASTE_xxx with your REAL key!
 # ════════════════════════════════════════════════════
 
-BOT_TOKEN = "8408260750:AAEAspZEIQm84Y5rwcWYyX0mHi830NVIfPI"
-# Example: "7123456789:AAHf-xxxxxxxxxxxxxxxxxxxxxxxxxxx"
-# ↑ Replace with YOUR token from @BotFather
+BOT_TOKEN = os.environ.get(
+    "BOT_TOKEN",
+    "8408260750:AAEAspZEIQm84Y5rwcWYyX0mHi830NVIfPI"
+)
+# Example: "7123456789:AAHf-xxxxxxxxxxxxxxxxxxxxxxx"
 
-CHANNEL_ID = "@kansiri_daily_updates"
+CHANNEL_ID = os.environ.get(
+    "CHANNEL_ID",
+    "@kansiri_daily_updates"
+)
 # Example: "@daily_ca_upsc_2025"
-# ↑ Replace with YOUR channel username (keep the @)
 
-GROQ_API_KEY = "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"
-# Example: "gsk_abc123def456ghi789jklmnop..."
-# ↑ Replace with YOUR key from console.groq.com
+GEMINI_API_KEY = os.environ.get(
+    "GEMINI_API_KEY",
+    "AIzaSyAQh5DF8vWOeKwApSC9aIj3c5F8YhWLFb4"
+)
+# Example: "AIzaSyxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
-# ════════════════════════════════════════════════════
-#  STEP B: AI SETTINGS (no changes needed)
-# ════════════════════════════════════════════════════
+GROQ_API_KEY = os.environ.get(
+    "GROQ_API_KEY",
+    "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"
+)
+# Example: "gsk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
-AI_BACKEND = "groq"
-GROQ_MODEL = "llama-3.1-8b-instant"
-
-# ════════════════════════════════════════════════════
-#  STEP C: SCHEDULE — When to post (change if you want)
-# ════════════════════════════════════════════════════
-
-MORNING_NEWS_TIME = "07:00"    # 7:00 AM — News posting
-EVENING_QUIZ_TIME = "19:00"    # 7:00 PM — Quiz posting
+CEREBRAS_API_KEY = os.environ.get("CEREBRAS_API_KEY", "")
+OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 
 # ════════════════════════════════════════════════════
-#  STEP D: LIMITS (no changes needed)
+#  SCHEDULE
+# ════════════════════════════════════════════════════
+
+MORNING_NEWS_TIME = "07:00"
+EVENING_QUIZ_TIME = "18:00"
+
+# ════════════════════════════════════════════════════
+#  LIMITS
 # ════════════════════════════════════════════════════
 
 MAX_ARTICLES_PER_SOURCE = 15
@@ -46,7 +56,7 @@ MAX_QUIZ_QUESTIONS = 15
 REQUEST_TIMEOUT = 15
 
 # ════════════════════════════════════════════════════
-#  STEP E: FILE PATHS (automatic — don't change)
+#  FILE PATHS (automatic — don't change)
 # ════════════════════════════════════════════════════
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -57,18 +67,13 @@ QUIZ_DIR = os.path.join(DATA_DIR, "quizzes")
 EXCEL_DIR = os.path.join(DATA_DIR, "excel_reports")
 LOG_DIR = os.path.join(BASE_DIR, "logs")
 
-# Create folders if they don't exist
 for directory in [DATA_DIR, RAW_NEWS_DIR, FILTERED_NEWS_DIR,
                   QUIZ_DIR, EXCEL_DIR, LOG_DIR]:
     os.makedirs(directory, exist_ok=True)
 
 # ════════════════════════════════════════════════════
-#  STEP F: NEWS SOURCES (RSS feeds of newspapers)
+#  NEWS SOURCES
 # ════════════════════════════════════════════════════
-#
-#  RSS feed = A special link that gives news in a
-#  format computers can easily read.
-#  Every major newspaper provides this for free.
 
 RSS_FEEDS = {
     "The Hindu - National":
@@ -96,7 +101,7 @@ RSS_FEEDS = {
 }
 
 # ════════════════════════════════════════════════════
-#  STEP G: EXAM SYLLABUS — Topics to filter for
+#  EXAM SYLLABUS
 # ════════════════════════════════════════════════════
 
 SYLLABUS_CATEGORIES = {
