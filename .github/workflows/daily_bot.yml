@@ -43,7 +43,6 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install feedparser beautifulsoup4 requests python-telegram-bot==20.7 schedule lxml openpyxl xlsxwriter
-
       - name: Create data directories
         run: |
           mkdir -p data/raw_news data/filtered_news data/quizzes data/excel_reports logs
