@@ -1,0 +1,73 @@
+name: Daily Current Affairs Bot
+
+on:
+  schedule:
+    # 7:00 AM IST = 1:30 AM UTC
+    - cron: '30 1 * * *'
+    # 6:00 PM IST = 12:30 PM UTC
+    - cron: '30 12 * * *'
+
+  # Allow manual trigger from GitHub website
+  workflow_dispatch:
+    inputs:
+      job_type:
+        description: 'Which job to run'
+        required: true
+        default: 'news'
+        type: choice
+        options:
+          - news
+          - quiz
+          - both
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install feedparser beautifulsoup4 requests python-telegram-bot==20.7 schedule lxml openpyxl xlsxwriter
+
+      - name: Create data directories
+        run: |
+          mkdir -p data/raw_news data/filtered_news data/quizzes data/excel_reports logs
+
+      - name: Run Morning News (7 AM IST trigger)
+        if: github.event.schedule == '30 1 * * *' || github.event.inputs.job_type == 'news' || github.event.inputs.job_type == 'both'
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
+        run: python main.py news
+
+      - name: Run Evening Quiz (6 PM IST trigger)
+        if: github.event.schedule == '30 12 * * *' || github.event.inputs.job_type == 'quiz' || github.event.inputs.job_type == 'both'
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
+        run: python main.py quiz
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-report-${{ github.run_number }}
+          path: |
+            data/excel_reports/
+            data/filtered_news/
+            logs/
+          retention-days: 30
