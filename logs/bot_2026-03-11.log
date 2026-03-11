@@ -618,3 +618,57 @@
 2026-03-11 20:34:37 | ai_engine | INFO |   Provider added: Groq
 2026-03-11 20:34:37 | ai_engine | INFO | AI Engine ready with 2 providers
 2026-03-11 20:34:38 | main | INFO | Evening quiz already done today! Skipping.
+2026-03-11 21:58:24 | ai_engine | INFO |   Provider added: Google Gemini
+2026-03-11 21:58:24 | ai_engine | INFO |   Provider added: Groq
+2026-03-11 21:58:24 | ai_engine | INFO | AI Engine ready with 2 providers
+2026-03-11 21:58:53 | ai_engine | INFO |   Provider added: Google Gemini
+2026-03-11 21:58:53 | ai_engine | INFO |   Provider added: Groq
+2026-03-11 21:58:53 | ai_engine | INFO | AI Engine ready with 2 providers
+2026-03-11 22:07:13 | ai_engine | INFO |   Provider added: Google Gemini
+2026-03-11 22:07:13 | ai_engine | INFO |   Provider added: Groq
+2026-03-11 22:07:13 | ai_engine | INFO | AI Engine ready with 2 providers
+2026-03-11 22:07:13 | ai_engine | INFO |   Provider added: Google Gemini
+2026-03-11 22:07:13 | ai_engine | INFO |   Provider added: Groq
+2026-03-11 22:07:13 | ai_engine | INFO | AI Engine ready with 2 providers
+2026-03-11 22:07:15 | ai_engine | INFO |   Provider added: Google Gemini
+2026-03-11 22:07:15 | ai_engine | INFO |   Provider added: Groq
+2026-03-11 22:07:15 | ai_engine | INFO | AI Engine ready with 2 providers
+2026-03-11 22:07:16 | extras | INFO | Generating This Day in History...
+2026-03-11 22:07:17 | ai_engine | INFO |   Switching: Gemini -> Groq
+2026-03-11 22:07:20 | extras | INFO | Generating Word of the Day...
+2026-03-11 22:07:22 | extras | INFO | Generating Exam Countdown...
+2026-03-11 22:07:22 | extras | INFO | Generating Comparison Table...
+2026-03-11 22:07:25 | telegram.Bot | DEBUG | Entering: send_message
+2026-03-11 22:07:26 | telegram.Bot | DEBUG | Message(author_signature='Current Affairs', channel_chat_created=False, chat=Chat(id=-1003460978194, title='Kansiri', type=<ChatType.CHANNEL>, username='kansiri_daily_updates'), date=datetime.datetime(2026, 3, 11, 16, 37, 26, tzinfo=<UTC>), delete_chat_photo=False, entities=(MessageEntity(length=17, offset=1155, type=<MessageEntityType.HASHTAG>), MessageEntity(length=5, offset=1173, type=<MessageEntityType.HASHTAG>), MessageEntity(length=10, offset=1179, type=<MessageEntityType.HASHTAG>)), group_chat_created=False, has_protected_content=True, message_id=41, sender_chat=Chat(id=-1003460978194, title='Kansiri', type=<ChatType.CHANNEL>, username='kansiri_daily_updates'), supergroup_chat_created=False, text="📜  <b>THIS DAY IN HISTORY</b>\n📅  <b>11 March 2026</b>\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n- 1917 - Russia's February Revolution began on 11 March, marking the end of the Romanov dynasty.\n- 1930 - The Indian Salt March, a 24-day protest march led by Mahatma Gandhi, began on 12 March but was initiated on 11 March 1930, with the goal of challenging British salt taxes.\n- 1946 - The Cabinet Mission, a British mission to India to negotiate the country's future, arrived in India on 24 February but began its work on 11 March 1946.\n- 1951 - The Indian Constituent Assembly adopted the Constitution of India on 26 November but began its work on 11 March 1951.\n- 2004 - A massive undersea earthquake struck off the coast of Indonesia, triggering a devastating tsunami that affected several countries including Thailand, Sri Lanka, and India.\n\nEXAM TIP: The 2004 Indian Ocean tsunami is most frequently asked because it is a significant international event that had a major impact on India and other countries, making it a relevant topic for UPSC/SSC exams.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n💡 <i>History repeats in exams. Learn from it!</i>\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n#ThisDayInHistory #UPSC #GovtExams")
+2026-03-11 22:07:26 | telegram.Bot | DEBUG | Exiting: send_message
+2026-03-11 22:07:30 | telegram.Bot | DEBUG | Entering: send_message
+2026-03-11 22:07:30 | telegram | ERROR | Send text error: Unknown error in HTTP implementation: RuntimeError('Event loop is closed')
+2026-03-11 22:07:33 | telegram.Bot | DEBUG | Entering: send_message
+2026-03-11 22:07:34 | telegram.Bot | DEBUG | Message(author_signature='Current Affairs', channel_chat_created=False, chat=Chat(id=-1003460978194, title='Kansiri', type=<ChatType.CHANNEL>, username='kansiri_daily_updates'), date=datetime.datetime(2026, 3, 11, 16, 37, 34, tzinfo=<UTC>), delete_chat_photo=False, entities=(MessageEntity(length=14, offset=494, type=<MessageEntityType.HASHTAG>), MessageEntity(length=5, offset=509, type=<MessageEntityType.HASHTAG>), MessageEntity(length=11, offset=515, type=<MessageEntityType.HASHTAG>)), group_chat_created=False, has_protected_content=True, message_id=42, sender_chat=Chat(id=-1003460978194, title='Kansiri', type=<ChatType.CHANNEL>, username='kansiri_daily_updates'), supergroup_chat_created=False, text="⏰  <b>EXAM COUNTDOWN</b>\n📅  <b>11 March 2026</b>\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n  Exam dates will be updated soon!\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n🎯 <b>Today's Strategy Tip:</b>\n<i>Focus on linking current affairs with static GK. Examiners love connected questions.</i>\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n📋 <b>Daily Checklist:</b>\n  ☐ Read today's current affairs\n  ☐ Attempt today's quiz\n  ☐ Revise 1 static GK topic\n  ☐ Solve 30 previous year MCQs\n  ☐ Read 1 editorial\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n#ExamCountdown #UPSC #Motivation")
+2026-03-11 22:07:34 | telegram.Bot | DEBUG | Exiting: send_message
+2026-03-11 22:07:38 | telegram.Bot | DEBUG | Entering: send_message
+2026-03-11 22:07:38 | telegram | ERROR | Send text error: Unknown error in HTTP implementation: RuntimeError('Event loop is closed')
+2026-03-11 23:04:10 | ai_engine | INFO |   Provider added: Google Gemini
+2026-03-11 23:04:10 | ai_engine | INFO |   Provider added: Groq
+2026-03-11 23:04:10 | ai_engine | INFO | AI Engine ready with 2 providers
+2026-03-11 23:04:17 | ai_engine | INFO |   Provider added: Google Gemini
+2026-03-11 23:04:17 | ai_engine | INFO |   Provider added: Groq
+2026-03-11 23:04:17 | ai_engine | INFO | AI Engine ready with 2 providers
+2026-03-11 23:04:32 | ai_engine | INFO |   Provider added: Google Gemini
+2026-03-11 23:04:32 | ai_engine | INFO |   Provider added: Groq
+2026-03-11 23:04:32 | ai_engine | INFO | AI Engine ready with 2 providers
+2026-03-11 23:04:34 | extras | INFO | Generating This Day in History...
+2026-03-11 23:04:35 | ai_engine | INFO |   Switching: Gemini -> Groq
+2026-03-11 23:04:37 | extras | INFO | Generating Word of the Day...
+2026-03-11 23:04:44 | extras | INFO | Generating Exam Countdown...
+2026-03-11 23:04:44 | extras | INFO | Generating Comparison Table...
+2026-03-11 23:04:46 | telegram.Bot | DEBUG | Entering: send_message
+2026-03-11 23:04:47 | telegram.Bot | DEBUG | Message(author_signature='Current Affairs', channel_chat_created=False, chat=Chat(id=-1003460978194, title='Kansiri', type=<ChatType.CHANNEL>, username='kansiri_daily_updates'), date=datetime.datetime(2026, 3, 11, 17, 34, 47, tzinfo=<UTC>), delete_chat_photo=False, entities=(MessageEntity(length=17, offset=1017, type=<MessageEntityType.HASHTAG>), MessageEntity(length=5, offset=1035, type=<MessageEntityType.HASHTAG>), MessageEntity(length=10, offset=1041, type=<MessageEntityType.HASHTAG>)), group_chat_created=False, has_protected_content=True, message_id=43, sender_chat=Chat(id=-1003460978194, title='Kansiri', type=<ChatType.CHANNEL>, username='kansiri_daily_updates'), supergroup_chat_created=False, text="📜  <b>THIS DAY IN HISTORY</b>\n📅  <b>11 March 2026</b>\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n- 1917 - The British government passed the Representation of the People Act, which granted the right to vote to women in the United Kingdom over the age of 30.\n- 1942 - The Quit India Movement, a major civil disobedience movement against British rule, was launched by Mahatma Gandhi in India.\n- 1946 - The British government announced the establishment of the Interim Government of India, with Jawaharlal Nehru as the Vice President.\n- 1951 - The first five-year plan of India was launched, aiming to increase industrial production and agricultural output.\n- 1978 - The first commercial Concorde supersonic jet made its first flight.\n\nEXAM TIP: The Quit India Movement is most frequently asked in UPSC/SSC exams because it was a pivotal moment in India's struggle for independence and a significant event in Indian history.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n💡 <i>History repeats in exams. Learn from it!</i>\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n#ThisDayInHistory #UPSC #GovtExams")
+2026-03-11 23:04:47 | telegram.Bot | DEBUG | Exiting: send_message
+2026-03-11 23:04:51 | telegram.Bot | DEBUG | Entering: send_message
+2026-03-11 23:04:51 | telegram | ERROR | Send text error: Unknown error in HTTP implementation: RuntimeError('Event loop is closed')
+2026-03-11 23:04:54 | telegram.Bot | DEBUG | Entering: send_message
+2026-03-11 23:04:55 | telegram.Bot | DEBUG | Message(author_signature='Current Affairs', channel_chat_created=False, chat=Chat(id=-1003460978194, title='Kansiri', type=<ChatType.CHANNEL>, username='kansiri_daily_updates'), date=datetime.datetime(2026, 3, 11, 17, 34, 55, tzinfo=<UTC>), delete_chat_photo=False, entities=(MessageEntity(length=14, offset=496, type=<MessageEntityType.HASHTAG>), MessageEntity(length=5, offset=511, type=<MessageEntityType.HASHTAG>), MessageEntity(length=11, offset=517, type=<MessageEntityType.HASHTAG>)), group_chat_created=False, has_protected_content=True, message_id=44, sender_chat=Chat(id=-1003460978194, title='Kansiri', type=<ChatType.CHANNEL>, username='kansiri_daily_updates'), supergroup_chat_created=False, text="⏰  <b>EXAM COUNTDOWN</b>\n📅  <b>11 March 2026</b>\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n  Exam dates will be updated soon!\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n🎯 <b>Today's Strategy Tip:</b>\n<i>Create mnemonics for lists (Articles, Amendments, Committees). They save time in exam.</i>\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n📋 <b>Daily Checklist:</b>\n  ☐ Read today's current affairs\n  ☐ Attempt today's quiz\n  ☐ Revise 1 static GK topic\n  ☐ Solve 30 previous year MCQs\n  ☐ Read 1 editorial\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n#ExamCountdown #UPSC #Motivation")
+2026-03-11 23:04:55 | telegram.Bot | DEBUG | Exiting: send_message
+2026-03-11 23:04:59 | telegram.Bot | DEBUG | Entering: send_message
+2026-03-11 23:04:59 | telegram | ERROR | Send text error: Unknown error in HTTP implementation: RuntimeError('Event loop is closed')
