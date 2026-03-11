@@ -1,0 +1,3 @@
+BOT_TOKEN = "8408260750:AAEAspZEIQm84Y5rwcWYyX0mHi830NVIfPI"
+CHANNEL_ID = "@kansiri_daily_updates"
+GROQ_API_KEY = "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"
