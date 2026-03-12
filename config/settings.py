@@ -40,6 +40,16 @@ TELEGRAM_DELAY_SECONDS = 3  # Delay between Telegram messages (increased to avoi
 MAX_RETRIES = 3  # Maximum retry attempts
 
 # ════════════════════════════════════════════════════
+#  GOOGLE DRIVE SETTINGS (Optional - for backup storage)
+# ════════════════════════════════════════════════════
+
+GDRIVE_FOLDER_ID = os.environ.get("GDRIVE_FOLDER_ID", "")
+# Example: "1abc123xyz..." (Your shared folder ID from URL)
+
+GDRIVE_SERVICE_ACCOUNT_FILE = os.environ.get("GDRIVE_SERVICE_ACCOUNT_FILE", "")
+# Path to service account JSON file
+
+# ════════════════════════════════════════════════════
 #  SCHEDULE
 # ════════════════════════════════════════════════════
 

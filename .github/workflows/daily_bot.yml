@@ -42,10 +42,15 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install feedparser beautifulsoup4 requests python-telegram-bot==20.7 schedule lxml openpyxl xlsxwriter filelock
+          pip install feedparser beautifulsoup4 requests python-telegram-bot==20.7 schedule lxml openpyxl xlsxwriter filelock google-api-python-client google-auth-httplib2 google-auth-oauthlib
       - name: Create data directories
         run: |
           mkdir -p data/raw_news data/filtered_news data/quizzes data/excel_reports logs
+
+      - name: Create Google Service Account file
+        if: env.GDRIVE_FOLDER_ID != ''
+        run: |
+          echo "$GDRIVE_SERVICE_ACCOUNT_JSON" > service_account.json
 
       - name: Run Morning News
         env:
@@ -83,11 +88,16 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install feedparser beautifulsoup4 requests python-telegram-bot==20.7 schedule lxml openpyxl xlsxwriter filelock
+          pip install feedparser beautifulsoup4 requests python-telegram-bot==20.7 schedule lxml openpyxl xlsxwriter filelock google-api-python-client google-auth-httplib2 google-auth-oauthlib
 
       - name: Create data directories
         run: |
           mkdir -p data/raw_news data/filtered_news data/quizzes data/excel_reports logs
+
+      - name: Create Google Service Account file
+        if: env.GDRIVE_FOLDER_ID != ''
+        run: |
+          echo "$GDRIVE_SERVICE_ACCOUNT_JSON" > service_account.json
 
       - name: Run Evening Quiz
         env:
