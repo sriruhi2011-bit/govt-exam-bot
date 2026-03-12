@@ -8,6 +8,7 @@ from config.settings import (
     CEREBRAS_API_KEY, OPENROUTER_API_KEY,
     AI_TIMEOUT_SECONDS
 )
+from config.logger import setup_logger
 
 logger = setup_logger("ai_engine")
 
