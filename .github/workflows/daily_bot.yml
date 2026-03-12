@@ -52,7 +52,7 @@ jobs:
       - name: Create Google Service Account file
         if: env.GDRIVE_ENABLED == 'true'
         run: |
-          echo "$GDRIVE_SERVICE_ACCOUNT_JSON" > service_account.json
+          printf '%s' "$GDRIVE_SERVICE_ACCOUNT_JSON" > service_account.json
 
       - name: Run Morning News
         env:
@@ -110,7 +110,7 @@ jobs:
       - name: Create Google Service Account file
         if: env.GDRIVE_ENABLED == 'true'
         run: |
-          echo "$GDRIVE_SERVICE_ACCOUNT_JSON" > service_account.json
+          printf '%s' "$GDRIVE_SERVICE_ACCOUNT_JSON" > service_account.json
 
       - name: Run Evening Quiz
         env:
