@@ -45,6 +45,9 @@ class GoogleDriveUploader:
     def authenticate(self):
         """Authenticate with Google Drive using service account"""
         try:
+            logger.info(f"Folder ID: {self.folder_id}")
+            logger.info(f"Credentials file: {self.credentials_file}")
+            
             if not self.credentials_file or not self.folder_id:
                 logger.warning("Google Drive not configured - skipping upload")
                 return False
@@ -53,6 +56,10 @@ class GoogleDriveUploader:
             if not os.path.exists(self.credentials_file):
                 logger.warning(f"Service account file not found: {self.credentials_file}")
                 return False
+            
+            # Debug: show file size
+            file_size = os.path.getsize(self.credentials_file)
+            logger.info(f"Service account file size: {file_size} bytes")
             
             self.credentials = service_account.Credentials.from_service_account_file(
                 self.credentials_file,

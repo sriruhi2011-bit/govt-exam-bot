@@ -53,6 +53,8 @@ jobs:
         if: env.GDRIVE_ENABLED == 'true'
         run: |
           printf '%s' "$GDRIVE_SERVICE_ACCOUNT_JSON" > service_account.json
+          ls -la service_account.json
+          echo "File size: $(wc -c < service_account.json) bytes"
 
       - name: Run Morning News
         env:
@@ -111,6 +113,8 @@ jobs:
         if: env.GDRIVE_ENABLED == 'true'
         run: |
           printf '%s' "$GDRIVE_SERVICE_ACCOUNT_JSON" > service_account.json
+          ls -la service_account.json
+          echo "File size: $(wc -c < service_account.json) bytes"
 
       - name: Run Evening Quiz
         env:
