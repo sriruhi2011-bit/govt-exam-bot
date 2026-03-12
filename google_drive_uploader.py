@@ -2,6 +2,7 @@
 # Uploads reports to Google Drive automatically
 
 import os
+import json
 import datetime
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
@@ -29,7 +30,15 @@ class GoogleDriveUploader:
         from config.settings import GDRIVE_FOLDER_ID, GDRIVE_SERVICE_ACCOUNT_FILE
         
         self.folder_id = GDRIVE_FOLDER_ID
+        # Check for env override (GitHub Actions)
+        if os.environ.get('GDRIVE_FOLDER_ID'):
+            self.folder_id = os.environ.get('GDRIVE_FOLDER_ID')
+        
         self.credentials_file = GDRIVE_SERVICE_ACCOUNT_FILE
+        # Check for env override (GitHub Actions)
+        if os.environ.get('GDRIVE_SERVICE_ACCOUNT_FILE'):
+            self.credentials_file = os.environ.get('GDRIVE_SERVICE_ACCOUNT_FILE')
+        
         self.credentials = None
         self.service = None
     

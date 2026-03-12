@@ -48,7 +48,7 @@ jobs:
           mkdir -p data/raw_news data/filtered_news data/quizzes data/excel_reports logs
 
       - name: Create Google Service Account file
-        if: env.GDRIVE_FOLDER_ID != ''
+        if: secrets.GDRIVE_FOLDER_ID != ''
         run: |
           echo "$GDRIVE_SERVICE_ACCOUNT_JSON" > service_account.json
 
@@ -58,7 +58,16 @@ jobs:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
+          GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
+          GDRIVE_SERVICE_ACCOUNT_FILE: service_account.json
         run: python main.py news
+
+      - name: Upload to Google Drive
+        if: secrets.GDRIVE_FOLDER_ID != ''
+        run: python -c "from google_drive_uploader import GoogleDriveUploader; GoogleDriveUploader().upload_all_reports()"
+        env:
+          GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
+          GDRIVE_SERVICE_ACCOUNT_FILE: service_account.json
 
       - name: Upload reports
         if: always()
@@ -95,7 +104,7 @@ jobs:
           mkdir -p data/raw_news data/filtered_news data/quizzes data/excel_reports logs
 
       - name: Create Google Service Account file
-        if: env.GDRIVE_FOLDER_ID != ''
+        if: secrets.GDRIVE_FOLDER_ID != ''
         run: |
           echo "$GDRIVE_SERVICE_ACCOUNT_JSON" > service_account.json
 
@@ -105,7 +114,16 @@ jobs:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
+          GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
+          GDRIVE_SERVICE_ACCOUNT_FILE: service_account.json
         run: python main.py quiz
+
+      - name: Upload to Google Drive
+        if: secrets.GDRIVE_FOLDER_ID != ''
+        run: python -c "from google_drive_uploader import GoogleDriveUploader; GoogleDriveUploader().upload_all_reports()"
+        env:
+          GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
+          GDRIVE_SERVICE_ACCOUNT_FILE: service_account.json
 
       - name: Upload reports
         if: always()
