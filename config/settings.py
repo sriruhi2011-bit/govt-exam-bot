@@ -10,32 +10,34 @@ import os
 #  REPLACE each PASTE_xxx with your REAL key!
 # ════════════════════════════════════════════════════
 
-BOT_TOKEN = os.environ.get(
-    "BOT_TOKEN",
-    "8408260750:AAEAspZEIQm84Y5rwcWYyX0mHi830NVIfPI"
-)
+BOT_TOKEN = os.environ.get("BOT_TOKEN", "")
 # Example: "7123456789:AAHf-xxxxxxxxxxxxxxxxxxxxxxx"
 
-CHANNEL_ID = os.environ.get(
-    "CHANNEL_ID",
-    "@kansiri_daily_updates"
-)
+CHANNEL_ID = os.environ.get("CHANNEL_ID", "")
 # Example: "@daily_ca_upsc_2025"
 
-GEMINI_API_KEY = os.environ.get(
-    "GEMINI_API_KEY",
-    "AIzaSyAQh5DF8vWOeKwApSC9aIj3c5F8YhWLFb4"
-)
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 # Example: "AIzaSyxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
-GROQ_API_KEY = os.environ.get(
-    "GROQ_API_KEY",
-    "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"
-)
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
 # Example: "gsk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 CEREBRAS_API_KEY = os.environ.get("CEREBRAS_API_KEY", "")
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
+
+# ════════════════════════════════════════════════════
+#  CONSTANTS - Magic numbers extracted to named constants
+# ════════════════════════════════════════════════════
+
+MIN_CONTENT_LENGTH = 30  # Minimum paragraph length to consider valid content
+MIN_DUPLICATE_CHECK_LENGTH = 50  # Characters to use for duplicate detection
+DEFAULT_TEMPERATURE = 0.2  # Default AI temperature
+CONTENT_TRUNCATION_LENGTH = 1500  # Truncate content for AI prompts
+AI_TIMEOUT_SECONDS = 60  # Timeout for AI API calls
+REQUEST_DELAY_SECONDS = 0.5  # Delay between requests to same source
+TELEGRAM_MESSAGE_SPLIT_LENGTH = 4000  # Max characters per Telegram message
+TELEGRAM_DELAY_SECONDS = 2  # Delay between Telegram messages
+MAX_RETRIES = 3  # Maximum retry attempts
 
 # ════════════════════════════════════════════════════
 #  SCHEDULE

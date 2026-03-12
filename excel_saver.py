@@ -6,6 +6,7 @@ from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 from datetime import datetime
+from filelock import FileLock
 
 from config.settings import EXCEL_DIR
 from config.logger import setup_logger
@@ -27,6 +28,13 @@ class ExcelSaver:
             left=Side(style='thin'), right=Side(style='thin'),
             top=Side(style='thin'), bottom=Side(style='thin')
         )
+
+    def _save_with_lock(self, filepath, save_func):
+        """Save workbook with file locking to prevent race conditions"""
+        lock_file = filepath + ".lock"
+        lock = FileLock(lock_file, timeout=30)
+        with lock:
+            save_func()
 
     def _write_sheet(self, wb, sheet_name, headers, rows):
         if sheet_name in wb.sheetnames:
@@ -84,7 +92,7 @@ class ExcelSaver:
         logger.info(f"Saving {len(filtered_articles)} filtered articles...")
 
         headers = ['S.No', 'Date', 'Filtered At', 'Category', 'Importance',
-                    'Title', 'Source', 'Summary', 'Key Facts', 'Link']
+                    'Title', 'Source', 'Summary', 'Key Facts', 'Link', 'Image URL']
         rows = []
         for i, a in enumerate(filtered_articles, 1):
             ev = a.get('evaluation', {})
@@ -93,7 +101,8 @@ class ExcelSaver:
                 ev.get('category', ''), ev.get('importance', 0),
                 a.get('title', ''), a.get('source', ''),
                 ev.get('one_line_summary', ''),
-                ', '.join(ev.get('key_facts', [])), a.get('link', '')
+                ', '.join(ev.get('key_facts', [])), a.get('link', ''),
+                a.get('image_url', '')
             ])
 
         wb = load_workbook(self.daily_file)
@@ -180,7 +189,7 @@ class ExcelSaver:
         if 'All News' not in wb.sheetnames:
             ws = wb.create_sheet('All News')
             news_headers = ['Date', 'Time', 'Category', 'Importance',
-                            'Title', 'Source', 'Summary', 'Key Facts', 'Link']
+                            'Title', 'Source', 'Summary', 'Key Facts', 'Link', 'Image URL']
             for col, h in enumerate(news_headers, 1):
                 cell = ws.cell(row=1, column=col, value=h)
                 cell.font = self.header_font
@@ -197,7 +206,8 @@ class ExcelSaver:
                 ev.get('category', ''), ev.get('importance', 0),
                 a.get('title', ''), a.get('source', ''),
                 ev.get('one_line_summary', ''),
-                ', '.join(ev.get('key_facts', [])), a.get('link', '')
+                ', '.join(ev.get('key_facts', [])), a.get('link', ''),
+                a.get('image_url', '')
             ]
             for col, val in enumerate(values, 1):
                 cell = ws.cell(row=next_row, column=col, value=str(val))

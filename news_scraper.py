@@ -13,7 +13,7 @@ from config.settings import (
     RSS_FEEDS, RAW_NEWS_DIR,
     MAX_ARTICLES_PER_SOURCE,
     MAX_ARTICLE_CONTENT_LENGTH,
-    REQUEST_TIMEOUT
+    REQUEST_TIMEOUT, MIN_CONTENT_LENGTH, MIN_DUPLICATE_CHECK_LENGTH
 )
 from config.logger import setup_logger
 
@@ -71,7 +71,7 @@ class NewsScraper:
             text = ' '.join([
                 p.get_text().strip()
                 for p in paragraphs
-                if len(p.get_text().strip()) > 30
+                if len(p.get_text().strip()) > MIN_CONTENT_LENGTH
             ])
 
             return text[:MAX_ARTICLE_CONTENT_LENGTH]
@@ -125,7 +125,8 @@ class NewsScraper:
                         'source': source_name,
                         'date': str(self.today),
                         'scraped_at': self.timestamp,
-                        'content': content
+                        'content': content,
+                        'image_url': self._extract_image_url(entry)
                     }
 
                     all_articles.append(article)
@@ -156,7 +157,7 @@ class NewsScraper:
         unique = []
 
         for article in articles:
-            signature = article['title'].lower().strip()[:50]
+            signature = article['title'].lower().strip()[:MIN_DUPLICATE_CHECK_LENGTH]
 
             if signature not in seen:
                 seen.add(signature)
@@ -167,6 +168,29 @@ class NewsScraper:
             logger.info(f"   Removed {removed} duplicate articles")
 
         return unique
+
+    def _extract_image_url(self, entry):
+        """Extract image URL from RSS entry"""
+        # Try various common RSS image fields
+        if hasattr(entry, 'media_content') and entry.media_content:
+            return entry.media_content[0].get('url', '')
+        if hasattr(entry, 'media_thumbnail') and entry.media_thumbnail:
+            return entry.media_thumbnail[0].get('url', '')
+        if hasattr(entry, 'enclosure') and entry.enclosure:
+            enclosure = entry.enclosure
+            if hasattr(enclosure, 'type') and enclosure.type and enclosure.type.startswith('image'):
+                return getattr(enclosure, 'url', '')
+        # Try to find image in content
+        if hasattr(entry, 'content') and entry.content:
+            try:
+                content = entry.content[0].value
+                soup = BeautifulSoup(content, 'html.parser')
+                img = soup.find('img')
+                if img and img.get('src'):
+                    return img.get('src')
+            except:
+                pass
+        return ""
 
 
 if __name__ == "__main__":

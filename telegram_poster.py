@@ -2,11 +2,12 @@
 # WORKER 5 — Sends everything to Telegram channel
 
 import asyncio
+import requests
 from telegram import Bot
 from telegram.constants import ParseMode
 from datetime import datetime
 
-from config.settings import BOT_TOKEN, CHANNEL_ID
+from config.settings import BOT_TOKEN, CHANNEL_ID, TELEGRAM_MESSAGE_SPLIT_LENGTH, TELEGRAM_DELAY_SECONDS
 from config.logger import setup_logger
 
 logger = setup_logger("telegram")
@@ -18,6 +19,7 @@ class TelegramPoster:
     
     What it can do:
     - Send text messages (news summaries)
+    - Send photos with captions
     - Send quiz polls (interactive MCQs)
     - Split long messages automatically
     """
@@ -30,12 +32,12 @@ class TelegramPoster:
         """Send a text message to the channel"""
         try:
             # Telegram has a 4096 character limit per message
-            if len(text) > 4000:
+            if len(text) > TELEGRAM_MESSAGE_SPLIT_LENGTH:
                 # Split into smaller parts
                 parts = []
                 current = ""
                 for line in text.split('\n'):
-                    if len(current) + len(line) + 1 > 4000:
+                    if len(current) + len(line) + 1 > TELEGRAM_MESSAGE_SPLIT_LENGTH:
                         parts.append(current)
                         current = line
                     else:
@@ -45,12 +47,12 @@ class TelegramPoster:
                 
                 for part in parts:
                     await self.bot.send_message(
-                        chat_id=self.channel, text=part
+                        chat_id=self.channel, text=part, parse_mode=ParseMode.HTML
                     )
-                    await asyncio.sleep(2)
+                    await asyncio.sleep(TELEGRAM_DELAY_SECONDS)
             else:
                 await self.bot.send_message(
-                    chat_id=self.channel, text=text
+                    chat_id=self.channel, text=text, parse_mode=ParseMode.HTML
                 )
             
             await asyncio.sleep(1)
@@ -59,6 +61,48 @@ class TelegramPoster:
         except Exception as e:
             logger.error(f"Send text error: {e}")
             return False
+    
+    async def send_photo_with_caption(self, photo_url, caption):
+        """Send a photo with caption to the channel"""
+        try:
+            if not photo_url:
+                # No photo, just send text
+                return await self.send_text(caption)
+            
+            # Try to send by URL first (works for some URLs)
+            try:
+                await self.bot.send_photo(
+                    chat_id=self.channel,
+                    photo=photo_url,
+                    caption=caption[:1024],  # Caption max 1024 chars
+                    parse_mode=ParseMode.HTML
+                )
+                await asyncio.sleep(TELEGRAM_DELAY_SECONDS)
+                return True
+            except Exception as url_error:
+                logger.warning(f"Could not send photo by URL: {url_error}")
+            
+            # Download image and send as bytes
+            response = requests.get(photo_url, timeout=30)
+            if response.status_code != 200:
+                logger.warning(f"Could not download image: {photo_url}")
+                return await self.send_text(caption)
+            
+            # Send photo with caption
+            await self.bot.send_photo(
+                chat_id=self.channel,
+                photo=response.content,
+                caption=caption[:1024],  # Caption max 1024 chars
+                parse_mode=ParseMode.HTML
+            )
+            
+            await asyncio.sleep(TELEGRAM_DELAY_SECONDS)
+            return True
+            
+        except Exception as e:
+            logger.error(f"Send photo error: {e}")
+            # Fallback to text-only
+            return await self.send_text(caption)
     
     async def send_quiz(self, quiz_data):
         """Send a quiz poll (interactive) to the channel"""
@@ -84,13 +128,26 @@ class TelegramPoster:
             return False
     
     async def post_news(self, posts):
-        """Post all news messages"""
+        """Post all news messages - supports both text and dict with image"""
         logger.info(f"📤 Sending {len(posts)} news messages...")
         ok = 0
         fail = 0
         for i, post in enumerate(posts, 1):
             logger.info(f"   Sending {i}/{len(posts)}...")
-            if await self.send_text(post):
+            
+            if isinstance(post, dict):
+                # Post with image support
+                text = post.get('text', '')
+                image_url = post.get('image_url')
+                if image_url:
+                    result = await self.send_photo_with_caption(image_url, text)
+                else:
+                    result = await self.send_text(text)
+            else:
+                # Plain text post
+                result = await self.send_text(post)
+            
+            if result:
                 ok += 1
             else:
                 fail += 1

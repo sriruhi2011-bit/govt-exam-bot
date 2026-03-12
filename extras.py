@@ -3,39 +3,10 @@
 
 import random
 from datetime import datetime, date
-from ai_engine import ai
+from ai_engine import get_ai_engine
 from config.logger import setup_logger
 
 logger = setup_logger("extras")
-
-EXAM_DATES = {
-    "UPSC Prelims 2025": "2025-05-25",
-    "UPSC Mains 2025": "2025-09-19",
-    "SSC CGL 2025": "2025-06-15",
-    "KPSC KAS Prelims 2025": "2025-06-22",
-    "KPSC FDA/SDA 2025": "2025-07-20",
-    "RBI Grade B 2025": "2025-08-10",
-    "IBPS PO 2025": "2025-10-04",
-}
-
-STRATEGY_TIPS = [
-    "Revise current affairs from the last 12 months. Focus on government schemes and international summits.",
-    "Solve at least 50 MCQs daily from previous year papers. Analyze why you got wrong answers.",
-    "Make short notes of today's news. Use keywords, not full sentences. Review them weekly.",
-    "Focus on NCERT books for static GK. Class 6-12 covers 60% of Prelims syllabus.",
-    "Practice answer writing for 30 minutes daily. Even bullet points help build the habit.",
-    "Read one editorial from The Hindu or Indian Express daily. Note 3 key arguments.",
-    "Revise one subject's static portion today. Rotate subjects through the week.",
-    "Attempt a full-length mock test this weekend. Analyze mistakes more than score.",
-    "Map-based questions are increasing. Practice marking rivers, national parks on a blank map.",
-    "Focus on linking current affairs with static GK. Examiners love connected questions.",
-    "Create mnemonics for lists (Articles, Amendments, Committees). They save time in exam.",
-    "Revise Government Schemes: name, ministry, launch year, target beneficiaries.",
-    "Practice reading comprehension passages. Time yourself: 8 minutes per passage max.",
-    "Study constitutional amendments from last 5 years. They are exam favorites.",
-    "Review India's bilateral relations with neighboring countries. Focus on recent summits.",
-    "Mental health matters. Take a 30-minute break. A fresh mind learns better.",
-]
 
 ELI5_TOPICS = [
     "What is Repo Rate and how does it affect common people",
@@ -92,7 +63,7 @@ class ExtraContent:
     def this_day_in_history(self):
         logger.info("Generating This Day in History...")
         prompt = f"List 5 important historical events that happened on {self.day} {self.month} (any year). Include 2-3 events related to India and 2-3 international events. Focus on events asked in UPSC/SSC exams. FORMAT: YEAR - Event description in 1 clear line. After the 5 events add: EXAM TIP: Which event is most frequently asked and why (1 line). Plain text only."
-        content = ai.query(prompt, temperature=0.3, max_tokens=400)
+        content = get_ai_engine().query(prompt, temperature=0.3, max_tokens=400)
         if not content:
             return None
         post = f"""📜  <b>THIS DAY IN HISTORY</b>
@@ -110,7 +81,7 @@ class ExtraContent:
     def vocabulary_word(self):
         logger.info("Generating Word of the Day...")
         prompt = "Pick ONE advanced English vocabulary word useful for government exams. Provide: WORD (in capitals), PRONUNCIATION, TYPE (noun/verb/adj), MEANING (1 line), EXAMPLE (sentence about government/policy), SYNONYMS (3 words), ANTONYMS (2 words), MEMORY TIP (creative trick to remember, 1 line). Plain text only."
-        content = ai.query(prompt, temperature=0.5, max_tokens=300)
+        content = get_ai_engine().query(prompt, temperature=0.5, max_tokens=300)
         if not content:
             return None
         post = f"""📖  <b>WORD OF THE DAY</b>
@@ -145,7 +116,7 @@ class ExtraContent:
         ]
         topic = random.choice(topics)
         prompt = f"Create a short exam-focused fact capsule about {topic}. Choose a specific example. Give: TOPIC (specific name), CATEGORY, KEY FACTS (5 facts with dates/numbers), WHY IMPORTANT FOR EXAMS (1 line), EXAM HISTORY (has this been asked? which exam?). Plain text only."
-        content = ai.query(prompt, temperature=0.4, max_tokens=350)
+        content = get_ai_engine().query(prompt, temperature=0.4, max_tokens=350)
         if not content:
             return None
         post = f"""💡  <b>DAILY GK CAPSULE</b>
@@ -160,59 +131,11 @@ class ExtraContent:
 #StaticGK #GKCapsule #UPSC #SSC"""
         return post
 
-    def prelims_countdown(self):
-        logger.info("Generating Exam Countdown...")
-        today_date = date.today()
-        tip = random.choice(STRATEGY_TIPS)
-        countdown_lines = []
-        for exam_name, exam_date_str in EXAM_DATES.items():
-            try:
-                exam_date = datetime.strptime(exam_date_str, "%Y-%m-%d").date()
-                days_left = (exam_date - today_date).days
-                if days_left > 0:
-                    if days_left <= 30:
-                        icon = "🔴"
-                    elif days_left <= 90:
-                        icon = "🟡"
-                    else:
-                        icon = "🟢"
-                    countdown_lines.append(f"  {icon} <b>{exam_name}</b>")
-                    countdown_lines.append(f"     📅 {exam_date.strftime(chr(37)+chr(100)+chr(32)+chr(37)+chr(66)+chr(32)+chr(37)+chr(89))} — <b>{days_left} days left</b>")
-                    countdown_lines.append("")
-            except:
-                pass
-        if not countdown_lines:
-            countdown_lines = ["  Exam dates will be updated soon!"]
-        countdown_text = chr(10).join(countdown_lines)
-        post = f"""⏰  <b>EXAM COUNTDOWN</b>
-📅  <b>{self.date_nice}</b>
-━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-{countdown_text}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-🎯 <b>Today's Strategy Tip:</b>
-<i>{tip}</i>
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-📋 <b>Daily Checklist:</b>
-  ☐ Read today's current affairs
-  ☐ Attempt today's quiz
-  ☐ Revise 1 static GK topic
-  ☐ Solve 30 previous year MCQs
-  ☐ Read 1 editorial
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#ExamCountdown #UPSC #Motivation"""
-        return post
-
     def eli5_post(self):
         logger.info("Generating ELI5 post...")
         topic = random.choice(ELI5_TOPICS)
         prompt = f"Explain this topic in very simple language: {topic}. Rules: 1) Use a simple real-life analogy first 2) Then explain the actual concept 3) Give 3-4 key points in simple language 4) End with why this matters for exams 5) Maximum 150 words 6) No jargon 7) Plain text only."
-        content = ai.query(prompt, temperature=0.4, max_tokens=400)
+        content = get_ai_engine().query(prompt, temperature=0.4, max_tokens=400)
         if not content:
             return None
         post = f"""🎯  <b>CONCEPT SIMPLIFIED</b>
@@ -235,7 +158,7 @@ class ExtraContent:
         logger.info("Generating Comparison Table...")
         topic = random.choice(COMPARISON_TOPICS)
         prompt = f"Create a comparison between: {topic}. Compare on 5 points. For each point give the answer for both items. FORMAT: ITEM 1: (name), ITEM 2: (name), then Point 1: aspect - Item1: answer vs Item2: answer (repeat for 5 points). End with KEY EXAM POINT: what examiners usually ask (1 line). Plain text only."
-        content = ai.query(prompt, temperature=0.3, max_tokens=500)
+        content = get_ai_engine().query(prompt, temperature=0.3, max_tokens=500)
         if not content:
             return None
         post = f"""📊  <b>COMPARE AND LEARN</b>
@@ -259,7 +182,7 @@ class ExtraContent:
             return None
         logger.info("Generating Weekly Summary...")
         prompt = "Create a weekly current affairs summary for UPSC aspirants. List the top 8 most important news from India and world this week. For each: 1 line headline, 1 line exam importance, category (Economy/Polity/IR/Science/Environment/Defense/Schemes). Focus on exam-relevant news. Plain text only."
-        content = ai.query(prompt, temperature=0.3, max_tokens=600)
+        content = get_ai_engine().query(prompt, temperature=0.3, max_tokens=600)
         if not content:
             return None
         post = f"""📚  <b>WEEKLY NEWS RECAP</b>
@@ -282,9 +205,6 @@ class ExtraContent:
         vocab = self.vocabulary_word()
         if vocab:
             posts.append(("Word of the Day", vocab))
-        countdown = self.prelims_countdown()
-        if countdown:
-            posts.append(("Exam Countdown", countdown))
         day = self.day_of_week
         if day in [0, 3, 6]:
             gk = self.daily_static_gk()

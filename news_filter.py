@@ -4,8 +4,8 @@ import json
 import os
 from datetime import datetime
 
-from ai_engine import ai
-from config.settings import SYLLABUS_CATEGORIES, FILTERED_NEWS_DIR, MIN_IMPORTANCE_SCORE
+from ai_engine import get_ai_engine
+from config.settings import SYLLABUS_CATEGORIES, FILTERED_NEWS_DIR, MIN_IMPORTANCE_SCORE, CONTENT_TRUNCATION_LENGTH
 from config.logger import setup_logger
 
 logger = setup_logger("filter")
@@ -69,7 +69,7 @@ CATEGORIES TO CHOOSE FROM:
 ARTICLE:
 Title: {article['title']}
 Source: {article['source']}
-Content: {article['content'][:1500]}
+Content: {article['content'][:CONTENT_TRUNCATION_LENGTH]}
 
 RESPOND ONLY IN THIS EXACT JSON FORMAT AND NOTHING ELSE:
 {{"is_relevant": true, "category": "Economy", "importance": 7, "key_facts": ["fact 1", "fact 2", "fact 3"], "one_line_summary": "Brief summary of the news"}}
@@ -77,10 +77,10 @@ RESPOND ONLY IN THIS EXACT JSON FORMAT AND NOTHING ELSE:
 If the article is NOT relevant for government exams:
 {{"is_relevant": false, "category": "None", "importance": 0, "key_facts": [], "one_line_summary": ""}}"""
 
-        response = ai.query(prompt, temperature=0.1, max_tokens=400)
+        response = get_ai_engine().query(prompt, temperature=0.1, max_tokens=400)
 
         if response:
-            result = ai.extract_json(response)
+            result = get_ai_engine().extract_json(response)
             return result
 
         return None

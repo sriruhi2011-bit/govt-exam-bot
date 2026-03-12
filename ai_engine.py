@@ -3,7 +3,11 @@
 import requests
 import json
 import time
-from config.logger import setup_logger
+from config.settings import (
+    GEMINI_API_KEY, GROQ_API_KEY,
+    CEREBRAS_API_KEY, OPENROUTER_API_KEY,
+    AI_TIMEOUT_SECONDS
+)
 
 logger = setup_logger("ai_engine")
 
@@ -28,7 +32,7 @@ class AIEngine:
                 "rpm": 15,
                 "fails": 0
             })
-            logger.info("  Provider added: Google Gemini")
+            logger.info(f"  Provider added: Google Gemini")
 
         if GROQ_API_KEY and "PASTE_" not in GROQ_API_KEY and "YOUR_" not in GROQ_API_KEY and len(GROQ_API_KEY) > 10:
             self.providers.append({
@@ -40,7 +44,7 @@ class AIEngine:
                 "rpm": 30,
                 "fails": 0
             })
-            logger.info("  Provider added: Groq")
+            logger.info(f"  Provider added: Groq")
 
         if CEREBRAS_API_KEY and "PASTE_" not in CEREBRAS_API_KEY and "YOUR_" not in CEREBRAS_API_KEY and len(CEREBRAS_API_KEY) > 10:
             self.providers.append({
@@ -52,7 +56,7 @@ class AIEngine:
                 "rpm": 30,
                 "fails": 0
             })
-            logger.info("  Provider added: Cerebras")
+            logger.info(f"  Provider added: Cerebras")
 
         if OPENROUTER_API_KEY and "PASTE_" not in OPENROUTER_API_KEY and "YOUR_" not in OPENROUTER_API_KEY and len(OPENROUTER_API_KEY) > 10:
             self.providers.append({
@@ -64,14 +68,14 @@ class AIEngine:
                 "rpm": 20,
                 "fails": 0
             })
-            logger.info("  Provider added: OpenRouter")
+            logger.info(f"  Provider added: OpenRouter")
 
         if not self.providers:
             raise ValueError("No AI providers! Add API keys in config/settings.py")
 
         self.current_provider_index = 0
         self.last_request_time = 0
-        logger.info("AI Engine ready with " + str(len(self.providers)) + " providers")
+        logger.info(f"AI Engine ready with {len(self.providers)} providers")
 
     def _get_provider(self):
         return self.providers[self.current_provider_index]
@@ -80,7 +84,7 @@ class AIEngine:
         old = self.providers[self.current_provider_index]["name"]
         self.current_provider_index = (self.current_provider_index + 1) % len(self.providers)
         new = self.providers[self.current_provider_index]["name"]
-        logger.info("  Switching: " + old + " -> " + new)
+        logger.info(f"  Switching: {old} -> {new}")
 
     def _smart_delay(self):
         provider = self._get_provider()
@@ -97,7 +101,7 @@ class AIEngine:
             "contents": [{"parts": [{"text": prompt}]}],
             "generationConfig": {"temperature": temperature, "maxOutputTokens": max_tokens}
         }
-        response = requests.post(url, headers={"Content-Type": "application/json"}, json=payload, timeout=60)
+        response = requests.post(url, headers={"Content-Type": "application/json"}, json=payload, timeout=AI_TIMEOUT_SECONDS)
         if response.status_code == 200:
             result = response.json()
             try:
@@ -107,7 +111,7 @@ class AIEngine:
         elif response.status_code == 429:
             return "RATE_LIMITED"
         else:
-            logger.error("  Gemini error " + str(response.status_code))
+            logger.error(f"  Gemini error {response.status_code}")
             return None
 
     def _call_openai_compatible(self, provider, prompt, temperature, max_tokens):
@@ -120,13 +124,13 @@ class AIEngine:
             "temperature": temperature,
             "max_tokens": max_tokens
         }
-        response = requests.post(provider["url"], headers=headers, json=payload, timeout=60)
+        response = requests.post(provider["url"], headers=headers, json=payload, timeout=AI_TIMEOUT_SECONDS)
         if response.status_code == 200:
             return response.json()["choices"][0]["message"]["content"].strip()
         elif response.status_code == 429:
             return "RATE_LIMITED"
         else:
-            logger.error("  " + provider["name"] + " error " + str(response.status_code))
+            logger.error(f"  {provider['name']} error {response.status_code}")
             return None
 
     def query(self, prompt, temperature=0.2, max_tokens=500):
@@ -163,7 +167,7 @@ class AIEngine:
                 else:
                     time.sleep(10)
             except Exception as e:
-                logger.error("  Error: " + str(e))
+                logger.error(f"  Error: {str(e)}")
                 time.sleep(5)
         return None
 
@@ -191,4 +195,16 @@ class AIEngine:
         return None
 
 
-ai = AIEngine()
+def get_ai_engine():
+    """Lazy initialization of AI engine"""
+    global _ai_instance
+    if _ai_instance is None:
+        _ai_instance = AIEngine()
+    return _ai_instance
+
+
+# Lazy-loaded singleton instance
+_ai_instance = None
+
+# Backwards compatibility - ai = get_ai_engine()
+# Removed auto-initialization at import time to prevent failures when no API keys are configured

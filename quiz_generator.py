@@ -5,8 +5,8 @@ import os
 import random
 from datetime import datetime
 
-from ai_engine import ai
-from config.settings import QUIZ_DIR, MAX_QUIZ_QUESTIONS
+from ai_engine import get_ai_engine
+from config.settings import QUIZ_DIR, MAX_QUIZ_QUESTIONS, CONTENT_TRUNCATION_LENGTH
 from config.logger import setup_logger
 
 logger = setup_logger("quiz_gen")
@@ -35,13 +35,13 @@ RESPOND ONLY IN JSON FORMAT AND NOTHING ELSE:
 NEWS:
 Title: {article['title']}
 Category: {article['evaluation']['category']}
-Content: {article['content'][:1500]}
+Content: {article['content'][:CONTENT_TRUNCATION_LENGTH]}
 Key Facts: {article['evaluation'].get('key_facts', [])}"""
 
-        response = ai.query(prompt, temperature=0.3, max_tokens=800)
+        response = get_ai_engine().query(prompt, temperature=0.3, max_tokens=800)
 
         if response:
-            parsed = ai.extract_json(response)
+            parsed = get_ai_engine().extract_json(response)
             if parsed and 'questions' in parsed:
                 questions = parsed['questions']
                 for q in questions:
