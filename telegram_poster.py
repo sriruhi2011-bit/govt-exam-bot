@@ -2,10 +2,12 @@
 # WORKER 5 — Sends everything to Telegram channel
 
 import asyncio
+import time
 import requests
 from telegram import Bot
 from telegram.constants import ParseMode
 from datetime import datetime
+import html
 
 from config.settings import BOT_TOKEN, CHANNEL_ID, TELEGRAM_MESSAGE_SPLIT_LENGTH, TELEGRAM_DELAY_SECONDS
 from config.logger import setup_logger
@@ -49,13 +51,13 @@ class TelegramPoster:
                     await self.bot.send_message(
                         chat_id=self.channel, text=part, parse_mode=ParseMode.HTML
                     )
-                    await asyncio.sleep(TELEGRAM_DELAY_SECONDS)
+                    await asyncio.sleep(TELEGRAM_DELAY_SECONDS * 2)
             else:
                 await self.bot.send_message(
                     chat_id=self.channel, text=text, parse_mode=ParseMode.HTML
                 )
             
-            await asyncio.sleep(1)
+            await asyncio.sleep(TELEGRAM_DELAY_SECONDS * 2)
             return True
             
         except Exception as e:
@@ -69,39 +71,39 @@ class TelegramPoster:
                 # No photo, just send text
                 return await self.send_text(caption)
             
-            # Try to send by URL first (works for some URLs)
+            # Try to send by URL first
             try:
                 await self.bot.send_photo(
                     chat_id=self.channel,
                     photo=photo_url,
-                    caption=caption[:1024],  # Caption max 1024 chars
+                    caption=caption[:1024],
                     parse_mode=ParseMode.HTML
                 )
-                await asyncio.sleep(TELEGRAM_DELAY_SECONDS)
+                await asyncio.sleep(TELEGRAM_DELAY_SECONDS * 2)
                 return True
             except Exception as url_error:
                 logger.warning(f"Could not send photo by URL: {url_error}")
             
             # Download image and send as bytes
-            response = requests.get(photo_url, timeout=30)
-            if response.status_code != 200:
-                logger.warning(f"Could not download image: {photo_url}")
-                return await self.send_text(caption)
+            try:
+                response = requests.get(photo_url, timeout=30)
+                if response.status_code == 200:
+                    await self.bot.send_photo(
+                        chat_id=self.channel,
+                        photo=response.content,
+                        caption=caption[:1024],
+                        parse_mode=ParseMode.HTML
+                    )
+                    await asyncio.sleep(TELEGRAM_DELAY_SECONDS * 2)
+                    return True
+            except Exception as e:
+                logger.warning(f"Could not download image: {e}")
             
-            # Send photo with caption
-            await self.bot.send_photo(
-                chat_id=self.channel,
-                photo=response.content,
-                caption=caption[:1024],  # Caption max 1024 chars
-                parse_mode=ParseMode.HTML
-            )
-            
-            await asyncio.sleep(TELEGRAM_DELAY_SECONDS)
-            return True
+            # Fallback to text-only
+            return await self.send_text(caption)
             
         except Exception as e:
             logger.error(f"Send photo error: {e}")
-            # Fallback to text-only
             return await self.send_text(caption)
     
     async def send_quiz(self, quiz_data):
@@ -128,7 +130,7 @@ class TelegramPoster:
             return False
     
     async def post_news(self, posts):
-        """Post all news messages - supports both text and dict with image"""
+        """Post all news messages"""
         logger.info(f"📤 Sending {len(posts)} news messages...")
         ok = 0
         fail = 0
