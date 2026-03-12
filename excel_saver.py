@@ -67,7 +67,9 @@ class ExcelSaver:
     def _ensure_daily_file(self):
         if not os.path.exists(self.daily_file):
             wb = Workbook()
-            wb.remove(wb.active)
+            # Keep the default sheet and rename it
+            ws = wb.active
+            ws.title = "Daily Report"
             wb.save(self.daily_file)
 
     def save_scraped_news(self, articles):
@@ -183,7 +185,9 @@ class ExcelSaver:
             wb = load_workbook(self.master_file)
         else:
             wb = Workbook()
-            wb.remove(wb.active)
+            # Keep the default sheet and rename it
+            ws = wb.active
+            ws.title = "All News"
 
         # All News sheet
         if 'All News' not in wb.sheetnames:
