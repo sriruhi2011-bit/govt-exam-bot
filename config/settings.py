@@ -39,12 +39,7 @@ TELEGRAM_MESSAGE_SPLIT_LENGTH = 4000  # Max characters per Telegram message
 TELEGRAM_DELAY_SECONDS = 3  # Delay between Telegram messages (increased to avoid flood control)
 MAX_RETRIES = 3  # Maximum retry attempts
 
-# ════════════════════════════════════════════════════
-#  DROPBOX SETTINGS (Optional - for backup storage)
-# ════════════════════════════════════════════════════
 
-DROPBOX_ACCESS_TOKEN = os.environ.get("DROPBOX_ACCESS_TOKEN", "")
-# Example: "sl.BearerToken..." (Get from Dropbox App Console)
 
 # ════════════════════════════════════════════════════
 #  SCHEDULE
