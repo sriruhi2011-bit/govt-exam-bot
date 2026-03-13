@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
-      GDRIVE_ENABLED: ${{ secrets.GDRIVE_FOLDER_ID != '' }}
+      DROPBOX_ENABLED: ${{ secrets.DROPBOX_ACCESS_TOKEN != '' }}
 
     steps:
       - name: Checkout code
@@ -44,17 +44,11 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install feedparser beautifulsoup4 requests python-telegram-bot==20.7 schedule lxml openpyxl xlsxwriter filelock google-api-python-client google-auth-httplib2 google-auth-oauthlib
+          pip install feedparser beautifulsoup4 requests python-telegram-bot==20.7 schedule lxml openpyxl xlsxwriter filelock dropbox
+
       - name: Create data directories
         run: |
           mkdir -p data/raw_news data/filtered_news data/quizzes data/excel_reports logs
-
-      - name: Create Google Service Account file
-        if: env.GDRIVE_ENABLED == 'true'
-        run: |
-          printf '%s' "$GDRIVE_SERVICE_ACCOUNT_JSON" > service_account.json
-          ls -la service_account.json
-          echo "File size: $(wc -c < service_account.json) bytes"
 
       - name: Run Morning News (Process Only)
         env:
@@ -62,18 +56,14 @@ jobs:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
-          GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
-          GDRIVE_SERVICE_ACCOUNT_FILE: service_account.json
           SKIP_TELEGRAM: 'true'
         run: python main.py news
 
       - name: Wait for 7:00 AM IST posting time
         run: |
-          # Current UTC time
           current_hour=$(date -u +"%H")
           current_min=$(date -u +"%M")
           current_total=$((current_hour * 60 + current_min))
-          # Target: 01:30 UTC (7:00 AM IST) = 90 minutes
           target=90
           wait_minutes=$((target - current_total))
           if [ $wait_minutes -gt 0 ]; then
@@ -106,12 +96,11 @@ ok, fail = run_async(poster.post_news(posts))
 print(f'Posted: {ok} sent, {fail} failed')
 "
 
-      - name: Upload to Google Drive
-        if: env.GDRIVE_ENABLED == 'true'
-        run: python -c "from google_drive_uploader import GoogleDriveUploader; GoogleDriveUploader().upload_all_reports()"
+      - name: Upload to Dropbox
+        if: env.DROPBOX_ENABLED == 'true'
+        run: python -c "from dropbox_uploader import DropboxUploader; DropboxUploader().upload_all_reports()"
         env:
-          GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
-          GDRIVE_SERVICE_ACCOUNT_FILE: service_account.json
+          DROPBOX_ACCESS_TOKEN: ${{ secrets.DROPBOX_ACCESS_TOKEN }}
 
       - name: Upload reports
         if: always()
@@ -129,7 +118,7 @@ print(f'Posted: {ok} sent, {fail} failed')
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
-      GDRIVE_ENABLED: ${{ secrets.GDRIVE_FOLDER_ID != '' }}
+      DROPBOX_ENABLED: ${{ secrets.DROPBOX_ACCESS_TOKEN != '' }}
 
     steps:
       - name: Checkout code
@@ -143,18 +132,11 @@ print(f'Posted: {ok} sent, {fail} failed')
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install feedparser beautifulsoup4 requests python-telegram-bot==20.7 schedule lxml openpyxl xlsxwriter filelock google-api-python-client google-auth-httplib2 google-auth-oauthlib
+          pip install feedparser beautifulsoup4 requests python-telegram-bot==20.7 schedule lxml openpyxl xlsxwriter filelock dropbox
 
       - name: Create data directories
         run: |
           mkdir -p data/raw_news data/filtered_news data/quizzes data/excel_reports logs
-
-      - name: Create Google Service Account file
-        if: env.GDRIVE_ENABLED == 'true'
-        run: |
-          printf '%s' "$GDRIVE_SERVICE_ACCOUNT_JSON" > service_account.json
-          ls -la service_account.json
-          echo "File size: $(wc -c < service_account.json) bytes"
 
       - name: Run Evening Quiz (Process Only)
         env:
@@ -162,18 +144,14 @@ print(f'Posted: {ok} sent, {fail} failed')
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
-          GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
-          GDRIVE_SERVICE_ACCOUNT_FILE: service_account.json
           SKIP_TELEGRAM: 'true'
         run: python main.py quiz
 
       - name: Wait for 6:00 PM IST posting time
         run: |
-          # Current UTC time
           current_hour=$(date -u +"%H")
           current_min=$(date -u +"%M")
           current_total=$((current_hour * 60 + current_min))
-          # Target: 12:30 UTC (6:00 PM IST) = 750 minutes
           target=750
           wait_minutes=$((target - current_total))
           if [ $wait_minutes -gt 0 ]; then
@@ -207,12 +185,11 @@ ok, fail = run_async(poster.post_quiz(quiz_posts))
 print(f'Posted: {ok} sent, {fail} failed')
 "
 
-      - name: Upload to Google Drive
-        if: env.GDRIVE_ENABLED == 'true'
-        run: python -c "from google_drive_uploader import GoogleDriveUploader; GoogleDriveUploader().upload_all_reports()"
+      - name: Upload to Dropbox
+        if: env.DROPBOX_ENABLED == 'true'
+        run: python -c "from dropbox_uploader import DropboxUploader; DropboxUploader().upload_all_reports()"
         env:
-          GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
-          GDRIVE_SERVICE_ACCOUNT_FILE: service_account.json
+          DROPBOX_ACCESS_TOKEN: ${{ secrets.DROPBOX_ACCESS_TOKEN }}
 
       - name: Upload reports
         if: always()
