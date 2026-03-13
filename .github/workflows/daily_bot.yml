@@ -75,24 +75,7 @@ jobs:
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
-        run: python -c "
-import json
-import os
-from datetime import datetime
-from content_generator import ContentGenerator
-from telegram_poster import TelegramPoster, run_async
-
-today = datetime.now().strftime('%Y-%m-%d')
-filtered_file = f'data/filtered_news/filtered_{today}.json'
-with open(filtered_file, 'r', encoding='utf-8') as f:
-    filtered = json.load(f)
-
-generator = ContentGenerator()
-posts, post_data = generator.generate_all_posts(filtered)
-poster = TelegramPoster()
-ok, fail = run_async(poster.post_news(posts))
-print(f'Posted: {ok} sent, {fail} failed')
-"
+        run: python main.py post-news
 
       - name: Upload reports
         if: always()
@@ -155,25 +138,7 @@ print(f'Posted: {ok} sent, {fail} failed')
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
-        run: python -c "
-import json
-import os
-from datetime import datetime
-from quiz_generator import QuizGenerator
-from telegram_poster import TelegramPoster, run_async
-
-today = datetime.now().strftime('%Y-%m-%d')
-filtered_file = f'data/filtered_news/filtered_{today}.json'
-with open(filtered_file, 'r', encoding='utf-8') as f:
-    filtered = json.load(f)
-
-quiz_gen = QuizGenerator()
-questions = quiz_gen.generate_daily_quiz(filtered)
-quiz_posts = quiz_gen.format_for_telegram(questions)
-poster = TelegramPoster()
-ok, fail = run_async(poster.post_quiz(quiz_posts))
-print(f'Posted: {ok} sent, {fail} failed')
-"
+        run: python main.py post-quiz
 
       - name: Upload reports
         if: always()

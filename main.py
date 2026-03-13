@@ -300,5 +300,50 @@ if __name__ == '__main__':
             print('State reset!')
         else:
             print('No state file found.')
+    elif command == 'post-news':
+        # Post existing news to Telegram (for scheduled workflow)
+        from config.settings import BOT_TOKEN, CHANNEL_ID
+        import json
+        from datetime import datetime
+        from content_generator import ContentGenerator
+        from telegram_poster import TelegramPoster, run_async
+        
+        today = datetime.now().strftime('%Y-%m-%d')
+        filtered_file = os.path.join(FILTERED_NEWS_DIR, f'filtered_{today}.json')
+        
+        if not os.path.exists(filtered_file):
+            print(f'ERROR: No filtered news file for today: {filtered_file}')
+        else:
+            with open(filtered_file, 'r', encoding='utf-8') as f:
+                filtered = json.load(f)
+            
+            generator = ContentGenerator()
+            posts, post_data = generator.generate_all_posts(filtered)
+            poster = TelegramPoster()
+            ok, fail = run_async(poster.post_news(posts))
+            print(f'Posted: {ok} sent, {fail} failed')
+    elif command == 'post-quiz':
+        # Post existing quiz to Telegram (for scheduled workflow)
+        from config.settings import BOT_TOKEN, CHANNEL_ID
+        import json
+        from datetime import datetime
+        from quiz_generator import QuizGenerator
+        from telegram_poster import TelegramPoster, run_async
+        
+        today = datetime.now().strftime('%Y-%m-%d')
+        filtered_file = os.path.join(FILTERED_NEWS_DIR, f'filtered_{today}.json')
+        
+        if not os.path.exists(filtered_file):
+            print(f'ERROR: No filtered news file for today: {filtered_file}')
+        else:
+            with open(filtered_file, 'r', encoding='utf-8') as f:
+                filtered = json.load(f)
+            
+            quiz_gen = QuizGenerator()
+            questions = quiz_gen.generate_daily_quiz(filtered)
+            quiz_posts = quiz_gen.format_for_telegram(questions)
+            poster = TelegramPoster()
+            ok, fail = run_async(poster.post_quiz(quiz_posts))
+            print(f'Posted: {ok} sent, {fail} failed')
     else:
-        print('Usage: python main.py [test|news|quiz|extras|start|status|reset]')
+        print('Usage: python main.py [test|news|quiz|extras|start|status|reset|post-news|post-quiz]')
