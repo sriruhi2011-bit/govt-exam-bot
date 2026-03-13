@@ -106,10 +106,26 @@ def morning_news_pipeline():
         excel.save_posts(post_data)
 
         print('\n>>> STEP 4: Posting news to Telegram...')
-        poster = TelegramPoster()
-        ok, fail = run_async(poster.post_news(posts))
-        print(f'   Results: {ok} sent, {fail} failed')
-        excel.save_posting_log('Morning News', 'Success', f'Sent:{ok} Failed:{fail}')
+        if skip_telegram:
+            print('   SKIPPING Telegram posting (will post separately at exact time)')
+            # Save posts to file for later posting
+            import json
+            posts_to_save = []
+            for p in posts:
+                if isinstance(p, dict):
+                    posts_to_save.append(p)
+                # Skip string posts (header/footer)
+            if posts_to_save:
+                posts_file = os.path.join(DATA_DIR, 'pending_news_posts.json')
+                with open(posts_file, 'w', encoding='utf-8') as f:
+                    json.dump({'posts': posts_to_save}, f, ensure_ascii=False)
+                print(f'   Saved {len(posts_to_save)} posts to pending_news_posts.json')
+            excel.save_posting_log('Morning News', 'Processing Done', 'Will post at 7:00 AM')
+        else:
+            poster = TelegramPoster()
+            ok, fail = run_async(poster.post_news(posts))
+            print(f'   Results: {ok} sent, {fail} failed')
+            excel.save_posting_log('Morning News', 'Success', f'Sent:{ok} Failed:{fail}')
 
         print('\n>>> STEP 5: Posting extra content...')
         if skip_telegram:
@@ -305,20 +321,18 @@ if __name__ == '__main__':
         from config.settings import BOT_TOKEN, CHANNEL_ID
         import json
         from datetime import datetime
-        from content_generator import ContentGenerator
         from telegram_poster import TelegramPoster, run_async
         
         today = datetime.now().strftime('%Y-%m-%d')
-        filtered_file = os.path.join(FILTERED_NEWS_DIR, f'filtered_{today}.json')
+        posts_file = os.path.join(DATA_DIR, 'pending_news_posts.json')
         
-        if not os.path.exists(filtered_file):
-            print(f'ERROR: No filtered news file for today: {filtered_file}')
+        if not os.path.exists(posts_file):
+            print(f'ERROR: No pending posts file: {posts_file}')
         else:
-            with open(filtered_file, 'r', encoding='utf-8') as f:
-                filtered = json.load(f)
+            with open(posts_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            posts = data.get('posts', [])
             
-            generator = ContentGenerator()
-            posts, post_data = generator.generate_all_posts(filtered)
             poster = TelegramPoster()
             ok, fail = run_async(poster.post_news(posts))
             print(f'Posted: {ok} sent, {fail} failed')
@@ -331,16 +345,15 @@ if __name__ == '__main__':
         from telegram_poster import TelegramPoster, run_async
         
         today = datetime.now().strftime('%Y-%m-%d')
-        filtered_file = os.path.join(FILTERED_NEWS_DIR, f'filtered_{today}.json')
+        quiz_file = os.path.join(QUIZ_DIR, f'quiz_{today}.json')
         
-        if not os.path.exists(filtered_file):
-            print(f'ERROR: No filtered news file for today: {filtered_file}')
+        if not os.path.exists(quiz_file):
+            print(f'ERROR: No quiz file for today: {quiz_file}')
         else:
-            with open(filtered_file, 'r', encoding='utf-8') as f:
-                filtered = json.load(f)
+            with open(quiz_file, 'r', encoding='utf-8') as f:
+                questions = json.load(f)
             
             quiz_gen = QuizGenerator()
-            questions = quiz_gen.generate_daily_quiz(filtered)
             quiz_posts = quiz_gen.format_for_telegram(questions)
             poster = TelegramPoster()
             ok, fail = run_async(poster.post_quiz(quiz_posts))
