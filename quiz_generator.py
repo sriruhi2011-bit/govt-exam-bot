@@ -85,13 +85,17 @@ Key Facts: {article['evaluation'].get('key_facts', [])}"""
     def format_for_telegram(self, questions):
         posts = []
 
+        # Enhanced header with better formatting
         header = (
-            f"🧠 DAILY CURRENT AFFAIRS QUIZ 🧠\n"
-            f"📅 {self.today_nice}\n"
-            f"━━━━━━━━━━━━━━━━━━━━━\n"
-            f"📝 Questions: {len(questions)}\n"
-            f"⏰ Try within 15 minutes\n"
-            f"━━━━━━━━━━━━━━━━━━━━━"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "   🧠 <b>DAILY CURRENT AFFAIRS QUIZ</b> 🧠\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"   📅 <b>{self.today_nice}</b>\n"
+            "   ⏰ <i>Evening Edition</i>\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"   📝 <b>Questions:</b> <i>{len(questions)}</i>\n"
+            "   ⏱️ <b>Time:</b> <i>15 minutes</i>\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━"
         )
         posts.append(("text", header))
 
@@ -118,10 +122,11 @@ Key Facts: {article['evaluation'].get('key_facts', [])}"""
             posts.append(("quiz", quiz_data))
 
         footer = (
-            f"\n━━━━━━━━━━━━━━━━━━━━━\n"
-            f"📊 How did you score?\n"
-            f"🔔 Daily quiz at 7:00 PM\n\n"
-            f"#DailyQuiz #CurrentAffairs #UPSC"
+            "\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "📊 <b>How did you score?</b>\n"
+            "🔔 <i>Turn on notifications!</i>\n"
+            "🌅 <b>Tomorrow's News at 7:00 AM</b>\n\n"
+            "#DailyQuiz #CurrentAffairs #UPSC #SSC"
         )
         posts.append(("text", footer))
 

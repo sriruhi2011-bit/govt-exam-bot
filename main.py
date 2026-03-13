@@ -112,19 +112,22 @@ def morning_news_pipeline():
         excel.save_posting_log('Morning News', 'Success', f'Sent:{ok} Failed:{fail}')
 
         print('\n>>> STEP 5: Posting extra content...')
-        try:
-            extra = ExtraContent()
-            extra_posts = extra.get_todays_extras()
-            print(f'   Generated {len(extra_posts)} extras for {extra.day_name}')
-            for name, post_content in extra_posts:
-                print(f'   Posting: {name}...')
-                result = run_async(poster.send_text(post_content))
-                status = 'OK' if result else 'FAILED'
-                print(f'   {status}: {name}')
-                time.sleep(3)
-            excel.save_posting_log('Extra Content', 'Success', f'{len(extra_posts)} extras')
-        except Exception as e:
-            print(f'   Extra content error (not critical): {e}')
+        if skip_telegram:
+            print('   SKIPPING extra content (will post separately at exact time)')
+        else:
+            try:
+                extra = ExtraContent()
+                extra_posts = extra.get_todays_extras()
+                print(f'   Generated {len(extra_posts)} extras for {extra.day_name}')
+                for name, post_content in extra_posts:
+                    print(f'   Posting: {name}...')
+                    result = run_async(poster.send_text(post_content))
+                    status = 'OK' if result else 'FAILED'
+                    print(f'   {status}: {name}')
+                    time.sleep(3)
+                excel.save_posting_log('Extra Content', 'Success', f'{len(extra_posts)} extras')
+            except Exception as e:
+                print(f'   Extra content error (not critical): {e}')
 
         mark_done('morning_news')
         elapsed = (datetime.now() - start).total_seconds()

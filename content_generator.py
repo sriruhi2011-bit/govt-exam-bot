@@ -20,18 +20,18 @@ class ContentGenerator:
         prompt = f"""Create a concise news summary for UPSC exam students.
 
 USE THIS EXACT FORMAT:
-📌 HEADLINE (rewrite in 1 clear line)
+📌 <b>HEADLINE</b> (rewrite in 1 clear line)
 
-📰 What happened:
+📰 <b>What happened:</b>
 (2-3 simple sentences)
 
-📝 Key Exam Points:
+📝 <b>Key Exam Points:</b>
 • Point 1
 • Point 2
 • Point 3
 
-🏷️ Category: {article['evaluation']['category']}
-⭐ Importance: {article['evaluation']['importance']}/10
+🏷️ <b>Category:</b> {article['evaluation']['category']}
+⭐ <b>Importance:</b> {article['evaluation']['importance']}/10
 
 ARTICLE:
 Title: {article['title']}
@@ -59,12 +59,16 @@ RULES:
         all_posts = []
         post_data = []
 
+        # Enhanced header with better formatting
         header = (
-            f"📰 <b>DAILY CURRENT AFFAIRS</b> 📰\n"
-            f"📅 <i>{self.today_nice}</i>\n"
-            f"━━━━━━━━━━━━━━━━━━━━━\n"
-            f"📊 <b>Total:</b> {len(articles)} important news items\n"
-            f"━━━━━━━━━━━━━━━━━━━━━"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "   📰 <b>DAILY CURRENT AFFAIRS</b> 📰\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"   📅 <b>{self.today_nice}</b>\n"
+            "   ⏰ <i>Morning Edition</i>\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"   📊 <b>Total:</b> <i>{len(articles)}</i> news | 📚 <b>Categories:</b> <i>{len(categories)}</i>\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━"
         )
         all_posts.append(header)
 
@@ -86,13 +90,14 @@ RULES:
                     # Extract image URL from article if available
                     image_url = article.get('image_url', '')
                     
-                    # Format with professional styling
+                    # Enhanced format with bold headers and underline
                     post_text = (
                         f"\n📌 <b>{article['title']}</b>\n\n"
                         f"{summary}\n\n"
-                        f"📍 <b>Source:</b> {article['source']}\n"
-                        f"🔗 <a href=\"{article['link']}\">Read Full Article</a>\n\n"
-                        f"━━━━━━━━━━━━━━━━━━━━━\n"
+                        f"─────────────────────────\n"
+                        f"📍 <b>Source:</b> <i>{article['source']}</i>\n"
+                        f"🔗 <a href=\"{article['link']}\"><b>Read Full Article</b></a>\n"
+                        f"─────────────────────────\n"
                     )
                     
                     all_posts.append({
@@ -118,11 +123,11 @@ RULES:
                     })
 
         footer = (
-            f"\n━━━━━━━━━━━━━━━━━━━━━\n"
-            f"📚 <b>Stay updated. Stay ahead.</b>\n"
-            f"🔔 <i>Turn on notifications!</i>\n"
-            f"⏰ <b>Quiz at 7:00 PM</b>\n\n"
-            f"#CurrentAffairs #UPSC #SSC #GovtExams"
+            "\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "📚 <b>Stay updated. Stay ahead.</b>\n"
+            "🔔 <i>Turn on notifications!</i>\n"
+            "⏰ <b>Quiz at 7:00 PM</b>\n\n"
+            "#CurrentAffairs #UPSC #SSC #GovtExams"
         )
         all_posts.append(footer)
 

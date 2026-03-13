@@ -2,10 +2,10 @@ name: Daily Current Affairs Bot
 
 on:
   schedule:
-    # 7:00 AM IST = 1:30 AM UTC
-    - cron: '30 1 * * *'
-    # 6:00 PM IST = 12:30 PM UTC
-    - cron: '30 12 * * *'
+    # 6:00 AM IST = 12:30 AM UTC (start processing 1 hour before)
+    - cron: '30 0 * * *'
+    # 5:00 PM IST = 11:30 AM UTC (start processing 1 hour before)
+    - cron: '30 11 * * *'
 
   # Allow manual trigger from GitHub website
   workflow_dispatch:
@@ -26,7 +26,7 @@ env:
 
 jobs:
   morning-news:
-    if: github.event.schedule == '30 1 * * *' || github.event.inputs.job_type == 'news' || github.event.inputs.job_type == 'both'
+    if: github.event.schedule == '30 1 * * *' || github.event.schedule == '30 0 * * *' || github.event.inputs.job_type == 'news' || github.event.inputs.job_type == 'both'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
@@ -56,7 +56,7 @@ jobs:
           ls -la service_account.json
           echo "File size: $(wc -c < service_account.json) bytes"
 
-      - name: Run Morning News
+      - name: Run Morning News (Process Only)
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
@@ -64,7 +64,47 @@ jobs:
           CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
           GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
           GDRIVE_SERVICE_ACCOUNT_FILE: service_account.json
+          SKIP_TELEGRAM: 'true'
         run: python main.py news
+
+      - name: Wait for 7:00 AM IST posting time
+        run: |
+          # Current UTC time
+          current_hour=$(date -u +"%H")
+          current_min=$(date -u +"%M")
+          current_total=$((current_hour * 60 + current_min))
+          # Target: 01:30 UTC (7:00 AM IST) = 90 minutes
+          target=90
+          wait_minutes=$((target - current_total))
+          if [ $wait_minutes -gt 0 ]; then
+            echo "Waiting $wait_minutes minutes for 7:00 AM IST..."
+            sleep $((wait_minutes * 60))
+          else
+            echo "Already past 7:00 AM IST, posting now..."
+          fi
+
+      - name: Post Morning News to Telegram
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
+        run: python -c "
+import json
+import os
+from datetime import datetime
+from content_generator import ContentGenerator
+from telegram_poster import TelegramPoster, run_async
+
+today = datetime.now().strftime('%Y-%m-%d')
+filtered_file = f'data/filtered_news/filtered_{today}.json'
+with open(filtered_file, 'r', encoding='utf-8') as f:
+    filtered = json.load(f)
+
+generator = ContentGenerator()
+posts, post_data = generator.generate_all_posts(filtered)
+poster = TelegramPoster()
+ok, fail = run_async(poster.post_news(posts))
+print(f'Posted: {ok} sent, {fail} failed')
+"
 
       - name: Upload to Google Drive
         if: env.GDRIVE_ENABLED == 'true'
@@ -85,7 +125,7 @@ jobs:
           retention-days: 30
 
   evening-quiz:
-    if: github.event.schedule == '30 12 * * *' || github.event.inputs.job_type == 'quiz' || github.event.inputs.job_type == 'both'
+    if: github.event.schedule == '30 12 * * *' || github.event.schedule == '30 11 * * *' || github.event.inputs.job_type == 'quiz' || github.event.inputs.job_type == 'both'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
@@ -116,7 +156,7 @@ jobs:
           ls -la service_account.json
           echo "File size: $(wc -c < service_account.json) bytes"
 
-      - name: Run Evening Quiz
+      - name: Run Evening Quiz (Process Only)
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
@@ -124,7 +164,48 @@ jobs:
           CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
           GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
           GDRIVE_SERVICE_ACCOUNT_FILE: service_account.json
+          SKIP_TELEGRAM: 'true'
         run: python main.py quiz
+
+      - name: Wait for 6:00 PM IST posting time
+        run: |
+          # Current UTC time
+          current_hour=$(date -u +"%H")
+          current_min=$(date -u +"%M")
+          current_total=$((current_hour * 60 + current_min))
+          # Target: 12:30 UTC (6:00 PM IST) = 750 minutes
+          target=750
+          wait_minutes=$((target - current_total))
+          if [ $wait_minutes -gt 0 ]; then
+            echo "Waiting $wait_minutes minutes for 6:00 PM IST..."
+            sleep $((wait_minutes * 60))
+          else
+            echo "Already past 6:00 PM IST, posting now..."
+          fi
+
+      - name: Post Evening Quiz to Telegram
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
+        run: python -c "
+import json
+import os
+from datetime import datetime
+from quiz_generator import QuizGenerator
+from telegram_poster import TelegramPoster, run_async
+
+today = datetime.now().strftime('%Y-%m-%d')
+filtered_file = f'data/filtered_news/filtered_{today}.json'
+with open(filtered_file, 'r', encoding='utf-8') as f:
+    filtered = json.load(f)
+
+quiz_gen = QuizGenerator()
+questions = quiz_gen.generate_daily_quiz(filtered)
+quiz_posts = quiz_gen.format_for_telegram(questions)
+poster = TelegramPoster()
+ok, fail = run_async(poster.post_quiz(quiz_posts))
+print(f'Posted: {ok} sent, {fail} failed')
+"
 
       - name: Upload to Google Drive
         if: env.GDRIVE_ENABLED == 'true'
