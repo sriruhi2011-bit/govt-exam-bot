@@ -63,6 +63,9 @@ def morning_news_pipeline():
         print('Morning news already done today! Skipping.')
         return
 
+    # Check if we should skip Telegram posting (for scheduled workflow)
+    skip_telegram = os.environ.get('SKIP_TELEGRAM', '').lower() == 'true'
+
     start = datetime.now()
     print('')
     print('=' * 55)
