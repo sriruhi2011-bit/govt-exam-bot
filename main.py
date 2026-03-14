@@ -143,7 +143,6 @@ def morning_news_pipeline():
                     result = run_async(poster.send_text(post_content))
                     status = 'OK' if result else 'FAILED'
                     print(f'   {status}: {name}')
-                    time.sleep(3)
                 excel.save_posting_log('Extra Content', 'Success', f'{len(extra_posts)} extras')
             except Exception as e:
                 print(f'   Extra content error (not critical): {e}')
@@ -296,7 +295,6 @@ if __name__ == '__main__':
         for name, content in extra_posts:
             print(f'Posting: {name}...')
             run_async(poster.send_text(content))
-            time.sleep(3)
         print('Done!')
     elif command == 'start':
         start()

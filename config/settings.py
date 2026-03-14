@@ -36,7 +36,7 @@ CONTENT_TRUNCATION_LENGTH = 1500  # Truncate content for AI prompts
 AI_TIMEOUT_SECONDS = 60  # Timeout for AI API calls
 REQUEST_DELAY_SECONDS = 0.5  # Delay between requests to same source
 TELEGRAM_MESSAGE_SPLIT_LENGTH = 4000  # Max characters per Telegram message
-TELEGRAM_DELAY_SECONDS = 3  # Delay between Telegram messages (increased to avoid flood control)
+TELEGRAM_DELAY_SECONDS = 0  # No delay between Telegram messages
 MAX_RETRIES = 3  # Maximum retry attempts
 
 
@@ -45,8 +45,8 @@ MAX_RETRIES = 3  # Maximum retry attempts
 #  SCHEDULE
 # ════════════════════════════════════════════════════
 
-MORNING_NEWS_TIME = "07:00"
-EVENING_QUIZ_TIME = "18:00"
+MORNING_NEWS_TIME = "06:30"
+EVENING_QUIZ_TIME = "17:30"
 
 # ════════════════════════════════════════════════════
 #  LIMITS
