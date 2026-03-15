@@ -101,10 +101,10 @@ Key Facts: {article['evaluation'].get('key_facts', [])}"""
 
         for q in questions:
             options = [
-                q.get('option_a', 'Option A'),
-                q.get('option_b', 'Option B'),
-                q.get('option_c', 'Option C'),
-                q.get('option_d', 'Option D')
+                q.get('option_a', 'Option A')[:100],
+                q.get('option_b', 'Option B')[:100],
+                q.get('option_c', 'Option C')[:100],
+                q.get('option_d', 'Option D')[:100]
             ]
 
             correct_map = {'A': 0, 'B': 1, 'C': 2, 'D': 3}

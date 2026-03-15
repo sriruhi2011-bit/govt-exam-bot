@@ -211,11 +211,20 @@ def evening_quiz_pipeline():
             return
 
         print('\n>>> STEP 3: Posting quiz to Telegram...')
-        quiz_posts = quiz_gen.format_for_telegram(questions)
-        poster = TelegramPoster()
-        ok, fail = run_async(poster.post_quiz(quiz_posts))
-        print(f'   Results: {ok} sent, {fail} failed')
-        excel.save_posting_log('Evening Quiz', 'Success', f'Q:{len(questions)} Sent:{ok}')
+        if skip_telegram:
+            print('   SKIPPING Telegram posting (will post separately at exact time)')
+            # Save quiz to file for later posting
+            quiz_file = os.path.join(QUIZ_DIR, f'quiz_{datetime.now().strftime("%Y-%m-%d")}.json')
+            with open(quiz_file, 'w', encoding='utf-8') as f:
+                json.dump(questions, f, ensure_ascii=False)
+            print(f'   Saved {len(questions)} questions to {quiz_file}')
+            excel.save_posting_log('Evening Quiz', 'Processing Done', 'Will post at 5:30 PM')
+        else:
+            quiz_posts = quiz_gen.format_for_telegram(questions)
+            poster = TelegramPoster()
+            ok, fail = run_async(poster.post_quiz(quiz_posts))
+            print(f'   Results: {ok} sent, {fail} failed')
+            excel.save_posting_log('Evening Quiz', 'Success', f'Q:{len(questions)} Sent:{ok}')
 
         print('\n>>> STEP 4: Updating master database...')
         excel.update_master(filtered, questions)
@@ -339,7 +348,7 @@ if __name__ == '__main__':
             print(f'Posted: {ok} sent, {fail} failed')
     elif command == 'post-quiz':
         # Post existing quiz to Telegram (for scheduled workflow)
-        from config.settings import BOT_TOKEN, CHANNEL_ID
+        from config.settings import BOT_TOKEN, CHANNEL_ID, QUIZ_DIR
         import json
         from datetime import datetime
         from quiz_generator import QuizGenerator
