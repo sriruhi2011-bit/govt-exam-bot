@@ -125,7 +125,7 @@ jobs:
           current_hour=$(date -u +"%H")
           current_min=$(date -u +"%M")
           current_total=$((current_hour * 60 + current_min))
-          target=690
+          target=720
           wait_minutes=$((target - current_total))
           if [ $wait_minutes -gt 0 ]; then
             echo "Waiting $wait_minutes minutes for 5:30 PM IST..."
