@@ -45,8 +45,8 @@ MAX_RETRIES = 3  # Maximum retry attempts
 #  SCHEDULE
 # ════════════════════════════════════════════════════
 
-MORNING_NEWS_TIME = "06:30"
-EVENING_QUIZ_TIME = "17:30"
+MORNING_NEWS_TIME = "05:30"
+EVENING_QUIZ_TIME = "17:00"
 
 # ════════════════════════════════════════════════════
 #  LIMITS

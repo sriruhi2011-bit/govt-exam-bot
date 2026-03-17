@@ -2,10 +2,10 @@ name: Daily Current Affairs Bot
 
 on:
   schedule:
-    # 6:30 AM IST = 1:00 AM UTC (start processing 1 hour before)
-    - cron: '0 1 * * *'
-    # 5:30 PM IST = 12:00 PM UTC (start processing 1 hour before)
-    - cron: '0 12 * * *'
+    # 5:30 AM IST = 12:00 AM UTC (start processing 1 hour before)
+    - cron: '0 0 * * *'
+    # 5:00 PM IST = 11:30 AM UTC (start processing 30 mins before)
+    - cron: '30 11 * * *'
 
   # Allow manual trigger from GitHub website
   workflow_dispatch:
@@ -57,18 +57,18 @@ jobs:
           SKIP_TELEGRAM: 'true'
         run: python main.py news
 
-      - name: Wait for 6:30 AM IST posting time
+      - name: Wait for 5:30 AM IST posting time
         run: |
           current_hour=$(date -u +"%H")
           current_min=$(date -u +"%M")
           current_total=$((current_hour * 60 + current_min))
-          target=60
+          target=0
           wait_minutes=$((target - current_total))
           if [ $wait_minutes -gt 0 ]; then
-            echo "Waiting $wait_minutes minutes for 6:30 AM IST..."
+            echo "Waiting $wait_minutes minutes for 5:30 AM IST..."
             sleep $((wait_minutes * 60))
           else
-            echo "Already past 6:30 AM IST, posting now..."
+            echo "Already past 5:30 AM IST, posting now..."
           fi
 
       - name: Post Morning News to Telegram
@@ -120,18 +120,18 @@ jobs:
           SKIP_TELEGRAM: 'true'
         run: python main.py quiz
 
-      - name: Wait for 5:30 PM IST posting time
+      - name: Wait for 5:00 PM IST posting time
         run: |
           current_hour=$(date -u +"%H")
           current_min=$(date -u +"%M")
           current_total=$((current_hour * 60 + current_min))
-          target=720
+          target=690
           wait_minutes=$((target - current_total))
           if [ $wait_minutes -gt 0 ]; then
-            echo "Waiting $wait_minutes minutes for 5:30 PM IST..."
+            echo "Waiting $wait_minutes minutes for 5:00 PM IST..."
             sleep $((wait_minutes * 60))
           else
-            echo "Already past 5:30 PM IST, posting now..."
+            echo "Already past 5:00 PM IST, posting now..."
           fi
 
       - name: Post Evening Quiz to Telegram

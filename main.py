@@ -221,7 +221,7 @@ def evening_quiz_pipeline():
             with open(quiz_file, 'w', encoding='utf-8') as f:
                 json.dump(questions, f, ensure_ascii=False)
             print(f'   Saved {len(questions)} questions to {quiz_file}')
-            excel.save_posting_log('Evening Quiz', 'Processing Done', 'Will post at 5:30 PM')
+            excel.save_posting_log('Evening Quiz', 'Processing Done', 'Will post at 5:00 PM')
         else:
             quiz_posts = quiz_gen.format_for_telegram(questions)
             poster = TelegramPoster()
