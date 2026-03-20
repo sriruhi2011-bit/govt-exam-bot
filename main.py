@@ -244,7 +244,7 @@ def evening_quiz_pipeline():
     print(f'   EVENING QUIZ PIPELINE - {start.strftime("%H:%M:%S")}')
     print('=' * 55)
 
-    from config.settings import BOT_TOKEN, CHANNEL_ID
+    from config.settings import BOT_TOKEN, CHANNEL_ID, FILTERED_NEWS_DIR, QUIZ_DIR
     print(f'   Running on: {"GitHub Actions" if IS_GITHUB else "Local PC"}')
     bt = 'YES' if BOT_TOKEN and 'PASTE_' not in BOT_TOKEN and 'YOUR_' not in BOT_TOKEN else 'NO'
     print(f'   BOT_TOKEN: {bt} | CHANNEL: {CHANNEL_ID}')
