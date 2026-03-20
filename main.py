@@ -14,12 +14,7 @@ from quiz_generator import QuizGenerator
 from excel_saver import ExcelSaver
 from telegram_poster import TelegramPoster, run_async
 from extras import ExtraContent
-from config.settings import (
-    MORNING_GREETING_TIME, MORNING_NEWS_TIME,
-    EVENING_QUIZ_TIME, GOOD_NIGHT_TIME,
-    FILTERED_NEWS_DIR, DATA_DIR, QUIZ_DIR,
-    BOT_TOKEN, CHANNEL_ID, GEMINI_API_KEY, GROQ_API_KEY
-)
+from config.settings import DATA_DIR
 from config.logger import setup_logger
 
 logger = setup_logger('main')
