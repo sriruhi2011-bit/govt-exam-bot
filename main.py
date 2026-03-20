@@ -15,8 +15,9 @@ from excel_saver import ExcelSaver
 from telegram_poster import TelegramPoster, run_async
 from extras import ExtraContent
 from config.settings import (
-    MORNING_NEWS_TIME, EVENING_QUIZ_TIME,
-    FILTERED_NEWS_DIR, DATA_DIR
+    MORNING_GREETING_TIME, MORNING_NEWS_TIME, 
+    EVENING_QUIZ_TIME, GOOD_NIGHT_TIME,
+    FILTERED_NEWS_DIR, DATA_DIR, QUIZ_DIR
 )
 from config.logger import setup_logger
 
@@ -56,6 +57,42 @@ def mark_done(job_name):
     state[today][job_name] = datetime.now().strftime('%H:%M:%S')
     with open(STATE_FILE, 'w') as f:
         json.dump(state, f, indent=2)
+
+
+def morning_greeting_pipeline():
+    """Post morning greeting before news"""
+    if is_done_today('morning_greeting'):
+        print('Morning greeting already done today! Skipping.')
+        return
+    
+    skip_telegram = os.environ.get('SKIP_TELEGRAM', '').lower() == 'true'
+    
+    start = datetime.now()
+    print('')
+    print('=' * 55)
+    print(f'   MORNING GREETING - {start.strftime("%H:%M:%S")}')
+    print('=' * 55)
+    
+    try:
+        if skip_telegram:
+            print('   SKIPPING Telegram posting')
+            return
+            
+        poster = TelegramPoster()
+        extra = ExtraContent()
+        greeting = extra.morning_greeting()
+        
+        if greeting:
+            result = run_async(poster.send_text(greeting))
+            print(f'   Posted morning greeting: {"OK" if result else "FAILED"}')
+        else:
+            print('   WARNING: Could not generate greeting')
+            
+        mark_done('morning_greeting')
+        print('DONE!')
+        
+    except Exception as e:
+        print(f'ERROR: {e}')
 
 
 def morning_news_pipeline():
@@ -161,6 +198,42 @@ def morning_news_pipeline():
             pass
 
 
+def good_night_pipeline():
+    """Post good night message at 9 PM"""
+    if is_done_today('good_night'):
+        print('Good night already done today! Skipping.')
+        return
+    
+    skip_telegram = os.environ.get('SKIP_TELEGRAM', '').lower() == 'true'
+    
+    start = datetime.now()
+    print('')
+    print('=' * 55)
+    print(f'   GOOD NIGHT PIPELINE - {start.strftime("%H:%M:%S")}')
+    print('=' * 55)
+    
+    try:
+        if skip_telegram:
+            print('   SKIPPING Telegram posting')
+            return
+            
+        poster = TelegramPoster()
+        extra = ExtraContent()
+        goodnight = extra.good_night_message()
+        
+        if goodnight:
+            result = run_async(poster.send_text(goodnight))
+            print(f'   Posted good night: {"OK" if result else "FAILED"}')
+        else:
+            print('   WARNING: Could not generate good night message')
+            
+        mark_done('good_night')
+        print('DONE!')
+        
+    except Exception as e:
+        print(f'ERROR: {e}')
+
+
 def evening_quiz_pipeline():
     if is_done_today('evening_quiz'):
         print('Evening quiz already done today! Skipping.')
@@ -214,6 +287,24 @@ def evening_quiz_pipeline():
             return
 
         print('\n>>> STEP 3: Posting quiz to Telegram...')
+        poster = TelegramPoster()
+        
+        # Generate and post quiz notification FIRST
+        print('   Generating quiz notification...')
+        if not skip_telegram:
+            extra = ExtraContent()
+            quiz_alert_msg = extra.quiz_alert()
+            if quiz_alert_msg:
+                result = run_async(poster.send_text(quiz_alert_msg))
+                print(f'   Posted quiz alert: {"OK" if result else "FAILED"}')
+            else:
+                print('   WARNING: Could not generate quiz alert')
+            
+            # Wait 2 minutes before posting quiz
+            print('   Waiting 2 minutes before posting quiz...')
+            time.sleep(120)  # 2 minutes
+        
+        # Now post the quiz questions
         if skip_telegram:
             print('   SKIPPING Telegram posting (will post separately at exact time)')
             # Save quiz to file for later posting
@@ -224,7 +315,6 @@ def evening_quiz_pipeline():
             excel.save_posting_log('Evening Quiz', 'Processing Done', 'Will post at 5:00 PM')
         else:
             quiz_posts = quiz_gen.format_for_telegram(questions)
-            poster = TelegramPoster()
             ok, fail = run_async(poster.post_quiz(quiz_posts))
             print(f'   Results: {ok} sent, {fail} failed')
             excel.save_posting_log('Evening Quiz', 'Success', f'Q:{len(questions)} Sent:{ok}')
@@ -249,9 +339,23 @@ def evening_quiz_pipeline():
 def check_missed_jobs():
     now = datetime.now()
     hour = now.hour
+    morning_greeting_hour = int(MORNING_GREETING_TIME.split(':')[0])
     morning_hour = int(MORNING_NEWS_TIME.split(':')[0])
     evening_hour = int(EVENING_QUIZ_TIME.split(':')[0])
+    good_night_hour = int(GOOD_NIGHT_TIME.split(':')[0])
+    
     print(f'Checking missed jobs (time: {now.strftime("%H:%M")})...')
+    
+    # Morning greeting
+    if hour >= morning_greeting_hour and not is_done_today('morning_greeting'):
+        print('   Morning greeting MISSED - running now!')
+        morning_greeting_pipeline()
+    elif is_done_today('morning_greeting'):
+        print('   Morning greeting: Done today')
+    else:
+        print(f'   Morning greeting: Scheduled at {MORNING_GREETING_TIME}')
+    
+    # Morning news
     if hour >= morning_hour and not is_done_today('morning_news'):
         print('   Morning news MISSED - running now!')
         morning_news_pipeline()
@@ -259,6 +363,8 @@ def check_missed_jobs():
         print('   Morning news: Done today')
     else:
         print(f'   Morning news: Scheduled at {MORNING_NEWS_TIME}')
+    
+    # Evening quiz
     if hour >= evening_hour and not is_done_today('evening_quiz'):
         print('   Evening quiz MISSED - running now!')
         evening_quiz_pipeline()
@@ -266,6 +372,15 @@ def check_missed_jobs():
         print('   Evening quiz: Done today')
     else:
         print(f'   Evening quiz: Scheduled at {EVENING_QUIZ_TIME}')
+    
+    # Good night
+    if hour >= good_night_hour and not is_done_today('good_night'):
+        print('   Good night MISSED - running now!')
+        good_night_pipeline()
+    elif is_done_today('good_night'):
+        print('   Good night: Done today')
+    else:
+        print(f'   Good night: Scheduled at {GOOD_NIGHT_TIME}')
 
 
 def start():
@@ -273,12 +388,16 @@ def start():
     print('=' * 55)
     print('   GOVT EXAM NEWS BOT - ALL FEATURES')
     print('=' * 55)
-    print(f'   News + Extras: {MORNING_NEWS_TIME}')
-    print(f'   Quiz:          {EVENING_QUIZ_TIME}')
+    print(f'   Morning Greeting: {MORNING_GREETING_TIME}')
+    print(f'   Morning News:    {MORNING_NEWS_TIME}')
+    print(f'   Quiz (Alert):    {EVENING_QUIZ_TIME}')
+    print(f'   Good Night:      {GOOD_NIGHT_TIME}')
     print('=' * 55)
     check_missed_jobs()
+    schedule.every().day.at(MORNING_GREETING_TIME).do(morning_greeting_pipeline)
     schedule.every().day.at(MORNING_NEWS_TIME).do(morning_news_pipeline)
     schedule.every().day.at(EVENING_QUIZ_TIME).do(evening_quiz_pipeline)
+    schedule.every().day.at(GOOD_NIGHT_TIME).do(good_night_pipeline)
     print('\n   Running. Press Ctrl+C to stop.\n')
     while True:
         schedule.run_pending()
