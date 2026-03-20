@@ -8,6 +8,25 @@ from config.logger import setup_logger
 
 logger = setup_logger("extras")
 
+MORNING_GREETINGS = [
+    "Every morning brings new potential, but if you dwell on the misfortunes of the day before, you tend to overlook tremendous opportunities.",
+    "Success is the sum of small efforts, repeated day in and day out. Keep pushing forward!",
+    "The secret of getting ahead is getting started. Your UPSC journey begins with one step today.",
+    "Believe you can and you're halfway there. Today's effort is tomorrow's success.",
+    "Don't watch the clock; do what it does. Keep going. Stay focused, stay strong!",
+    "Wake up with determination. Go to bed with satisfaction. Your dream of becoming an officer is valid.",
+    "Small daily improvements are the key to staggering long-term results. Keep learning!",
+    "The only way to do great work is to love what you do. Find your purpose in service to the nation.",
+]
+
+GOOD_NIGHT_MESSAGES = [
+    "As you rest, remember: 'Sleep is the best meditation.' Rest well, wake up refreshed!",
+    "Tomorrow is another day to learn something new. Sweet dreams, future officer!",
+    "Review today's news once before sleeping. Memory consolidation works wonders!",
+    "Rest is not idleness. Tomorrow's success is built on today's learning.",
+    "Sleep well, study well, succeed well. Your nation needs capable leaders!",
+]
+
 ELI5_TOPICS = [
     "What is Repo Rate and how does it affect common people",
     "What is GDP and how is it calculated",
@@ -195,6 +214,77 @@ class ExtraContent:
 📌 <i>Revise this every Sunday for Prelims!</i>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #WeeklyRevision #SundayRevision #CurrentAffairs"""
+        return post
+
+    def morning_greeting(self):
+        """Generate morning greeting with motivational quote"""
+        logger.info("Generating morning greeting...")
+        quote = random.choice(MORNING_GREETINGS)
+        prompt = f"Create a short, inspiring morning message for UPSC/SSC exam aspirants. Include: 1) A motivational opening (1-2 sentences), 2) Today's date and day, 3) One specific study tip or focus area suggestion, 4) Encouragement to stay focused. Keep it under 150 words. Make it energetic and positive! Plain text only."
+        content = get_ai_engine().query(prompt, temperature=0.5, max_tokens=300)
+        if not content:
+            content = "Rise and shine! Today is another opportunity to learn and grow. Stay focused, stay determined!"
+        post = f"""🌅 <b>GOOD MORNING, FUTURE OFFICERS!</b> 🌅
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+📅 <b>{self.date_nice} - {self.day_name}</b>
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+"{quote}"
+
+{content}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+💪 <i>Let's make today count!</i>
+🔔 <i>Stay tuned for today's news!</i>
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+#GoodMorning #StayMotivated #UPSC #SSC"""
+        return post
+
+    def quiz_alert(self):
+        """Generate quiz notification message"""
+        logger.info("Generating quiz alert...")
+        prompt = "Create an exciting, short quiz announcement for government exam aspirants. Include: 1) Excitement about the quiz, 2) Mention it's based on today's current affairs, 3) Encourage participation, 4) Remind about time limit. Keep under 100 words. Plain text only."
+        content = get_ai_engine().query(prompt, temperature=0.5, max_tokens=200)
+        if not content:
+            content = "Test your today's learning with 10 quick questions!"
+        post = f"""📢 <b>QUIZ ALERT!</b> 📢
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🧠 <b>10 Questions</b> from today's current affairs
+⏱️ <b>1 minute</b> per question
+📝 <b>Test your learning!</b>
+
+{content}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+⏰ <i>Quiz starting in 2 minutes...</i>
+🔔 <i>Turn on notifications!</i>
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+#DailyQuiz #CurrentAffairs #UPSC #SSC"""
+        return post
+
+    def good_night_message(self):
+        """Generate good night message with revision tip"""
+        logger.info("Generating good night message...")
+        tip = random.choice(GOOD_NIGHT_MESSAGES)
+        prompt = "Create a soothing, encouraging good night message for exam aspirants. Include: 1) A calm closing thought, 2) One quick revision tip for tomorrow, 3) Reminder to rest well, 4) Positive encouragement. Keep under 150 words. Plain text only."
+        content = get_ai_engine().query(prompt, temperature=0.5, max_tokens=300)
+        if not content:
+            content = "Sweet dreams! Tomorrow is another day to learn and grow."
+        post = f"""🌙 <b>GOOD NIGHT, FUTURE OFFICERS!</b> 🌙
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+📅 <b>{self.date_nice}</b>
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+"{tip}"
+
+{content}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+💤 <i>Sleep well, wake up refreshed!</i>
+📚 <i>See you tomorrow with fresh news!</i>
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+#GoodNight #StayMotivated #UPSC"""
         return post
 
     def get_todays_extras(self):

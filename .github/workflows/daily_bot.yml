@@ -2,10 +2,10 @@ name: Daily Current Affairs Bot
 
 on:
   schedule:
-    # 5:30 AM IST = 12:00 AM UTC (start processing 1 hour before)
-    - cron: '0 0 * * *'
-    # 5:00 PM IST = 11:30 AM UTC (start processing 30 mins before)
-    - cron: '30 11 * * *'
+    # 5:25 AM IST = 11:55 PM UTC (morning greeting + news processing)
+    - cron: '55 23 * * *'
+    # 4:58 PM IST = 11:28 AM UTC (quiz processing - posts notification then quiz after 2 min)
+    - cron: '28 11 * * *'
 
   # Allow manual trigger from GitHub website
   workflow_dispatch:

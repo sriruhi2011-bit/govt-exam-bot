@@ -45,8 +45,10 @@ MAX_RETRIES = 3  # Maximum retry attempts
 #  SCHEDULE
 # ════════════════════════════════════════════════════
 
-MORNING_NEWS_TIME = "05:30"
-EVENING_QUIZ_TIME = "17:00"
+MORNING_GREETING_TIME = "05:25"      # 5 min before news
+MORNING_NEWS_TIME = "05:30"          # Morning news posts
+EVENING_QUIZ_TIME = "17:00"          # Quiz notification + quiz posts
+GOOD_NIGHT_TIME = "21:00"            # Good night message (9 PM)
 
 # ════════════════════════════════════════════════════
 #  LIMITS
@@ -56,7 +58,7 @@ MAX_ARTICLES_PER_SOURCE = 15
 MAX_ARTICLE_CONTENT_LENGTH = 3000
 MIN_IMPORTANCE_SCORE = 5
 MAX_NEWS_POSTS = 20
-MAX_QUIZ_QUESTIONS = 15
+MAX_QUIZ_QUESTIONS = 10    # Reduced to 10 questions
 REQUEST_TIMEOUT = 15
 
 # ════════════════════════════════════════════════════
