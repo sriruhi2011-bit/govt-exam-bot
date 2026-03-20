@@ -5,7 +5,7 @@ on:
     # 5:25 AM IST = 11:55 PM UTC (morning greeting + news processing)
     - cron: '55 23 * * *'
     # 4:58 PM IST = 11:28 AM UTC (quiz processing - posts notification then quiz after 2 min)
-    - cron: '28 11 * * *'
+    - cron: '30 11 * * *'
 
   # Allow manual trigger from GitHub website
   workflow_dispatch:
@@ -33,6 +33,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - name: Clear cached files
+        run: |
+          find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+          find . -type f -name '*.pyc' -delete 2>/dev/null || true
 
       - name: Set up Python
         uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
@@ -96,6 +101,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - name: Clear cached files
+        run: |
+          find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+          find . -type f -name '*.pyc' -delete 2>/dev/null || true
 
       - name: Set up Python
         uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
