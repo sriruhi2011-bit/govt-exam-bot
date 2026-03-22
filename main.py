@@ -55,42 +55,6 @@ def mark_done(job_name):
         json.dump(state, f, indent=2)
 
 
-def morning_greeting_pipeline():
-    """Post morning greeting before news"""
-    if is_done_today('morning_greeting'):
-        print('Morning greeting already done today! Skipping.')
-        return
-    
-    skip_telegram = os.environ.get('SKIP_TELEGRAM', '').lower() == 'true'
-    
-    start = datetime.now()
-    print('')
-    print('=' * 55)
-    print(f'   MORNING GREETING - {start.strftime("%H:%M:%S")}')
-    print('=' * 55)
-    
-    try:
-        if skip_telegram:
-            print('   SKIPPING Telegram posting')
-            return
-            
-        poster = TelegramPoster()
-        extra = ExtraContent()
-        greeting = extra.morning_greeting()
-        
-        if greeting:
-            result = run_async(poster.send_text(greeting))
-            print(f'   Posted morning greeting: {"OK" if result else "FAILED"}')
-        else:
-            print('   WARNING: Could not generate greeting')
-            
-        mark_done('morning_greeting')
-        print('DONE!')
-        
-    except Exception as e:
-        print(f'ERROR: {e}')
-
-
 def morning_news_pipeline():
     if is_done_today('morning_news'):
         print('Morning news already done today! Skipping.')
@@ -335,21 +299,11 @@ def evening_quiz_pipeline():
 def check_missed_jobs():
     now = datetime.now()
     hour = now.hour
-    morning_greeting_hour = int(MORNING_GREETING_TIME.split(':')[0])
     morning_hour = int(MORNING_NEWS_TIME.split(':')[0])
     evening_hour = int(EVENING_QUIZ_TIME.split(':')[0])
     good_night_hour = int(GOOD_NIGHT_TIME.split(':')[0])
     
     print(f'Checking missed jobs (time: {now.strftime("%H:%M")})...')
-    
-    # Morning greeting
-    if hour >= morning_greeting_hour and not is_done_today('morning_greeting'):
-        print('   Morning greeting MISSED - running now!')
-        morning_greeting_pipeline()
-    elif is_done_today('morning_greeting'):
-        print('   Morning greeting: Done today')
-    else:
-        print(f'   Morning greeting: Scheduled at {MORNING_GREETING_TIME}')
     
     # Morning news
     if hour >= morning_hour and not is_done_today('morning_news'):
@@ -384,13 +338,11 @@ def start():
     print('=' * 55)
     print('   GOVT EXAM NEWS BOT - ALL FEATURES')
     print('=' * 55)
-    print(f'   Morning Greeting: {MORNING_GREETING_TIME}')
     print(f'   Morning News:    {MORNING_NEWS_TIME}')
     print(f'   Quiz (Alert):    {EVENING_QUIZ_TIME}')
     print(f'   Good Night:      {GOOD_NIGHT_TIME}')
     print('=' * 55)
     check_missed_jobs()
-    schedule.every().day.at(MORNING_GREETING_TIME).do(morning_greeting_pipeline)
     schedule.every().day.at(MORNING_NEWS_TIME).do(morning_news_pipeline)
     schedule.every().day.at(EVENING_QUIZ_TIME).do(evening_quiz_pipeline)
     schedule.every().day.at(GOOD_NIGHT_TIME).do(good_night_pipeline)

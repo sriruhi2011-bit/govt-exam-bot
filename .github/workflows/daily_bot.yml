@@ -26,7 +26,7 @@ env:
 
 jobs:
   morning-news:
-    if: github.event.schedule == '0 0 * * *' || github.event.inputs.job_type == 'news' || github.event.inputs.job_type == 'both'
+    if: github.event.schedule == '55 23 * * *' || github.event.inputs.job_type == 'news' || github.event.inputs.job_type == 'both'
     runs-on: ubuntu-latest
     timeout-minutes: 45
 
