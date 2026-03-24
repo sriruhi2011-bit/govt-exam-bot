@@ -116,7 +116,7 @@ class TelegramPoster:
                 chat_id=self.channel,
                 question=question,
                 options=options,
-                type='regular',
+                type='quiz',
                 correct_option_id=quiz_data.get('correct_option_id', 0),
                 explanation=quiz_data.get('explanation', '')[:200],
                 is_anonymous=True
