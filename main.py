@@ -413,6 +413,10 @@ if __name__ == '__main__':
         morning_news_pipeline()
     elif command == 'quiz':
         evening_quiz_pipeline()
+    elif command == 'greeting':
+        morning_greeting_pipeline()
+    elif command == 'goodnight':
+        good_night_pipeline()
     elif command == 'extras':
         print('Testing extra content only...')
         poster = TelegramPoster()

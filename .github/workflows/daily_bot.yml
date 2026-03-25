@@ -2,10 +2,14 @@ name: Daily Current Affairs Bot
 
 on:
   schedule:
-    # 5:25 AM IST = 11:55 PM UTC (morning greeting + news processing)
-    - cron: '55 23 * * *'
-    # 4:58 PM IST = 11:28 AM UTC (quiz processing - posts notification then quiz after 2 min)
+    # 6:00 AM IST = 12:30 AM UTC (morning greeting)
+    - cron: '30 0 * * *'
+    # 7:00 AM IST = 1:30 AM UTC (morning news processing)
+    - cron: '30 1 * * *'
+    # 5:00 PM IST = 11:30 AM UTC (quiz processing - posts notification then quiz after 2 min)
     - cron: '30 11 * * *'
+    # 9:00 PM IST = 3:30 PM UTC (good night message)
+    - cron: '30 15 * * *'
 
   # Allow manual trigger from GitHub website
   workflow_dispatch:
@@ -18,6 +22,8 @@ on:
         options:
           - news
           - quiz
+          - greeting
+          - goodnight
           - both
 
 # Force Node.js 24 to remove the warning
@@ -25,8 +31,35 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
+  morning-greeting:
+    if: github.event.schedule == '30 0 * * *' || github.event.inputs.job_type == 'greeting' || github.event.inputs.job_type == 'both'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install python-telegram-bot==20.7 schedule
+
+      - name: Send Morning Greeting
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: python main.py greeting
+
   morning-news:
-    if: github.event.schedule == '55 23 * * *' || github.event.inputs.job_type == 'news' || github.event.inputs.job_type == 'both'
+    if: github.event.schedule == '30 1 * * *' || github.event.inputs.job_type == 'news' || github.event.inputs.job_type == 'both'
     runs-on: ubuntu-latest
     timeout-minutes: 45
 
@@ -161,3 +194,30 @@ jobs:
             data/quizzes/
             logs/
           retention-days: 30
+
+  good-night:
+    if: github.event.schedule == '30 15 * * *' || github.event.inputs.job_type == 'goodnight' || github.event.inputs.job_type == 'both'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install python-telegram-bot==20.7 schedule
+
+      - name: Send Good Night Message
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: python main.py goodnight
