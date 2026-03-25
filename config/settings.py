@@ -45,7 +45,8 @@ MAX_RETRIES = 3  # Maximum retry attempts
 #  SCHEDULE
 # ════════════════════════════════════════════════════
 
-MORNING_NEWS_TIME = "05:30"          # Morning news posts
+MORNING_GREETING_TIME = "06:00"         # Morning greeting with motivation
+MORNING_NEWS_TIME = "07:00"          # Morning news posts
 EVENING_QUIZ_TIME = "17:00"          # Quiz notification + quiz posts
 GOOD_NIGHT_TIME = "21:00"            # Good night message (9 PM)
 
