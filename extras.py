@@ -3,6 +3,7 @@
 
 import random
 from datetime import datetime, date
+from datetime import timezone, timedelta
 from ai_engine import get_ai_engine
 from config.logger import setup_logger
 
@@ -72,7 +73,9 @@ COMPARISON_TOPICS = [
 class ExtraContent:
 
     def __init__(self):
-        self.today = datetime.now()
+        # Use IST (UTC+5:30) for Indian timezone
+        ist_offset = timezone(timedelta(hours=5, minutes=30))
+        self.today = datetime.now(ist_offset)
         self.day = self.today.day
         self.month = self.today.strftime("%B")
         self.date_nice = self.today.strftime("%d %B %Y")
