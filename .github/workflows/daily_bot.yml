@@ -48,7 +48,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install python-telegram-bot==20.7 schedule
+          pip install feedparser beautifulsoup4 requests python-telegram-bot==20.7 schedule lxml openpyxl xlsxwriter filelock
 
       - name: Send Morning Greeting
         env:
@@ -212,7 +212,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install python-telegram-bot==20.7 schedule
+          pip install feedparser beautifulsoup4 requests python-telegram-bot==20.7 schedule lxml openpyxl xlsxwriter filelock
 
       - name: Send Good Night Message
         env:
