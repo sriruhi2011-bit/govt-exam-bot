@@ -5,7 +5,7 @@ import os
 import sys
 import time
 import schedule
-from datetime import datetime, date, timedelta
+from datetime import datetime, date, timedelta, timezone
 
 from news_scraper import NewsScraper
 from news_filter import NewsFilter
@@ -250,7 +250,9 @@ def evening_quiz_pipeline():
     print(f'   BOT_TOKEN: {bt} | CHANNEL: {CHANNEL_ID}')
 
     excel = ExcelSaver()
-    today = datetime.now().strftime('%Y-%m-%d')
+    # Use IST timezone for consistency with morning news
+    ist_offset = timezone(timedelta(hours=5, minutes=30))
+    today = datetime.now(ist_offset).strftime('%Y-%m-%d')
 
     try:
         print('\n>>> STEP 1: Loading filtered news...')
@@ -452,10 +454,12 @@ if __name__ == '__main__':
         # Post existing news to Telegram (for scheduled workflow)
         from config.settings import BOT_TOKEN, CHANNEL_ID
         import json
-        from datetime import datetime
+        from datetime import datetime, timezone, timedelta
         from telegram_poster import TelegramPoster, run_async
         
-        today = datetime.now().strftime('%Y-%m-%d')
+        # Use IST timezone for consistency
+        ist_offset = timezone(timedelta(hours=5, minutes=30))
+        today = datetime.now(ist_offset).strftime('%Y-%m-%d')
         posts_file = os.path.join(DATA_DIR, 'pending_news_posts.json')
         
         if not os.path.exists(posts_file):
@@ -472,11 +476,13 @@ if __name__ == '__main__':
         # Post existing quiz to Telegram (for scheduled workflow)
         from config.settings import BOT_TOKEN, CHANNEL_ID, QUIZ_DIR
         import json
-        from datetime import datetime
+        from datetime import datetime, timezone, timedelta
         from quiz_generator import QuizGenerator
         from telegram_poster import TelegramPoster, run_async
         
-        today = datetime.now().strftime('%Y-%m-%d')
+        # Use IST timezone for consistency
+        ist_offset = timezone(timedelta(hours=5, minutes=30))
+        today = datetime.now(ist_offset).strftime('%Y-%m-%d')
         quiz_file = os.path.join(QUIZ_DIR, f'quiz_{today}.json')
         
         if not os.path.exists(quiz_file):
