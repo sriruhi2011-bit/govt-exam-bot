@@ -97,9 +97,9 @@ jobs:
 
       - name: Wait for 5:30 AM IST posting time
         run: |
-          current_hour=$(date -u +"%H")
-          current_min=$(date -u +"%M")
-          current_total=$((current_hour * 60 + current_min))
+          current_hour=$(date -u +"%-H")
+          current_min=$(date -u +"%-M")
+          current_total=$((10#$current_hour * 60 + 10#$current_min))
           target=0
           wait_minutes=$((target - current_total))
           if [ $wait_minutes -gt 0 ]; then
@@ -165,9 +165,9 @@ jobs:
 
       - name: Wait for 5:00 PM IST posting time
         run: |
-          current_hour=$(date -u +"%H")
-          current_min=$(date -u +"%M")
-          current_total=$((current_hour * 60 + current_min))
+          current_hour=$(date -u +"%-H")
+          current_min=$(date -u +"%-M")
+          current_total=$((10#$current_hour * 60 + 10#$current_min))
           target=690
           wait_minutes=$((target - current_total))
           if [ $wait_minutes -gt 0 ]; then
