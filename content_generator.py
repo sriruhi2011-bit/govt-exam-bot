@@ -1,7 +1,7 @@
 # content_generator.py
 
 import os
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from ai_engine import get_ai_engine
 from config.settings import MAX_NEWS_POSTS, CONTENT_TRUNCATION_LENGTH
 from config.logger import setup_logger
@@ -12,9 +12,11 @@ logger = setup_logger("content_gen")
 class ContentGenerator:
 
     def __init__(self):
-        self.today_nice = datetime.now().strftime("%d %B %Y")
-        self.today = datetime.now().strftime("%Y-%m-%d")
-        self.time_now = datetime.now().strftime("%H:%M:%S")
+        # Use IST timezone (UTC+5:30) for Indian timezone
+        ist_offset = timezone(timedelta(hours=5, minutes=30))
+        self.today_nice = datetime.now(ist_offset).strftime("%d %B %Y")
+        self.today = datetime.now(ist_offset).strftime("%Y-%m-%d")
+        self.time_now = datetime.now(ist_offset).strftime("%H:%M:%S")
 
     def create_summary(self, article):
         prompt = f"""Create a concise news summary for UPSC exam students.

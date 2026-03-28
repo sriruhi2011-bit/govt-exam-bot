@@ -3,7 +3,7 @@
 import json
 import os
 import random
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 from ai_engine import get_ai_engine
 from config.settings import QUIZ_DIR, MAX_QUIZ_QUESTIONS, CONTENT_TRUNCATION_LENGTH
@@ -15,9 +15,11 @@ logger = setup_logger("quiz_gen")
 class QuizGenerator:
 
     def __init__(self):
-        self.today = datetime.now().strftime("%Y-%m-%d")
-        self.today_nice = datetime.now().strftime("%d %B %Y")
-        self.time_now = datetime.now().strftime("%H:%M:%S")
+        # Use IST timezone (UTC+5:30) for Indian timezone
+        ist_offset = timezone(timedelta(hours=5, minutes=30))
+        self.today = datetime.now(ist_offset).strftime("%Y-%m-%d")
+        self.today_nice = datetime.now(ist_offset).strftime("%d %B %Y")
+        self.time_now = datetime.now(ist_offset).strftime("%H:%M:%S")
 
     def make_questions(self, article):
         prompt = f"""You are a UPSC exam question setter.
