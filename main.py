@@ -243,6 +243,17 @@ def kannada_news_pipeline():
         posts, post_data = generator.generate_all_posts(filtered)
         print(f'   Created {len(posts)} Kannada posts')
         
+        # Save posts to file for later posting
+        posts_to_save = []
+        for p in posts:
+            if isinstance(p, dict):
+                posts_to_save.append(p)
+        if posts_to_save:
+            posts_file = os.path.join(KAN_DATA_DIR, 'pending_kan_posts.json')
+            with open(posts_file, 'w', encoding='utf-8') as f:
+                json.dump({'posts': posts_to_save}, f, ensure_ascii=False)
+            print(f'   Saved {len(posts_to_save)} posts for later posting')
+        
         print('\n>>> STEP 4: Posting to Kannada Telegram channel...')
         if skip_telegram:
             print('   SKIPPING Telegram posting')
@@ -646,26 +657,22 @@ if __name__ == '__main__':
             ok, fail = run_async(poster.post_quiz(quiz_posts))
             print(f'Posted: {ok} sent, {fail} failed')
     elif command == 'post-kan-news':
-        # Post existing Kannada news to Telegram channel
-        from config.settings import KAN_BOT_TOKEN, KAN_CHANNEL_ID, KAN_FILTERED_NEWS_DIR
+        # Post saved Kannada news to Telegram channel
+        from config.settings import KAN_BOT_TOKEN, KAN_CHANNEL_ID, KAN_DATA_DIR
         import json
         from datetime import datetime, timezone, timedelta
-        from kannada_content_generator import KannadaContentGenerator
         from kannada_poster import KannadaPoster, run_async
         
-        # Use IST timezone for consistency
-        ist_offset = timezone(timedelta(hours=5, minutes=30))
-        today = datetime.now(ist_offset).strftime('%Y-%m-%d')
-        filtered_file = os.path.join(KAN_FILTERED_NEWS_DIR, f'filtered_kan_{today}.json')
+        posts_file = os.path.join(KAN_DATA_DIR, 'pending_kan_posts.json')
         
-        if not os.path.exists(filtered_file):
-            print(f'ERROR: No filtered Kannada file: {filtered_file}')
+        if not os.path.exists(posts_file):
+            print(f'ERROR: No pending posts file: {posts_file}')
+            print('Run kan-news first to generate posts')
         else:
-            with open(filtered_file, 'r', encoding='utf-8') as f:
-                filtered = json.load(f)
+            with open(posts_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            posts = data.get('posts', [])
             
-            generator = KannadaContentGenerator()
-            posts, _ = generator.generate_all_posts(filtered)
             poster = KannadaPoster()
             ok, fail = run_async(poster.post_news(posts))
             print(f'Posted Kannada: {ok} sent, {fail} failed')

@@ -223,7 +223,7 @@ class ExtraContent:
         """Generate morning greeting with motivational quote"""
         logger.info("Generating morning greeting...")
         quote = random.choice(MORNING_GREETINGS)
-        prompt = f"Create a short, inspiring morning message for UPSC/SSC exam aspirants. Include: 1) A motivational opening (1-2 sentences), 2) Today's date and day, 3) One specific study tip or focus area suggestion, 4) Encouragement to stay focused. Keep it under 150 words. Make it energetic and positive! Plain text only."
+        prompt = f"Create a short, inspiring morning message for UPSC/SSC exam aspirants. Include: 1) A motivational opening (1-2 sentences), 2) One specific study tip or focus area suggestion, 3) Encouragement to stay focused. IMPORTANT: Do NOT include any date, day, or calendar info in your response (the date is already shown in the header). Keep it under 150 words. Make it energetic and positive! Plain text only."
         content = get_ai_engine().query(prompt, temperature=0.5, max_tokens=300)
         if not content:
             content = "Rise and shine! Today is another opportunity to learn and grow. Stay focused, stay determined!"
