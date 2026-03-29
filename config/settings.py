@@ -143,26 +143,32 @@ RSS_FEEDS = {
 # ════════════════════════════════════════════════════
 
 KAN_RSS_FEEDS = {
-    # Kannada Newspapers (Pure Kannada Sources)
+    # Karnataka-focused (English but Karnataka news)
+    "Deccan Herald Karnataka":
+        "https://www.deccanherald.com/rss/karnataka.rss",
+    "Deccan Herald Bengaluru":
+        "https://www.deccanherald.com/rss/bengaluru.rss",
+    "The Hindu Karnataka":
+        "https://www.thehindu.com/news/national/karnataka/feeder/default.rss",
+    "Indian Express Bangalore":
+        "https://indianexpress.com/section/cities/bangalore/feed/",
+    "Times of India Bengaluru":
+        "https://timesofindia.indiatimes.com/rssfeeds/4084533.cms",
+    "New Indian Express Karnataka":
+        "https://www.newindianexpress.com/rss/karnataka/rssfeed.xml",
+    "Bangalore Mirror":
+        "https://bangaloremirror.indiatimes.com/rssfeeds/4738792.cms",
+    # Kannada News Aggregators
+    "Karnataka.com":
+        "https://www.karnataka.com/feed/",
+    "Suvarna News":
+        "https://www.suvarnanews.tv/feed/",
     "Vijayavani":
         "https://vijayavani.com/feed",
     "Prajavani":
         "https://www.prajavani.net/rss/english",
     "OneIndia Kannada":
         "https://kannada.oneindia.in/rss/feed",
-    "News18 Kannada":
-        "https://kannada.news18.com/rss/lokmat.xml",
-    "Vijayavani National":
-        "https://vijayavani.com/national/rss",
-    "Prajavani National":
-        "https://www.prajavani.net/national/rss",
-    # Kannada News Portals
-    "Karnataka.com":
-        "https://www.karnataka.com/feed/",
-    "Vijayavani State":
-        "https://vijayavani.com/karnataka/rss",
-    "Prajavani Karnataka":
-        "https://www.prajavani.net/karnataka/rss",
 }
 
 # Kannada specific directories
