@@ -645,5 +645,53 @@ if __name__ == '__main__':
             poster = TelegramPoster()
             ok, fail = run_async(poster.post_quiz(quiz_posts))
             print(f'Posted: {ok} sent, {fail} failed')
+    elif command == 'post-kan-news':
+        # Post existing Kannada news to Telegram channel
+        from config.settings import KAN_BOT_TOKEN, KAN_CHANNEL_ID, KAN_FILTERED_NEWS_DIR
+        import json
+        from datetime import datetime, timezone, timedelta
+        from kannada_content_generator import KannadaContentGenerator
+        from kannada_poster import KannadaPoster, run_async
+        
+        # Use IST timezone for consistency
+        ist_offset = timezone(timedelta(hours=5, minutes=30))
+        today = datetime.now(ist_offset).strftime('%Y-%m-%d')
+        filtered_file = os.path.join(KAN_FILTERED_NEWS_DIR, f'filtered_kan_{today}.json')
+        
+        if not os.path.exists(filtered_file):
+            print(f'ERROR: No filtered Kannada file: {filtered_file}')
+        else:
+            with open(filtered_file, 'r', encoding='utf-8') as f:
+                filtered = json.load(f)
+            
+            generator = KannadaContentGenerator()
+            posts, _ = generator.generate_all_posts(filtered)
+            poster = KannadaPoster()
+            ok, fail = run_async(poster.post_news(posts))
+            print(f'Posted Kannada: {ok} sent, {fail} failed')
+    elif command == 'post-kan-quiz':
+        # Post existing Kannada quiz to Telegram channel
+        from config.settings import KAN_BOT_TOKEN, KAN_CHANNEL_ID, KAN_QUIZ_DIR
+        import json
+        from datetime import datetime, timezone, timedelta
+        from kannada_quiz_generator import KannadaQuizGenerator
+        from kannada_poster import KannadaPoster, run_async
+        
+        # Use IST timezone for consistency
+        ist_offset = timezone(timedelta(hours=5, minutes=30))
+        today = datetime.now(ist_offset).strftime('%Y-%m-%d')
+        quiz_file = os.path.join(KAN_QUIZ_DIR, f'kan_quiz_{today}.json')
+        
+        if not os.path.exists(quiz_file):
+            print(f'ERROR: No Kannada quiz file: {quiz_file}')
+        else:
+            with open(quiz_file, 'r', encoding='utf-8') as f:
+                questions = json.load(f)
+            
+            quiz_gen = KannadaQuizGenerator()
+            quiz_posts = quiz_gen.format_for_telegram(questions)
+            poster = KannadaPoster()
+            ok, fail = run_async(poster.post_quiz(quiz_posts))
+            print(f'Posted Kannada Quiz: {ok} sent, {fail} failed')
     else:
         print('Usage: python main.py [test|news|quiz|extras|start|status|reset|post-news|post-quiz]')

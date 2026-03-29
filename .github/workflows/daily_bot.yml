@@ -27,6 +27,8 @@ on:
           - both
           - kan-news
           - kan-quiz
+          - post-kan-news
+          - post-kan-quiz
 
 # Force Node.js 24 to remove the warning
 env:
@@ -108,6 +110,12 @@ jobs:
           SKIP_TELEGRAM: 'true'
         run: python main.py kan-news
 
+      - name: Post Kannada News to Telegram
+        env:
+          KAN_BOT_TOKEN: ${{ secrets.KAN_BOT_TOKEN }}
+          KAN_CHANNEL_ID: ${{ secrets.KAN_CHANNEL_ID }}
+        run: python main.py post-kan-news
+
       - name: Wait for 5:30 AM IST posting time
         run: |
           current_hour=$(date -u +"%-H")
@@ -186,6 +194,12 @@ jobs:
           KAN_CHANNEL_ID: ${{ secrets.KAN_CHANNEL_ID }}
           SKIP_TELEGRAM: 'true'
         run: python main.py kan-quiz
+
+      - name: Post Kannada Quiz to Telegram
+        env:
+          KAN_BOT_TOKEN: ${{ secrets.KAN_BOT_TOKEN }}
+          KAN_CHANNEL_ID: ${{ secrets.KAN_CHANNEL_ID }}
+        run: python main.py post-kan-quiz
 
       - name: Wait for 5:00 PM IST posting time
         run: |
