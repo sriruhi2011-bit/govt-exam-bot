@@ -26,6 +26,16 @@ CEREBRAS_API_KEY = os.environ.get("CEREBRAS_API_KEY", "")
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 
 # ════════════════════════════════════════════════════
+#  KANNADA CHANNEL CONFIGURATION
+# ════════════════════════════════════════════════════
+
+KAN_BOT_TOKEN = os.environ.get("KAN_BOT_TOKEN", "")
+# Example: "7123456789:AAHf-xxxxxxxxxxxxxxxxxxxxxxx"
+
+KAN_CHANNEL_ID = os.environ.get("KAN_CHANNEL_ID", "")
+# Example: "@kannada_news_upsc"
+
+# ════════════════════════════════════════════════════
 #  CONSTANTS - Magic numbers extracted to named constants
 # ════════════════════════════════════════════════════
 
@@ -127,6 +137,42 @@ RSS_FEEDS = {
     "Bangalore Mirror":
         "https://bangaloremirror.indiatimes.com/rssfeeds/4738792.cms",
 }
+
+# ════════════════════════════════════════════════════
+#  KANNADA RSS FEEDS
+# ════════════════════════════════════════════════════
+
+KAN_RSS_FEEDS = {
+    # Kannada Newspapers
+    "Vijayavani":
+        "https://vijayavani.com/feed",
+    "Prajavani":
+        "https://www.prajavani.net/rss/english",
+    "Karnataka News - 1":
+        "https://karnataka.com/feed/",
+    "OneIndia Kannada":
+        "https://kannada.oneindia.in/rss/feed",
+    "News18 Kannada":
+        "https://kannada.news18.com/rss/lokmat.xml",
+    "Vijayavani National":
+        "https://vijayavani.com/national/rss",
+    "Prajavani National":
+        "https://www.prajavani.net/national/rss",
+    # Kannada News Portals
+    "Karnataka Kannada News":
+        "https://www.karnataka.com/feed/",
+    "Bengaluru Kannada":
+        "https://www.thehindu.com/news/cities/bangalore/feeder/default.rss",
+}
+
+# Kannada specific directories
+KAN_DATA_DIR = os.path.join(DATA_DIR, "kannada")
+KAN_RAW_NEWS_DIR = os.path.join(KAN_DATA_DIR, "raw_news")
+KAN_FILTERED_NEWS_DIR = os.path.join(KAN_DATA_DIR, "filtered_news")
+KAN_QUIZ_DIR = os.path.join(KAN_DATA_DIR, "quizzes")
+
+for directory in [KAN_DATA_DIR, KAN_RAW_NEWS_DIR, KAN_FILTERED_NEWS_DIR, KAN_QUIZ_DIR]:
+    os.makedirs(directory, exist_ok=True)
 
 # ════════════════════════════════════════════════════
 #  EXAM SYLLABUS

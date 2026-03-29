@@ -194,6 +194,147 @@ def good_night_pipeline():
         print(f'ERROR: {e}')
 
 
+def kannada_news_pipeline():
+    """Post Kannada news at 7:30 AM IST (30 min after English news)"""
+    if is_done_today('kannada_news'):
+        print('Kannada news already done today! Skipping.')
+        return
+    
+    # Check if we should skip Telegram posting
+    skip_telegram = os.environ.get('SKIP_TELEGRAM', '').lower() == 'true'
+    
+    start = datetime.now()
+    print('')
+    print('=' * 55)
+    print(f'   KANNADA NEWS PIPELINE - {start.strftime("%H:%M:%S")}')
+    print('=' * 55)
+    
+    from config.settings import KAN_BOT_TOKEN, KAN_CHANNEL_ID, GEMINI_API_KEY, GROQ_API_KEY
+    print(f'   Running on: {"GitHub Actions" if IS_GITHUB else "Local PC"}')
+    kbt = 'YES' if KAN_BOT_TOKEN and 'PASTE_' not in KAN_BOT_TOKEN and 'YOUR_' not in KAN_BOT_TOKEN else 'NO'
+    print(f'   KAN_BOT_TOKEN: {kbt} | KAN_CHANNEL: {KAN_CHANNEL_ID}')
+    
+    try:
+        print('\n>>> STEP 1: Scraping Kannada news...')
+        from kannada_scraper import KannadaScraper
+        scraper = KannadaScraper()
+        raw = scraper.fetch_all_news()
+        print(f'   Got {len(raw)} Kannada articles')
+        
+        if not raw:
+            print('   WARNING: No Kannada articles found!')
+            mark_done('kannada_news')
+            return
+        
+        print('\n>>> STEP 2: AI Filtering...')
+        from kannada_filter import KannadaFilter
+        filterer = KannadaFilter()
+        filtered, stats = filterer.filter_articles(raw)
+        print(f'   Selected {len(filtered)} relevant Kannada articles')
+        
+        if not filtered:
+            print('   WARNING: No relevant Kannada articles today!')
+            mark_done('kannada_news')
+            return
+        
+        print('\n>>> STEP 3: Creating Kannada news posts...')
+        from kannada_content_generator import KannadaContentGenerator
+        generator = KannadaContentGenerator()
+        posts, post_data = generator.generate_all_posts(filtered)
+        print(f'   Created {len(posts)} Kannada posts')
+        
+        print('\n>>> STEP 4: Posting to Kannada Telegram channel...')
+        if skip_telegram:
+            print('   SKIPPING Telegram posting')
+            mark_done('kannada_news')
+        else:
+            from kannada_poster import KannadaPoster, run_async
+            poster = KannadaPoster()
+            ok, fail = run_async(poster.post_news(posts))
+            print(f'   Results: {ok} sent, {fail} failed')
+        
+        mark_done('kannada_news')
+        elapsed = (datetime.now() - start).total_seconds()
+        print(f'\nDONE in {elapsed:.0f} seconds!')
+        
+    except Exception as e:
+        print(f'\nERROR: {e}')
+        import traceback
+        traceback.print_exc()
+
+
+def kannada_quiz_pipeline():
+    """Post Kannada quiz at 5:30 PM IST (30 min after English quiz)"""
+    if is_done_today('kannada_quiz'):
+        print('Kannada quiz already done today! Skipping.')
+        return
+    
+    skip_telegram = os.environ.get('SKIP_TELEGRAM', '').lower() == 'true'
+    
+    start = datetime.now()
+    print('')
+    print('=' * 55)
+    print(f'   KANNADA QUIZ PIPELINE - {start.strftime("%H:%M:%S")}')
+    print('=' * 55)
+    
+    from config.settings import KAN_BOT_TOKEN, KAN_CHANNEL_ID, GEMINI_API_KEY, GROQ_API_KEY, KAN_FILTERED_NEWS_DIR
+    
+    try:
+        print('\n>>> STEP 1: Loading filtered Kannada news...')
+        ist_offset = timezone(timedelta(hours=5, minutes=30))
+        today = datetime.now(ist_offset).strftime('%Y-%m-%d')
+        
+        filtered_file = os.path.join(KAN_FILTERED_NEWS_DIR, f'filtered_kan_{today}.json')
+        if not os.path.exists(filtered_file):
+            print('   No filtered file. Running scrape+filter...')
+            from kannada_scraper import KannadaScraper
+            scraper = KannadaScraper()
+            raw = scraper.fetch_all_news()
+            from kannada_filter import KannadaFilter
+            filterer = KannadaFilter()
+            filtered, stats = filterer.filter_articles(raw)
+        else:
+            with open(filtered_file, 'r', encoding='utf-8') as f:
+                filtered = json.load(f)
+        print(f'   Loaded {len(filtered)} Kannada articles')
+        
+        if not filtered:
+            print('   WARNING: No articles for Kannada quiz!')
+            mark_done('kannada_quiz')
+            return
+        
+        print('\n>>> STEP 2: Generating Kannada quiz questions...')
+        from kannada_quiz_generator import KannadaQuizGenerator
+        quiz_gen = KannadaQuizGenerator()
+        questions = quiz_gen.generate_daily_quiz(filtered)
+        print(f'   Created {len(questions)} Kannada questions')
+        
+        if not questions:
+            print('   WARNING: No questions generated!')
+            mark_done('kannada_quiz')
+            return
+        
+        print('\n>>> STEP 3: Posting to Kannada Telegram channel...')
+        if skip_telegram:
+            print('   SKIPPING Telegram posting')
+            mark_done('kannada_quiz')
+        else:
+            from kannada_poster import KannadaPoster, run_async
+            poster = KannadaPoster()
+            quiz_posts = quiz_gen.format_for_telegram(questions)
+            ok, fail = run_async(poster.post_quiz(quiz_posts))
+            print(f'   Results: {ok} sent, {fail} failed')
+        
+        mark_done('kannada_quiz')
+        elapsed = (datetime.now() - start).total_seconds()
+        print(f'\nDONE in {elapsed:.0f} seconds!')
+        
+    except Exception as e:
+        print(f'\nERROR: {e}')
+        import traceback
+        traceback.print_exc()
+
+
 def morning_greeting_pipeline():
     """Post morning greeting at 6 AM"""
     if is_done_today('morning_greeting'):
@@ -388,13 +529,17 @@ def start():
     print('=' * 55)
     print(f'   Morning Greeting: {MORNING_GREETING_TIME}')
     print(f'   Morning News:    {MORNING_NEWS_TIME}')
+    print(f'   Kannada News:    07:30 (after morning news)')
     print(f'   Quiz (Alert):     {EVENING_QUIZ_TIME}')
+    print(f'   Kannada Quiz:    17:30 (after evening quiz)')
     print(f'   Good Night:      {GOOD_NIGHT_TIME}')
     print('=' * 55)
     check_missed_jobs()
     schedule.every().day.at(MORNING_GREETING_TIME).do(morning_greeting_pipeline)
     schedule.every().day.at(MORNING_NEWS_TIME).do(morning_news_pipeline)
+    # Kannada news runs 30 min after morning news (handled in pipeline)
     schedule.every().day.at(EVENING_QUIZ_TIME).do(evening_quiz_pipeline)
+    # Kannada quiz runs 30 min after evening quiz (handled in pipeline)
     schedule.every().day.at(GOOD_NIGHT_TIME).do(good_night_pipeline)
     print('\n   Running. Press Ctrl+C to stop.\n')
     while True:
@@ -419,6 +564,10 @@ if __name__ == '__main__':
         morning_greeting_pipeline()
     elif command == 'goodnight':
         good_night_pipeline()
+    elif command == 'kan-news':
+        kannada_news_pipeline()
+    elif command == 'kan-quiz':
+        kannada_quiz_pipeline()
     elif command == 'extras':
         print('Testing extra content only...')
         poster = TelegramPoster()

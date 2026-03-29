@@ -25,6 +25,8 @@ on:
           - greeting
           - goodnight
           - both
+          - kan-news
+          - kan-quiz
 
 # Force Node.js 24 to remove the warning
 env:
@@ -59,7 +61,7 @@ jobs:
         run: python main.py greeting
 
   morning-news:
-    if: github.event.schedule == '30 1 * * *' || github.event.inputs.job_type == 'news' || github.event.inputs.job_type == 'both'
+    if: github.event.schedule == '30 1 * * *' || github.event.inputs.job_type == 'news' || github.event.inputs.job_type == 'kan-news' || github.event.inputs.job_type == 'both'
     runs-on: ubuntu-latest
     timeout-minutes: 45
 
@@ -84,7 +86,7 @@ jobs:
 
       - name: Create data directories
         run: |
-          mkdir -p data/raw_news data/filtered_news data/quizzes data/excel_reports logs
+          mkdir -p data/raw_news data/filtered_news data/quizzes data/excel_reports data/kannada/raw_news data/kannada/filtered_news data/kannada/quizzes logs
 
       - name: Run Morning News (Process Only)
         env:
@@ -92,8 +94,19 @@ jobs:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
+          KAN_BOT_TOKEN: ${{ secrets.KAN_BOT_TOKEN }}
+          KAN_CHANNEL_ID: ${{ secrets.KAN_CHANNEL_ID }}
           SKIP_TELEGRAM: 'true'
         run: python main.py news
+
+      - name: Run Kannada News Pipeline
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          KAN_BOT_TOKEN: ${{ secrets.KAN_BOT_TOKEN }}
+          KAN_CHANNEL_ID: ${{ secrets.KAN_CHANNEL_ID }}
+          SKIP_TELEGRAM: 'true'
+        run: python main.py kan-news
 
       - name: Wait for 5:30 AM IST posting time
         run: |
@@ -127,7 +140,7 @@ jobs:
           retention-days: 30
 
   evening-quiz:
-    if: github.event.schedule == '30 11 * * *' || github.event.inputs.job_type == 'quiz' || github.event.inputs.job_type == 'both'
+    if: github.event.schedule == '30 11 * * *' || github.event.inputs.job_type == 'quiz' || github.event.inputs.job_type == 'kan-quiz' || github.event.inputs.job_type == 'both'
     runs-on: ubuntu-latest
     timeout-minutes: 45
 
@@ -160,8 +173,19 @@ jobs:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
+          KAN_BOT_TOKEN: ${{ secrets.KAN_BOT_TOKEN }}
+          KAN_CHANNEL_ID: ${{ secrets.KAN_CHANNEL_ID }}
           SKIP_TELEGRAM: 'true'
         run: python main.py quiz
+
+      - name: Run Kannada Quiz Pipeline
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          KAN_BOT_TOKEN: ${{ secrets.KAN_BOT_TOKEN }}
+          KAN_CHANNEL_ID: ${{ secrets.KAN_CHANNEL_ID }}
+          SKIP_TELEGRAM: 'true'
+        run: python main.py kan-quiz
 
       - name: Wait for 5:00 PM IST posting time
         run: |
