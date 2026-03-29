@@ -147,6 +147,11 @@ If not relevant for exams:
                 logger.warning(f"   AI analysis failed")
                 continue
 
+            if not isinstance(analysis, dict):
+                stats['ai_errors'] += 1
+                logger.warning(f"   AI analysis returned invalid format")
+                continue
+
             is_relevant = analysis.get('is_relevant', False)
             importance = analysis.get('importance', 0)
 
