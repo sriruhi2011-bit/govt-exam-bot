@@ -143,13 +143,11 @@ RSS_FEEDS = {
 # ════════════════════════════════════════════════════
 
 KAN_RSS_FEEDS = {
-    # Kannada Newspapers
+    # Kannada Newspapers (Pure Kannada Sources)
     "Vijayavani":
         "https://vijayavani.com/feed",
     "Prajavani":
         "https://www.prajavani.net/rss/english",
-    "Karnataka News - 1":
-        "https://karnataka.com/feed/",
     "OneIndia Kannada":
         "https://kannada.oneindia.in/rss/feed",
     "News18 Kannada":
@@ -159,10 +157,12 @@ KAN_RSS_FEEDS = {
     "Prajavani National":
         "https://www.prajavani.net/national/rss",
     # Kannada News Portals
-    "Karnataka Kannada News":
+    "Karnataka.com":
         "https://www.karnataka.com/feed/",
-    "Bengaluru Kannada":
-        "https://www.thehindu.com/news/cities/bangalore/feeder/default.rss",
+    "Vijayavani State":
+        "https://vijayavani.com/karnataka/rss",
+    "Prajavani Karnataka":
+        "https://www.prajavani.net/karnataka/rss",
 }
 
 # Kannada specific directories
