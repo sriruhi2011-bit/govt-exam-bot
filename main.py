@@ -209,7 +209,7 @@ def kannada_news_pipeline():
     print(f'   KANNADA NEWS PIPELINE - {start.strftime("%H:%M:%S")}')
     print('=' * 55)
     
-    from config.settings import KAN_BOT_TOKEN, KAN_CHANNEL_ID, GEMINI_API_KEY, GROQ_API_KEY
+    from config.settings import KAN_BOT_TOKEN, KAN_CHANNEL_ID, KAN_DATA_DIR, GEMINI_API_KEY, GROQ_API_KEY
     print(f'   Running on: {"GitHub Actions" if IS_GITHUB else "Local PC"}')
     kbt = 'YES' if KAN_BOT_TOKEN and 'PASTE_' not in KAN_BOT_TOKEN and 'YOUR_' not in KAN_BOT_TOKEN else 'NO'
     print(f'   KAN_BOT_TOKEN: {kbt} | KAN_CHANNEL: {KAN_CHANNEL_ID}')
