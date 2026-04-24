@@ -111,6 +111,9 @@ class AIEngine:
                 return None
         elif response.status_code == 429:
             return "RATE_LIMITED"
+        elif response.status_code in [401, 403]:
+            logger.error(f"  Gemini auth error {response.status_code}")
+            return "AUTH_ERROR"
         else:
             logger.error(f"  Gemini error {response.status_code}")
             return None
@@ -130,46 +133,72 @@ class AIEngine:
             return response.json()["choices"][0]["message"]["content"].strip()
         elif response.status_code == 429:
             return "RATE_LIMITED"
+        elif response.status_code in [401, 403]:
+            logger.error(f"  {provider['name']} auth error {response.status_code}")
+            return "AUTH_ERROR"
         else:
             logger.error(f"  {provider['name']} error {response.status_code}")
             return None
 
     def query(self, prompt, temperature=0.2, max_tokens=500):
+        # We allow enough attempts so that it can try providers multiple times if rate limited.
+        max_attempts = len(self.providers) * 4
         attempts = 0
-        max_attempts = len(self.providers) * 3
+        
         while attempts < max_attempts:
+            if not self.providers:
+                logger.error("  All AI providers failed or were removed!")
+                return None
+                
             provider = self._get_provider()
             attempts += 1
             self._smart_delay()
+            
             try:
                 if provider["type"] == "gemini":
                     result = self._call_gemini(provider, prompt, temperature, max_tokens)
                 else:
                     result = self._call_openai_compatible(provider, prompt, temperature, max_tokens)
-                if result == "RATE_LIMITED":
+                    
+                if result == "AUTH_ERROR":
+                    logger.error(f"  Removing {provider['name']} from providers permanently due to authentication failure")
+                    self.providers.remove(provider)
+                    if self.providers:
+                        self.current_provider_index = self.current_provider_index % len(self.providers)
+                    continue
+                    
+                elif result == "RATE_LIMITED":
                     provider["fails"] += 1
                     if len(self.providers) > 1:
+                        # Reset fails count before switching so we don't get stuck later
+                        provider["fails"] = 0
                         self._switch_provider()
                     else:
                         time.sleep(30)
                     continue
+                    
                 elif result is not None:
+                    # Success
                     provider["fails"] = 0
                     return result
                 else:
                     provider["fails"] += 1
                     if provider["fails"] >= 3 and len(self.providers) > 1:
+                        provider["fails"] = 0
                         self._switch_provider()
                     else:
                         time.sleep(5)
+                        
             except requests.exceptions.Timeout:
                 if len(self.providers) > 1:
+                    provider["fails"] = 0
                     self._switch_provider()
                 else:
                     time.sleep(10)
             except Exception as e:
                 logger.error(f"  Error: {str(e)}")
                 time.sleep(5)
+                
         return None
 
     def extract_json(self, text):
