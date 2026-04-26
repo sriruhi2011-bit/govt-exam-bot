@@ -63,9 +63,9 @@ jobs:
         run: python main.py greeting
 
   morning-news:
-    if: github.event.schedule == '30 1 * * *' || github.event.inputs.job_type == 'news' || github.event.inputs.job_type == 'both'
+    if: github.event.schedule == '30 1 * * *' || github.event.inputs.job_type == 'news' || github.event.inputs.job_type == 'kan-news' || github.event.inputs.job_type == 'both'
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 120
 
     steps:
       - name: Checkout code
@@ -96,10 +96,25 @@ jobs:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
+          KAN_BOT_TOKEN: ${{ secrets.KAN_BOT_TOKEN }}
+          KAN_CHANNEL_ID: ${{ secrets.KAN_CHANNEL_ID }}
           SKIP_TELEGRAM: 'true'
         run: python main.py news
-      # NOTE: Kannada news runs locally, not on GitHub Actions
-      # Run 'python main.py kan-news' and 'python main.py post-kan-news' locally
+
+      - name: Run Kannada News Pipeline
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          KAN_BOT_TOKEN: ${{ secrets.KAN_BOT_TOKEN }}
+          KAN_CHANNEL_ID: ${{ secrets.KAN_CHANNEL_ID }}
+          SKIP_TELEGRAM: 'true'
+        run: python main.py kan-news
+
+      - name: Post Kannada News to Telegram
+        env:
+          KAN_BOT_TOKEN: ${{ secrets.KAN_BOT_TOKEN }}
+          KAN_CHANNEL_ID: ${{ secrets.KAN_CHANNEL_ID }}
+        run: python main.py post-kan-news
 
       - name: Wait for 5:30 AM IST posting time
         run: |
@@ -133,9 +148,9 @@ jobs:
           retention-days: 30
 
   evening-quiz:
-    if: github.event.schedule == '30 11 * * *' || github.event.inputs.job_type == 'quiz' || github.event.inputs.job_type == 'both'
+    if: github.event.schedule == '30 11 * * *' || github.event.inputs.job_type == 'quiz' || github.event.inputs.job_type == 'kan-quiz' || github.event.inputs.job_type == 'both'
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 120
 
     steps:
       - name: Checkout code
@@ -166,10 +181,25 @@ jobs:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
+          KAN_BOT_TOKEN: ${{ secrets.KAN_BOT_TOKEN }}
+          KAN_CHANNEL_ID: ${{ secrets.KAN_CHANNEL_ID }}
           SKIP_TELEGRAM: 'true'
         run: python main.py quiz
-      # NOTE: Kannada quiz runs locally, not on GitHub Actions
-      # Run 'python main.py kan-quiz' and 'python main.py post-kan-quiz' locally
+
+      - name: Run Kannada Quiz Pipeline
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          KAN_BOT_TOKEN: ${{ secrets.KAN_BOT_TOKEN }}
+          KAN_CHANNEL_ID: ${{ secrets.KAN_CHANNEL_ID }}
+          SKIP_TELEGRAM: 'true'
+        run: python main.py kan-quiz
+
+      - name: Post Kannada Quiz to Telegram
+        env:
+          KAN_BOT_TOKEN: ${{ secrets.KAN_BOT_TOKEN }}
+          KAN_CHANNEL_ID: ${{ secrets.KAN_CHANNEL_ID }}
+        run: python main.py post-kan-quiz
 
       - name: Wait for 5:00 PM IST posting time
         run: |
