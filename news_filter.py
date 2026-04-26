@@ -99,6 +99,8 @@ If the article is NOT relevant for government exams:
 
         logger.info(f"Filtering {len(articles)} articles...")
 
+        consecutive_errors = 0
+
         for i, article in enumerate(articles, 1):
             logger.info(
                 f"[{i}/{len(articles)}] {article['title'][:60]}..."
@@ -117,8 +119,14 @@ If the article is NOT relevant for government exams:
 
             if analysis is None:
                 stats['ai_errors'] += 1
+                consecutive_errors += 1
                 logger.warning(f"   AI analysis failed")
+                if consecutive_errors >= 3:
+                    logger.error("   Aborting article process due to 3 consecutive AI failures.")
+                    break
                 continue
+            else:
+                consecutive_errors = 0
 
             is_relevant = analysis.get('is_relevant', False)
             importance = analysis.get('importance', 0)

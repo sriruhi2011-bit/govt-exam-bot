@@ -103,7 +103,7 @@ RESPOND ONLY IN THIS EXACT JSON FORMAT AND NOTHING ELSE:
 If not relevant for exams:
 {{"is_relevant": false, "category": "None", "importance": 0, "key_facts": [], "one_line_summary": ""}}"""
 
-        response = get_ai_engine().query(prompt, temperature=0.1, max_tokens=400)
+        response = get_ai_engine().query(prompt, temperature=0.1, max_tokens=600)
 
         if response:
             result = get_ai_engine().extract_json(response)
@@ -126,6 +126,8 @@ If not relevant for exams:
 
         logger.info(f"Filtering {len(articles)} Kannada articles...")
 
+        consecutive_errors = 0
+
         for i, article in enumerate(articles, 1):
             logger.info(
                 f"[{i}/{len(articles)}] {article['title'][:60]}..."
@@ -144,12 +146,33 @@ If not relevant for exams:
 
             if analysis is None:
                 stats['ai_errors'] += 1
+                consecutive_errors += 1
                 logger.warning(f"   AI analysis failed")
+                if consecutive_errors >= 3:
+                    logger.error("   Aborting Kannada article process due to 3 consecutive AI failures.")
+                    break
                 continue
+            else:
+                consecutive_errors = 0
 
-            if not isinstance(analysis, dict):
+            # Handle both dict and list responses
+            if isinstance(analysis, list):
+                # AI returned list format, convert to dict
+                if analysis and len(analysis) > 0:
+                    analysis = {
+                        'is_relevant': True,
+                        'category': 'ಕರ್ನಾಟಕ ವಿಶೇಷ',
+                        'importance': 7,
+                        'key_facts': analysis,
+                        'one_line_summary': ''
+                    }
+                else:
+                    stats['ai_errors'] += 1
+                    logger.warning(f"   AI analysis returned empty list")
+                    continue
+            elif not isinstance(analysis, dict):
                 stats['ai_errors'] += 1
-                logger.warning(f"   AI analysis returned invalid format")
+                logger.warning(f"   AI analysis returned invalid format: {type(analysis)}")
                 continue
 
             is_relevant = analysis.get('is_relevant', False)
