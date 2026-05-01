@@ -29,7 +29,7 @@ class AIEngine:
                 "type": "gemini",
                 "key": GEMINI_API_KEY,
                 "model": "gemini-1.5-flash",
-                "url": "https://generativelanguage.googleapis.com/v1/models/",
+                "url": "https://generativelanguage.googleapis.com/v1beta/models/",
                 "rpm": 15,
                 "fails": 0
             })
@@ -115,7 +115,7 @@ class AIEngine:
             logger.error(f"  Gemini auth error {response.status_code}: {response.text}")
             return "AUTH_ERROR"
         else:
-            logger.error(f"  Gemini error {response.status_code}: {response.text[:200]}")
+            logger.error(f"  Gemini error {response.status_code} at {url}: {response.text[:200]}")
             return None
 
     def _call_openai_compatible(self, provider, prompt, temperature, max_tokens):
