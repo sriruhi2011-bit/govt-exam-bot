@@ -28,8 +28,8 @@ class AIEngine:
                 "name": "Gemini",
                 "type": "gemini",
                 "key": GEMINI_API_KEY,
-                "model": "gemini-2.0-flash-lite",
-                "url": "https://generativelanguage.googleapis.com/v1beta/models/",
+                "model": "gemini-1.5-flash",
+                "url": "https://generativelanguage.googleapis.com/v1/models/",
                 "rpm": 15,
                 "fails": 0
             })
@@ -112,10 +112,10 @@ class AIEngine:
         elif response.status_code == 429:
             return "RATE_LIMITED"
         elif response.status_code in [401, 403]:
-            logger.error(f"  Gemini auth error {response.status_code}")
+            logger.error(f"  Gemini auth error {response.status_code}: {response.text}")
             return "AUTH_ERROR"
         else:
-            logger.error(f"  Gemini error {response.status_code}")
+            logger.error(f"  Gemini error {response.status_code}: {response.text[:200]}")
             return None
 
     def _call_openai_compatible(self, provider, prompt, temperature, max_tokens):
@@ -134,10 +134,10 @@ class AIEngine:
         elif response.status_code == 429:
             return "RATE_LIMITED"
         elif response.status_code in [401, 403]:
-            logger.error(f"  {provider['name']} auth error {response.status_code}")
+            logger.error(f"  {provider['name']} auth error {response.status_code}: {response.text}")
             return "AUTH_ERROR"
         else:
-            logger.error(f"  {provider['name']} error {response.status_code}")
+            logger.error(f"  {provider['name']} error {response.status_code}: {response.text[:200]}")
             return None
 
     def query(self, prompt, temperature=0.2, max_tokens=500):
@@ -190,13 +190,14 @@ class AIEngine:
                         time.sleep(5)
                         
             except requests.exceptions.Timeout:
+                logger.warning(f"  {provider['name']} timed out after {AI_TIMEOUT_SECONDS}s")
                 if len(self.providers) > 1:
                     provider["fails"] = 0
                     self._switch_provider()
                 else:
                     time.sleep(10)
             except Exception as e:
-                logger.error(f"  Error: {str(e)}")
+                logger.error(f"  Unexpected AI Engine Error: {str(e)}")
                 time.sleep(5)
                 
         return None

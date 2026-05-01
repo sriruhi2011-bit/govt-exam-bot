@@ -120,7 +120,7 @@ If the article is NOT relevant for government exams:
             if analysis is None:
                 stats['ai_errors'] += 1
                 consecutive_errors += 1
-                logger.warning(f"   AI analysis failed")
+                logger.warning(f"   AI analysis failed (Provider error or Invalid JSON)")
                 if consecutive_errors >= 3:
                     logger.error("   Aborting article process due to 3 consecutive AI failures.")
                     break
