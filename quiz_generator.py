@@ -6,7 +6,12 @@ import random
 from datetime import datetime, timezone, timedelta
 
 from ai_engine import get_ai_engine
-from config.settings import QUIZ_DIR, MAX_QUIZ_QUESTIONS, CONTENT_TRUNCATION_LENGTH
+from config.settings import (
+    QUIZ_DIR,
+    MAX_QUIZ_QUESTIONS,
+    CONTENT_TRUNCATION_LENGTH,
+    MAX_QUIZ_ARTICLES_POOL_PER_CATEGORY,
+)
 from config.logger import setup_logger
 
 logger = setup_logger("quiz_gen")
@@ -21,6 +26,36 @@ class QuizGenerator:
         self.today_nice = datetime.now(ist_offset).strftime("%d %B %Y")
         self.time_now = datetime.now(ist_offset).strftime("%H:%M:%S")
 
+    def _normalize_correct_answer(self, val):
+        if val is None:
+            return None
+        if isinstance(val, str):
+            v = val.strip().upper()
+            # Accept plain letters
+            if v in {"A", "B", "C", "D"}:
+                return v
+            # Accept formats like "A.", "(A)", "Option A", "Correct: A"
+            # Extract first standalone letter A-D found in the string
+            for letter in ["A", "B", "C", "D"]:
+                if f"({letter})" in v or v.startswith(letter + ".") or v.endswith("." + letter) or v.startswith("OPTION " + letter) or ("OPTION " + letter) in v:
+                    return letter
+            # Fallback: find first occurrence of A-D
+            for ch in v:
+                if ch in {"A", "B", "C", "D"}:
+                    return ch
+        return None
+
+    def _questions_are_valid(self, questions):
+        if not isinstance(questions, list) or not questions:
+            return False
+        for q in questions:
+            for key in ["question", "option_a", "option_b", "option_c", "option_d", "correct_answer", "explanation"]:
+                if key not in q:
+                    return False
+            if self._normalize_correct_answer(q.get("correct_answer")) not in {"A", "B", "C", "D"}:
+                return False
+        return True
+
     def make_questions(self, article):
         prompt = f"""You are a UPSC exam question setter.
 Create exactly 2 MCQ questions from this news.
@@ -32,7 +67,28 @@ RULES:
 4. Exam-worthy difficulty
 
 RESPOND ONLY IN JSON FORMAT AND NOTHING ELSE:
-{{"questions": [{{"question": "Question text?", "option_a": "Option A", "option_b": "Option B", "option_c": "Option C", "option_d": "Option D", "correct_answer": "A", "explanation": "Why A is correct..."}}, {{"question": "Second question?", "option_a": "Option A", "option_b": "Option B", "option_c": "Option C", "option_d": "Option D", "correct_answer": "C", "explanation": "Why C is correct..."}}]}}
+{{
+  "questions": [
+    {{
+      "question": "Question text?",
+      "option_a": "Option A",
+      "option_b": "Option B",
+      "option_c": "Option C",
+      "option_d": "Option D",
+      "correct_answer": "A",
+      "explanation": "Why A is correct..."
+    }},
+    {{
+      "question": "Second question?",
+      "option_a": "Option A",
+      "option_b": "Option B",
+      "option_c": "Option C",
+      "option_d": "Option D",
+      "correct_answer": "C",
+      "explanation": "Why C is correct..."
+    }}
+  ]
+}}
 
 NEWS:
 Title: {article['title']}
@@ -40,32 +96,60 @@ Category: {article['evaluation']['category']}
 Content: {article['content'][:CONTENT_TRUNCATION_LENGTH]}
 Key Facts: {article['evaluation'].get('key_facts', [])}"""
 
-        response = get_ai_engine().query(prompt, temperature=0.3, max_tokens=800)
+        max_attempts = 2
+        for attempt in range(1, max_attempts + 1):
+            response = get_ai_engine().query_cached(prompt, temperature=0.3, max_tokens=800)
+            if not response:
+                continue
 
-        if response:
             parsed = get_ai_engine().extract_json(response)
-            if parsed and 'questions' in parsed:
-                questions = parsed['questions']
-                for q in questions:
-                    q['source_article'] = article['title']
-                    q['category'] = article['evaluation']['category']
-                    q['source'] = article['source']
-                    q['article_link'] = article['link']
-                    q['date'] = self.today
-                    q['generated_at'] = self.time_now
+            if not parsed or "questions" not in parsed:
+                continue
+
+            questions = parsed["questions"]
+
+            # Normalize/validate correct_answer
+            for q in questions:
+                q["correct_answer"] = self._normalize_correct_answer(q.get("correct_answer"))
+
+                q["source_article"] = article["title"]
+                q["category"] = article["evaluation"]["category"]
+                q["source"] = article["source"]
+                q["article_link"] = article["link"]
+                q["date"] = self.today
+                q["generated_at"] = self.time_now
+
+            if self._questions_are_valid(questions):
                 return questions
 
-        logger.warning(f"Could not generate MCQ for: {article['title'][:50]}")
+            logger.warning(
+                f"Invalid MCQ JSON for article (attempt {attempt}/{max_attempts}): {article['title'][:50]}"
+            )
+
+        logger.warning(f"Could not generate valid MCQ for: {article['title'][:50]}")
         return []
 
     def generate_daily_quiz(self, filtered_articles):
         all_questions = []
 
-        quiz_articles = filtered_articles[:15]
+        # Select a quiz article pool per category to improve balance and reduce calls.
+        per_cat_pool = MAX_QUIZ_ARTICLES_POOL_PER_CATEGORY
+        category_pools = {}
+        for a in filtered_articles:
+            cat = a.get("evaluation", {}).get("category", "General")
+            category_pools.setdefault(cat, []).append(a)
 
-        for i, article in enumerate(quiz_articles, 1):
+        quiz_pool = []
+        for cat, articles in category_pools.items():
+            quiz_pool.extend(articles[:per_cat_pool])
+
+        # Bound total pool size (avoid runaway if there are many categories)
+        quiz_pool = quiz_pool[:15]
+        quiz_pool.sort(key=lambda x: x.get("evaluation", {}).get("importance", 0), reverse=True)
+
+        for i, article in enumerate(quiz_pool, 1):
             logger.info(
-                f"[{i}/{len(quiz_articles)}] Making MCQs: "
+                f"[{i}/{len(quiz_pool)}] Making MCQs: "
                 f"{article['title'][:50]}..."
             )
             questions = self.make_questions(article)

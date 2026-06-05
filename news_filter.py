@@ -5,7 +5,14 @@ import os
 from datetime import datetime, timezone, timedelta
 
 from ai_engine import get_ai_engine
-from config.settings import SYLLABUS_CATEGORIES, FILTERED_NEWS_DIR, MIN_IMPORTANCE_SCORE, CONTENT_TRUNCATION_LENGTH
+from config.settings import (
+    SYLLABUS_CATEGORIES,
+    FILTERED_NEWS_DIR,
+    MIN_IMPORTANCE_SCORE,
+    CONTENT_TRUNCATION_LENGTH,
+    MAX_NEWS_POSTS_PER_CATEGORY,
+    MAX_NEWS_POSTS,
+)
 from config.logger import setup_logger
 
 logger = setup_logger("filter")
@@ -78,7 +85,7 @@ RESPOND ONLY IN THIS EXACT JSON FORMAT AND NOTHING ELSE:
 If the article is NOT relevant for government exams:
 {{"is_relevant": false, "category": "None", "importance": 0, "key_facts": [], "one_line_summary": ""}}"""
 
-        response = get_ai_engine().query(prompt, temperature=0.1, max_tokens=400)
+        response = get_ai_engine().query_cached(prompt, temperature=0.1, max_tokens=400)
 
         if response:
             result = get_ai_engine().extract_json(response)
@@ -88,6 +95,8 @@ If the article is NOT relevant for government exams:
 
     def filter_articles(self, articles):
         filtered = []
+        per_category_limit = MAX_NEWS_POSTS_PER_CATEGORY
+        category_counts = {}
         stats = {
             'total': len(articles),
             'keyword_passed': 0,
@@ -114,6 +123,11 @@ If the article is NOT relevant for government exams:
                 logger.debug(f"   Skipped: {reason}")
                 continue
 
+            if reason in SYLLABUS_CATEGORIES and category_counts.get(reason, 0) >= per_category_limit:
+                stats['keyword_skipped'] += 1
+                logger.debug(f"   Skipped: quota reached for {reason}")
+                continue
+
             stats['keyword_passed'] += 1
 
             analysis = self.ai_analyze(article)
@@ -133,19 +147,38 @@ If the article is NOT relevant for government exams:
             importance = analysis.get('importance', 0)
 
             if is_relevant and importance >= MIN_IMPORTANCE_SCORE:
-                stats['ai_relevant'] += 1
-                article['evaluation'] = analysis
-                article['filtered_at'] = self.timestamp
-                filtered.append(article)
-                logger.info(
-                    f"   YES [{analysis.get('category', '?')}] "
-                    f"Importance: {importance}/10"
-                )
+                category = analysis.get('category', 'General')
+                current = category_counts.get(category, 0)
+                if current >= per_category_limit:
+                    # Quota filled for this category; skip without appending
+                    stats['ai_not_relevant'] += 1
+                    logger.debug(f"   NO (quota reached for {category}: {current}/{per_category_limit})")
+                    pass
+                else:
+                    stats['ai_relevant'] += 1
+                    category_counts[category] = current + 1
+                    article['evaluation'] = analysis
+                    article['filtered_at'] = self.timestamp
+                    filtered.append(article)
+                    logger.info(
+                        f"   YES [{category}] "
+                        f"Importance: {importance}/10"
+                    )
             else:
                 stats['ai_not_relevant'] += 1
                 logger.debug(
                     f"   NO (importance: {importance})"
                 )
+
+            # Stop early if we have collected the maximum total news posts
+            if len(filtered) >= MAX_NEWS_POSTS:
+                logger.info(f"Stopping filtering early: reached total limit of {MAX_NEWS_POSTS} posts.")
+                break
+
+            # Stop early once we have quotas filled for all categories
+            if all(category_counts.get(cat, 0) >= per_category_limit for cat in SYLLABUS_CATEGORIES.keys()):
+                logger.info("Stopping filtering early: quotas filled for all categories.")
+                break
 
         filtered.sort(
             key=lambda x: x['evaluation'].get('importance', 0),

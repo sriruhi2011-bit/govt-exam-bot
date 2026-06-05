@@ -354,7 +354,7 @@ def evening_quiz_pipeline():
             pass
 
 
-def check_missed_jobs():
+def check_missed_jobs(quiet=False):
     now = datetime.now(ist_offset)
     hour = now.hour
     minute = now.minute
@@ -365,43 +365,52 @@ def check_missed_jobs():
     evening_hour, evening_min = map(int, EVENING_QUIZ_TIME.split(':'))
     good_night_hour, good_night_min = map(int, GOOD_NIGHT_TIME.split(':'))
     
-    print(f'Checking missed jobs (time: {now.strftime("%H:%M")} IST)...')
+    if not quiet:
+        print(f'Checking missed jobs (time: {now.strftime("%H:%M")} IST)...')
     
     # Morning greeting
     if current_minutes >= (morning_greeting_hour * 60 + morning_greeting_min) and not is_done_today('morning_greeting'):
         print('   Morning greeting MISSED - running now!')
         morning_greeting_pipeline()
     elif is_done_today('morning_greeting'):
-        print('   Morning greeting: Done today')
+        if not quiet:
+            print('   Morning greeting: Done today')
     else:
-        print(f'   Morning greeting: Scheduled at {MORNING_GREETING_TIME} IST')
+        if not quiet:
+            print(f'   Morning greeting: Scheduled at {MORNING_GREETING_TIME} IST')
     
     # Morning news
     if current_minutes >= (morning_hour * 60 + morning_min) and not is_done_today('morning_news'):
         print('   Morning news MISSED - running now!')
         morning_news_pipeline()
     elif is_done_today('morning_news'):
-        print('   Morning news: Done today')
+        if not quiet:
+            print('   Morning news: Done today')
     else:
-        print(f'   Morning news: Scheduled at {MORNING_NEWS_TIME} IST')
+        if not quiet:
+            print(f'   Morning news: Scheduled at {MORNING_NEWS_TIME} IST')
     
     # Evening quiz
     if current_minutes >= (evening_hour * 60 + evening_min) and not is_done_today('evening_quiz'):
         print('   Evening quiz MISSED - running now!')
         evening_quiz_pipeline()
     elif is_done_today('evening_quiz'):
-        print('   Evening quiz: Done today')
+        if not quiet:
+            print('   Evening quiz: Done today')
     else:
-        print(f'   Evening quiz: Scheduled at {EVENING_QUIZ_TIME} IST')
+        if not quiet:
+            print(f'   Evening quiz: Scheduled at {EVENING_QUIZ_TIME} IST')
     
     # Good night
     if current_minutes >= (good_night_hour * 60 + good_night_min) and not is_done_today('good_night'):
         print('   Good night MISSED - running now!')
         good_night_pipeline()
     elif is_done_today('good_night'):
-        print('   Good night: Done today')
+        if not quiet:
+            print('   Good night: Done today')
     else:
-        print(f'   Good night: Scheduled at {GOOD_NIGHT_TIME} IST')
+        if not quiet:
+            print(f'   Good night: Scheduled at {GOOD_NIGHT_TIME} IST')
 
 
 def start():
@@ -434,8 +443,20 @@ def start():
     schedule.every().day.at(local_quiz).do(evening_quiz_pipeline)
     schedule.every().day.at(local_good_night).do(good_night_pipeline)
     print('\n   Running. Press Ctrl+C to stop.\n')
+
+    missed_check_interval_sec = 60
+    last_missed_check = time.time()
     while True:
         schedule.run_pending()
+
+        # Periodically check missed jobs so late startup / scheduling drift is handled
+        if time.time() - last_missed_check >= missed_check_interval_sec:
+            try:
+                check_missed_jobs(quiet=True)
+            except Exception as e:
+                logger.error(f"Missed-job check failed: {e}")
+            last_missed_check = time.time()
+
         time.sleep(30)
 
 

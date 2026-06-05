@@ -3,6 +3,9 @@
 import requests
 import json
 import time
+import hashlib
+from typing import Optional, Dict, Any
+
 from config.settings import (
     GEMINI_API_KEY, GROQ_API_KEY,
     CEREBRAS_API_KEY, OPENROUTER_API_KEY,
@@ -16,6 +19,9 @@ logger = setup_logger("ai_engine")
 class AIEngine:
 
     def __init__(self):
+        # In-memory cache to reduce duplicate AI calls within the same process run
+        # Keyed by (provider identity + prompt hash + temperature + max_tokens)
+        self._cache: Dict[str, Optional[str]] = {}
         from config.settings import (
             GEMINI_API_KEY, GROQ_API_KEY,
             CEREBRAS_API_KEY, OPENROUTER_API_KEY
@@ -140,33 +146,41 @@ class AIEngine:
             logger.error(f"  {provider['name']} error {response.status_code}: {response.text[:200]}")
             return None
 
+    def _cache_key(self, provider: Dict[str, Any], prompt: str, temperature: float, max_tokens: int) -> str:
+        provider_identity = f'{provider.get("name","")}|{provider.get("type","")}|{provider.get("url","")}'
+        prompt_hash = hashlib.sha256(prompt.encode("utf-8", errors="ignore")).hexdigest()
+        raw = f'{provider_identity}|{prompt_hash}|{temperature}|{max_tokens}'
+        return hashlib.sha256(raw.encode("utf-8", errors="ignore")).hexdigest()
+
     def query(self, prompt, temperature=0.2, max_tokens=500):
         # We allow enough attempts so that it can try providers multiple times if rate limited.
         max_attempts = len(self.providers) * 4
         attempts = 0
-        
+
         while attempts < max_attempts:
             if not self.providers:
                 logger.error("  All AI providers failed or were removed!")
                 return None
-                
+
             provider = self._get_provider()
             attempts += 1
             self._smart_delay()
-            
+
             try:
                 if provider["type"] == "gemini":
                     result = self._call_gemini(provider, prompt, temperature, max_tokens)
                 else:
                     result = self._call_openai_compatible(provider, prompt, temperature, max_tokens)
-                    
+
                 if result == "AUTH_ERROR":
-                    logger.error(f"  Removing {provider['name']} from providers permanently due to authentication failure")
+                    logger.error(
+                        f"  Removing {provider['name']} from providers permanently due to authentication failure"
+                    )
                     self.providers.remove(provider)
                     if self.providers:
                         self.current_provider_index = self.current_provider_index % len(self.providers)
                     continue
-                    
+
                 elif result == "RATE_LIMITED":
                     provider["fails"] += 1
                     if len(self.providers) > 1:
@@ -176,7 +190,7 @@ class AIEngine:
                     else:
                         time.sleep(30)
                     continue
-                    
+
                 elif result is not None:
                     # Success
                     provider["fails"] = 0
@@ -188,7 +202,7 @@ class AIEngine:
                         self._switch_provider()
                     else:
                         time.sleep(5)
-                        
+
             except requests.exceptions.Timeout:
                 logger.warning(f"  {provider['name']} timed out after {AI_TIMEOUT_SECONDS}s")
                 if len(self.providers) > 1:
@@ -199,8 +213,27 @@ class AIEngine:
             except Exception as e:
                 logger.error(f"  Unexpected AI Engine Error: {str(e)}")
                 time.sleep(5)
-                
+
         return None
+
+    def query_cached(self, prompt: str, temperature: float = 0.2, max_tokens: int = 500) -> Optional[str]:
+        """
+        Cache layer to reduce duplicate AI calls within the same process.
+        Key is based on currently selected provider identity + prompt hash + params.
+        """
+        if not self.providers:
+            return self.query(prompt, temperature=temperature, max_tokens=max_tokens)
+
+        provider = self._get_provider()
+        key = self._cache_key(provider, prompt, temperature, max_tokens)
+
+        if key in self._cache:
+            return self._cache[key]
+
+        result = self.query(prompt, temperature=temperature, max_tokens=max_tokens)
+        # Cache even failures (None) to avoid repeated storms for the same input/prompt.
+        self._cache[key] = result
+        return result
 
     def extract_json(self, text):
         if text is None:

@@ -3,7 +3,7 @@
 import os
 from datetime import datetime, timezone, timedelta
 from ai_engine import get_ai_engine
-from config.settings import MAX_NEWS_POSTS, CONTENT_TRUNCATION_LENGTH
+from config.settings import MAX_NEWS_POSTS, CONTENT_TRUNCATION_LENGTH, MAX_NEWS_POSTS_PER_CATEGORY
 from config.logger import setup_logger
 
 logger = setup_logger("content_gen")
@@ -45,7 +45,7 @@ RULES:
 - Focus on facts, dates, names, numbers
 - No opinions"""
 
-        response = get_ai_engine().query(prompt, temperature=0.3, max_tokens=400)
+        response = get_ai_engine().query_cached(prompt, temperature=0.3, max_tokens=400)
         return response
 
     def generate_all_posts(self, filtered_articles):
@@ -58,41 +58,23 @@ RULES:
                 categories[cat] = []
             categories[cat].append(article)
 
-        all_posts = []
+        posts_body = []
         post_data = []
-
-        # Enhanced header with better formatting
-        header = (
-            "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            "   📰 <b>DAILY CURRENT AFFAIRS</b> 📰\n"
-            "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"   📅 <b>{self.today_nice}</b>\n"
-            "   ⏰ <i>Morning Edition</i>\n"
-            "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"   📊 <b>Total:</b> <i>{len(articles)}</i> news | 📚 <b>Categories:</b> <i>{len(categories)}</i>\n"
-            "━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        )
-        all_posts.append(header)
-
         post_number = 0
+        actual_categories = set()
+
         for category, cat_articles in categories.items():
-            cat_header = f"\n\n🔷 <b>{category.upper()}</b>\n{'─' * 28}\n"
-            all_posts.append(cat_header)
-
-            for article in cat_articles[:4]:
-                post_number += 1
-                logger.info(
-                    f"Writing post {post_number}/{len(articles)}: "
-                    f"{article['title'][:50]}..."
-                )
-
+            cat_posts = []
+            for article in cat_articles[:MAX_NEWS_POSTS_PER_CATEGORY]:
                 summary = self.create_summary(article)
-
                 if summary:
-                    # Extract image URL from article if available
+                    post_number += 1
+                    logger.info(
+                        f"Writing post {post_number}: "
+                        f"{article['title'][:50]}..."
+                    )
+
                     image_url = article.get('image_url', '')
-                    
-                    # Enhanced format with bold headers and underline
                     post_text = (
                         f"\n📌 <b>{article['title']}</b>\n\n"
                         f"{summary}\n\n"
@@ -101,8 +83,8 @@ RULES:
                         f"🔗 <a href=\"{article['link']}\"><b>Read Full Article</b></a>\n"
                         f"─────────────────────────\n"
                     )
-                    
-                    all_posts.append({
+
+                    cat_posts.append({
                         'text': post_text,
                         'image_url': image_url if image_url else None,
                         'article': article
@@ -124,6 +106,23 @@ RULES:
                         'image_url': image_url
                     })
 
+            if cat_posts:
+                actual_categories.add(category)
+                cat_header = f"\n\n🔷 <b>{category.upper()}</b>\n{'─' * 28}\n"
+                posts_body.append(cat_header)
+                posts_body.extend(cat_posts)
+
+        header = (
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "   📰 <b>DAILY CURRENT AFFAIRS</b> 📰\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"   📅 <b>{self.today_nice}</b>\n"
+            "   ⏰ <i>Morning Edition</i>\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"   📊 <b>Total:</b> <i>{post_number}</i> news | 📚 <b>Categories:</b> <i>{len(actual_categories)}</i>\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        )
+
         footer = (
             "\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
             "📚 <b>Stay updated. Stay ahead.</b>\n"
@@ -131,9 +130,10 @@ RULES:
             "⏰ <b>Quiz at 7:00 PM</b>\n\n"
             "#CurrentAffairs #UPSC #SSC #GovtExams"
         )
-        all_posts.append(footer)
 
-        logger.info(f"Generated {post_number} news posts")
+        all_posts = [header] + posts_body + [footer]
+
+        logger.info(f"Generated {post_number} news posts across {len(actual_categories)} categories")
 
         return all_posts, post_data
 

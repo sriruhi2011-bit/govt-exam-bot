@@ -50,7 +50,6 @@ TELEGRAM_DELAY_SECONDS = 0  # No delay between Telegram messages
 MAX_RETRIES = 3  # Maximum retry attempts
 
 
-
 # ════════════════════════════════════════════════════
 #  SCHEDULE
 # ════════════════════════════════════════════════════
@@ -68,7 +67,9 @@ MAX_ARTICLES_PER_SOURCE = 15
 MAX_ARTICLE_CONTENT_LENGTH = 3000
 MIN_IMPORTANCE_SCORE = 5
 MAX_NEWS_POSTS = 20
+MAX_NEWS_POSTS_PER_CATEGORY = 4  # used for per-category posting blocks
 MAX_QUIZ_QUESTIONS = 10    # Reduced to 10 questions
+MAX_QUIZ_ARTICLES_POOL_PER_CATEGORY = 2  # number of filtered articles per category to use for quiz generation
 REQUEST_TIMEOUT = 15
 
 # ════════════════════════════════════════════════════
