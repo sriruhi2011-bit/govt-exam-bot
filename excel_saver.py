@@ -5,7 +5,7 @@ import os
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from filelock import FileLock
 
 from config.settings import EXCEL_DIR
@@ -17,8 +17,9 @@ logger = setup_logger("excel")
 class ExcelSaver:
 
     def __init__(self):
-        self.today = datetime.now().strftime("%Y-%m-%d")
-        self.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        ist_offset = timezone(timedelta(hours=5, minutes=30))
+        self.today = datetime.now(ist_offset).strftime("%Y-%m-%d")
+        self.timestamp = datetime.now(ist_offset).strftime("%Y-%m-%d %H:%M:%S")
         self.daily_file = os.path.join(EXCEL_DIR, f"daily_report_{self.today}.xlsx")
         self.master_file = os.path.join(EXCEL_DIR, "master_database.xlsx")
 
@@ -171,7 +172,8 @@ class ExcelSaver:
             ws = wb['Posting Log']
 
         next_row = ws.max_row + 1
-        values = [self.today, datetime.now().strftime("%H:%M:%S"),
+        ist_offset = timezone(timedelta(hours=5, minutes=30))
+        values = [self.today, datetime.now(ist_offset).strftime("%H:%M:%S"),
                   post_type, status, details]
         for col, val in enumerate(values, 1):
             cell = ws.cell(row=next_row, column=col, value=val)

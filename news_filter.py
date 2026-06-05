@@ -2,7 +2,7 @@
 
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 from ai_engine import get_ai_engine
 from config.settings import SYLLABUS_CATEGORIES, FILTERED_NEWS_DIR, MIN_IMPORTANCE_SCORE, CONTENT_TRUNCATION_LENGTH
@@ -14,8 +14,9 @@ logger = setup_logger("filter")
 class NewsFilter:
 
     def __init__(self):
-        self.today = datetime.now().strftime("%Y-%m-%d")
-        self.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        ist_offset = timezone(timedelta(hours=5, minutes=30))
+        self.today = datetime.now(ist_offset).strftime("%Y-%m-%d")
+        self.timestamp = datetime.now(ist_offset).strftime("%Y-%m-%d %H:%M:%S")
 
     def quick_keyword_check(self, article):
         text = (

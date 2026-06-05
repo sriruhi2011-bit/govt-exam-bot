@@ -22,6 +22,23 @@ logger = setup_logger('main')
 STATE_FILE = os.path.join(DATA_DIR, 'job_state.json')
 IS_GITHUB = os.environ.get('GITHUB_ACTIONS') == 'true'
 
+ist_offset = timezone(timedelta(hours=5, minutes=30))
+
+def get_ist_date():
+    return datetime.now(ist_offset).strftime('%Y-%m-%d')
+
+def get_local_time_for_ist(ist_time_str):
+    """Convert an IST time string (HH:MM) to the system local time string (HH:MM)"""
+    try:
+        hour, minute = map(int, ist_time_str.split(':'))
+        now_ist = datetime.now(ist_offset)
+        target_ist = now_ist.replace(hour=hour, minute=minute, second=0, microsecond=0)
+        target_local = target_ist.astimezone()
+        return target_local.strftime("%H:%M")
+    except Exception as e:
+        logger.error(f"Error converting IST time {ist_time_str} to local: {e}")
+        return ist_time_str
+
 
 def is_done_today(job_name):
     if IS_GITHUB:
@@ -30,7 +47,7 @@ def is_done_today(job_name):
         if os.path.exists(STATE_FILE):
             with open(STATE_FILE, 'r') as f:
                 state = json.load(f)
-            today = str(date.today())
+            today = get_ist_date()
             return today in state and job_name in state[today]
     except:
         pass
@@ -47,10 +64,10 @@ def mark_done(job_name):
                 state = json.load(f)
     except:
         pass
-    today = str(date.today())
+    today = get_ist_date()
     if today not in state:
         state[today] = {}
-    state[today][job_name] = datetime.now().strftime('%H:%M:%S')
+    state[today][job_name] = datetime.now(ist_offset).strftime('%H:%M:%S')
     with open(STATE_FILE, 'w') as f:
         json.dump(state, f, indent=2)
 
@@ -338,50 +355,53 @@ def evening_quiz_pipeline():
 
 
 def check_missed_jobs():
-    now = datetime.now()
+    now = datetime.now(ist_offset)
     hour = now.hour
-    morning_greeting_hour = int(MORNING_GREETING_TIME.split(':')[0])
-    morning_hour = int(MORNING_NEWS_TIME.split(':')[0])
-    evening_hour = int(EVENING_QUIZ_TIME.split(':')[0])
-    good_night_hour = int(GOOD_NIGHT_TIME.split(':')[0])
+    minute = now.minute
+    current_minutes = hour * 60 + minute
     
-    print(f'Checking missed jobs (time: {now.strftime("%H:%M")})...')
+    morning_greeting_hour, morning_greeting_min = map(int, MORNING_GREETING_TIME.split(':'))
+    morning_hour, morning_min = map(int, MORNING_NEWS_TIME.split(':'))
+    evening_hour, evening_min = map(int, EVENING_QUIZ_TIME.split(':'))
+    good_night_hour, good_night_min = map(int, GOOD_NIGHT_TIME.split(':'))
+    
+    print(f'Checking missed jobs (time: {now.strftime("%H:%M")} IST)...')
     
     # Morning greeting
-    if hour >= morning_greeting_hour and not is_done_today('morning_greeting'):
+    if current_minutes >= (morning_greeting_hour * 60 + morning_greeting_min) and not is_done_today('morning_greeting'):
         print('   Morning greeting MISSED - running now!')
         morning_greeting_pipeline()
     elif is_done_today('morning_greeting'):
         print('   Morning greeting: Done today')
     else:
-        print(f'   Morning greeting: Scheduled at {MORNING_GREETING_TIME}')
+        print(f'   Morning greeting: Scheduled at {MORNING_GREETING_TIME} IST')
     
     # Morning news
-    if hour >= morning_hour and not is_done_today('morning_news'):
+    if current_minutes >= (morning_hour * 60 + morning_min) and not is_done_today('morning_news'):
         print('   Morning news MISSED - running now!')
         morning_news_pipeline()
     elif is_done_today('morning_news'):
         print('   Morning news: Done today')
     else:
-        print(f'   Morning news: Scheduled at {MORNING_NEWS_TIME}')
+        print(f'   Morning news: Scheduled at {MORNING_NEWS_TIME} IST')
     
     # Evening quiz
-    if hour >= evening_hour and not is_done_today('evening_quiz'):
+    if current_minutes >= (evening_hour * 60 + evening_min) and not is_done_today('evening_quiz'):
         print('   Evening quiz MISSED - running now!')
         evening_quiz_pipeline()
     elif is_done_today('evening_quiz'):
         print('   Evening quiz: Done today')
     else:
-        print(f'   Evening quiz: Scheduled at {EVENING_QUIZ_TIME}')
+        print(f'   Evening quiz: Scheduled at {EVENING_QUIZ_TIME} IST')
     
     # Good night
-    if hour >= good_night_hour and not is_done_today('good_night'):
+    if current_minutes >= (good_night_hour * 60 + good_night_min) and not is_done_today('good_night'):
         print('   Good night MISSED - running now!')
         good_night_pipeline()
     elif is_done_today('good_night'):
         print('   Good night: Done today')
     else:
-        print(f'   Good night: Scheduled at {GOOD_NIGHT_TIME}')
+        print(f'   Good night: Scheduled at {GOOD_NIGHT_TIME} IST')
 
 
 def start():
@@ -389,16 +409,30 @@ def start():
     print('=' * 55)
     print('   GOVT EXAM NEWS BOT - ALL FEATURES')
     print('=' * 55)
-    print(f'   Morning Greeting: {MORNING_GREETING_TIME}')
-    print(f'   Morning News:    {MORNING_NEWS_TIME}')
-    print(f'   Quiz (Alert):     {EVENING_QUIZ_TIME}')
-    print(f'   Good Night:      {GOOD_NIGHT_TIME}')
+    print(f'   Morning Greeting (IST): {MORNING_GREETING_TIME}')
+    print(f'   Morning News (IST):    {MORNING_NEWS_TIME}')
+    print(f'   Quiz (Alert) (IST):     {EVENING_QUIZ_TIME}')
+    print(f'   Good Night (IST):      {GOOD_NIGHT_TIME}')
     print('=' * 55)
     check_missed_jobs()
-    schedule.every().day.at(MORNING_GREETING_TIME).do(morning_greeting_pipeline)
-    schedule.every().day.at(MORNING_NEWS_TIME).do(morning_news_pipeline)
-    schedule.every().day.at(EVENING_QUIZ_TIME).do(evening_quiz_pipeline)
-    schedule.every().day.at(GOOD_NIGHT_TIME).do(good_night_pipeline)
+    
+    # Convert IST schedule times to system local times
+    local_greeting = get_local_time_for_ist(MORNING_GREETING_TIME)
+    local_news = get_local_time_for_ist(MORNING_NEWS_TIME)
+    local_quiz = get_local_time_for_ist(EVENING_QUIZ_TIME)
+    local_good_night = get_local_time_for_ist(GOOD_NIGHT_TIME)
+    
+    print(f'   Scheduling in system local time:')
+    print(f'     Morning Greeting: {local_greeting}')
+    print(f'     Morning News:     {local_news}')
+    print(f'     Quiz:             {local_quiz}')
+    print(f'     Good Night:       {local_good_night}')
+    print('=' * 55)
+    
+    schedule.every().day.at(local_greeting).do(morning_greeting_pipeline)
+    schedule.every().day.at(local_news).do(morning_news_pipeline)
+    schedule.every().day.at(local_quiz).do(evening_quiz_pipeline)
+    schedule.every().day.at(local_good_night).do(good_night_pipeline)
     print('\n   Running. Press Ctrl+C to stop.\n')
     while True:
         schedule.run_pending()
@@ -435,7 +469,7 @@ if __name__ == '__main__':
     elif command == 'start':
         start()
     elif command == 'status':
-        today_str = str(date.today())
+        today_str = get_ist_date()
         print(f'\nStatus for {today_str}:')
         if os.path.exists(STATE_FILE):
             with open(STATE_FILE, 'r') as f:

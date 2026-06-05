@@ -3,7 +3,7 @@
 import feedparser
 import requests
 from bs4 import BeautifulSoup
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 import json
 import hashlib
 import os
@@ -30,8 +30,9 @@ class NewsScraper:
                 'Chrome/120.0.0.0 Safari/537.36'
             )
         }
-        self.today = datetime.now().date()
-        self.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        ist_offset = timezone(timedelta(hours=5, minutes=30))
+        self.today = datetime.now(ist_offset).strftime("%Y-%m-%d")
+        self.timestamp = datetime.now(ist_offset).strftime("%Y-%m-%d %H:%M:%S")
 
     def get_article_text(self, url):
         try:
@@ -123,7 +124,7 @@ class NewsScraper:
                         'link': link,
                         'summary': summary,
                         'source': source_name,
-                        'date': str(self.today),
+                        'date': self.today,
                         'scraped_at': self.timestamp,
                         'content': content,
                         'image_url': self._extract_image_url(entry)
