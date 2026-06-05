@@ -30,19 +30,16 @@ class QuizGenerator:
         if val is None:
             return None
         if isinstance(val, str):
+            import re
             v = val.strip().upper()
-            # Accept plain letters
-            if v in {"A", "B", "C", "D"}:
-                return v
-            # Accept formats like "A.", "(A)", "Option A", "Correct: A"
-            # Extract first standalone letter A-D found in the string
-            for letter in ["A", "B", "C", "D"]:
-                if f"({letter})" in v or v.startswith(letter + ".") or v.endswith("." + letter) or v.startswith("OPTION " + letter) or ("OPTION " + letter) in v:
-                    return letter
-            # Fallback: find first occurrence of A-D
-            for ch in v:
-                if ch in {"A", "B", "C", "D"}:
-                    return ch
+            # Find all standalone letters A, B, C, D using word boundaries
+            match = re.search(r'\b([A-D])\b', v)
+            if match:
+                return match.group(1)
+            # If no word boundaries match (e.g. "(A)"), find the first A-D char by filtering other chars
+            cleaned = re.sub(r'[^A-D]', '', v)
+            if cleaned:
+                return cleaned[0]
         return None
 
     def _questions_are_valid(self, questions):
@@ -57,35 +54,52 @@ class QuizGenerator:
         return True
 
     def make_questions(self, article):
-        prompt = f"""You are a UPSC exam question setter.
-Create exactly 2 MCQ questions from this news.
+        prompt = f"""You are an elite UPSC Civil Services Exam question setter.
+Create exactly 2 high-quality, concept-heavy MCQ questions from the provided news article. The questions must test both the current development and static syllabus concepts (such as relevant constitutional articles, parent acts, historical context, or economic theories).
 
-RULES:
-1. 4 options each (A, B, C, D)
-2. Only 1 correct answer
-3. Include explanation
-4. Exam-worthy difficulty
+RULES FOR QUESTION 1 (Classic Statement-Based):
+1. Must begin with "Consider the following statements regarding [Topic]:" followed by 2 or 3 numbered statements.
+2. One statement must test the static/historical background of the topic, and one must test the current development.
+3. The question must end with "Which of the statements given above is/are correct?".
+4. Options (A, B, C, D) must represent combinations of these statements, for example:
+   - A) 1 only
+   - B) 2 and 3 only
+   - C) 1 and 3 only
+   - D) 1, 2 and 3
+
+RULES FOR QUESTION 2 (Modern Elimination-Proof):
+1. Must begin with "Consider the following statements regarding [Topic]:" followed by exactly 3 numbered statements.
+2. The question must end with "How many of the statements given above are correct?".
+3. Options (A, B, C, D) must be EXACTLY:
+   - A) Only one
+   - B) Only two
+   - C) All three
+   - D) None
+
+GENERAL RULES:
+- Include a detailed explanation for each question explaining which statements are correct/incorrect and why.
+- Output MUST be strictly in JSON format. Do not add any markdown blocks or conversational text.
 
 RESPOND ONLY IN JSON FORMAT AND NOTHING ELSE:
 {{
   "questions": [
     {{
-      "question": "Question text?",
-      "option_a": "Option A",
-      "option_b": "Option B",
-      "option_c": "Option C",
-      "option_d": "Option D",
-      "correct_answer": "A",
-      "explanation": "Why A is correct..."
+      "question": "Consider the following statements regarding [Topic]:\\n1. [Statement 1]\\n2. [Statement 2]\\n3. [Statement 3]\\n\\nWhich of the statements given above is/are correct?",
+      "option_a": "[Option A]",
+      "option_b": "[Option B]",
+      "option_c": "[Option C]",
+      "option_d": "[Option D]",
+      "correct_answer": "[A/B/C/D]",
+      "explanation": "[Detailed Explanation]"
     }},
     {{
-      "question": "Second question?",
-      "option_a": "Option A",
-      "option_b": "Option B",
-      "option_c": "Option C",
-      "option_d": "Option D",
-      "correct_answer": "C",
-      "explanation": "Why C is correct..."
+      "question": "Consider the following statements regarding [Topic]:\\n1. [Statement 1]\\n2. [Statement 2]\\n3. [Statement 3]\\n\\nHow many of the statements given above are correct?",
+      "option_a": "Only one",
+      "option_b": "Only two",
+      "option_c": "All three",
+      "option_d": "None",
+      "correct_answer": "[A/B/C/D]",
+      "explanation": "[Detailed Explanation]"
     }}
   ]
 }}
