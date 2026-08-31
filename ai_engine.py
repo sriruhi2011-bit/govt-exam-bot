@@ -30,52 +30,64 @@ class AIEngine:
         self.providers = []
 
         if GEMINI_API_KEY and "PASTE_" not in GEMINI_API_KEY and "YOUR_" not in GEMINI_API_KEY and len(GEMINI_API_KEY) > 10:
+            gemini_fallbacks = ["gemini-2.0-flash", "gemini-1.5-flash-latest", "gemini-2.5-flash", "gemini-1.5-flash"]
             self.providers.append({
                 "name": "Gemini",
                 "type": "gemini",
                 "key": GEMINI_API_KEY,
-                "model": "gemini-1.5-flash",
+                "model": gemini_fallbacks[0],
+                "fallback_models": gemini_fallbacks,
+                "model_idx": 0,
                 "url": "https://generativelanguage.googleapis.com/v1beta/models/",
                 "rpm": 15,
                 "fails": 0
             })
-            logger.info(f"  Provider added: Google Gemini")
+            logger.info(f"  Provider added: Google Gemini ({gemini_fallbacks[0]})")
 
         if GROQ_API_KEY and "PASTE_" not in GROQ_API_KEY and "YOUR_" not in GROQ_API_KEY and len(GROQ_API_KEY) > 10:
+            groq_fallbacks = ["llama-3.3-70b-versatile", "llama3-8b-8192", "llama-3.2-3b-preview", "gemma2-9b-it", "llama-3.1-8b-instant"]
             self.providers.append({
                 "name": "Groq",
                 "type": "openai_compatible",
                 "key": GROQ_API_KEY,
-                "model": "llama-3.1-8b-instant",
+                "model": groq_fallbacks[0],
+                "fallback_models": groq_fallbacks,
+                "model_idx": 0,
                 "url": "https://api.groq.com/openai/v1/chat/completions",
                 "rpm": 30,
                 "fails": 0
             })
-            logger.info(f"  Provider added: Groq")
+            logger.info(f"  Provider added: Groq ({groq_fallbacks[0]})")
 
         if CEREBRAS_API_KEY and "PASTE_" not in CEREBRAS_API_KEY and "YOUR_" not in CEREBRAS_API_KEY and len(CEREBRAS_API_KEY) > 10:
+            cerebras_fallbacks = ["llama-3.3-70b", "llama3.1-8b"]
             self.providers.append({
                 "name": "Cerebras",
                 "type": "openai_compatible",
                 "key": CEREBRAS_API_KEY,
-                "model": "llama3.1-8b",
+                "model": cerebras_fallbacks[0],
+                "fallback_models": cerebras_fallbacks,
+                "model_idx": 0,
                 "url": "https://api.cerebras.ai/v1/chat/completions",
                 "rpm": 30,
                 "fails": 0
             })
-            logger.info(f"  Provider added: Cerebras")
+            logger.info(f"  Provider added: Cerebras ({cerebras_fallbacks[0]})")
 
         if OPENROUTER_API_KEY and "PASTE_" not in OPENROUTER_API_KEY and "YOUR_" not in OPENROUTER_API_KEY and len(OPENROUTER_API_KEY) > 10:
+            openrouter_fallbacks = ["meta-llama/llama-3.3-70b-instruct:free", "google/gemini-2.0-flash-exp:free", "meta-llama/llama-3.1-8b-instruct:free"]
             self.providers.append({
                 "name": "OpenRouter",
                 "type": "openai_compatible",
                 "key": OPENROUTER_API_KEY,
-                "model": "meta-llama/llama-3.1-8b-instruct:free",
+                "model": openrouter_fallbacks[0],
+                "fallback_models": openrouter_fallbacks,
+                "model_idx": 0,
                 "url": "https://openrouter.ai/api/v1/chat/completions",
                 "rpm": 20,
                 "fails": 0
             })
-            logger.info(f"  Provider added: OpenRouter")
+            logger.info(f"  Provider added: OpenRouter ({openrouter_fallbacks[0]})")
 
         if not self.providers:
             raise ValueError("No AI providers! Add API keys in config/settings.py")
@@ -102,6 +114,16 @@ class AIEngine:
             time.sleep(min_delay - elapsed)
         self.last_request_time = time.time()
 
+    def _try_next_model(self, provider):
+        fallbacks = provider.get("fallback_models", [])
+        idx = provider.get("model_idx", 0) + 1
+        if idx < len(fallbacks):
+            provider["model_idx"] = idx
+            provider["model"] = fallbacks[idx]
+            logger.warning(f"  Model fallback for {provider['name']}: switching to '{provider['model']}'")
+            return True
+        return False
+
     def _call_gemini(self, provider, prompt, temperature, max_tokens):
         url = provider["url"] + provider["model"] + ":generateContent?key=" + provider["key"]
         payload = {
@@ -119,6 +141,11 @@ class AIEngine:
             return "RATE_LIMITED"
         elif response.status_code in [401, 403]:
             logger.error(f"  Gemini auth error {response.status_code}: {response.text}")
+            return "AUTH_ERROR"
+        elif response.status_code == 404:
+            logger.error(f"  Gemini error 404 for model '{provider['model']}': {response.text[:200]}")
+            if self._try_next_model(provider):
+                return self._call_gemini(provider, prompt, temperature, max_tokens)
             return "AUTH_ERROR"
         else:
             logger.error(f"  Gemini error {response.status_code} at {url}: {response.text[:200]}")
@@ -141,6 +168,11 @@ class AIEngine:
             return "RATE_LIMITED"
         elif response.status_code in [401, 403]:
             logger.error(f"  {provider['name']} auth error {response.status_code}: {response.text}")
+            return "AUTH_ERROR"
+        elif response.status_code == 404:
+            logger.error(f"  {provider['name']} error 404 for model '{provider['model']}': {response.text[:200]}")
+            if self._try_next_model(provider):
+                return self._call_openai_compatible(provider, prompt, temperature, max_tokens)
             return "AUTH_ERROR"
         else:
             logger.error(f"  {provider['name']} error {response.status_code}: {response.text[:200]}")

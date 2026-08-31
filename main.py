@@ -521,7 +521,7 @@ if __name__ == '__main__':
         posts_file = os.path.join(DATA_DIR, 'pending_news_posts.json')
         
         if not os.path.exists(posts_file):
-            print(f'ERROR: No pending posts file: {posts_file}')
+            print(f'INFO: No pending posts file found: {posts_file}. Skipping Telegram news posting.')
         else:
             with open(posts_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
