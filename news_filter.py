@@ -28,6 +28,7 @@ class NewsFilter:
     def quick_keyword_check(self, article):
         text = (
             article['title'] + ' ' +
+            article.get('summary', '') + ' ' +
             article.get('content', '')
         ).lower()
 
@@ -35,7 +36,7 @@ class NewsFilter:
             'cricket score', 'ipl', 'bollywood', 'movie review',
             'celebrity gossip', 'horoscope', 'recipe', 'fashion week',
             'web series', 'box office', 'reality show', 'dating',
-            'weight loss', 'skincare'
+            'weight loss', 'skincare', 'horoscope today', 'astrology'
         ]
 
         for word in skip_words:
@@ -49,14 +50,23 @@ class NewsFilter:
 
         general_news_words = [
             'government', 'ministry', 'india', 'policy', 'launched',
-            'announced', 'approved', 'signed', 'summit', 'committee'
+            'announced', 'approved', 'signed', 'summit', 'committee',
+            'court', 'state', 'minister', 'police', 'report', 'crore',
+            'center', 'centre', 'district', 'project', 'scheme', 'bank',
+            'rate', 'target', 'held', 'meet', 'bill', 'law', 'act',
+            'rule', 'order', 'security', 'defence', 'defense', 'trade',
+            'tax', 'export', 'import', 'growth', 'sector', 'chief',
+            'isro', 'rbi', 'gdp', 'high court', 'supreme court',
+            'bengaluru', 'karnataka', 'assembly', 'governor', 'union',
+            'cabinet', 'pm', 'president', 'sanction', 'agreement',
+            'talks', 'deal', 'official', 'department', 'commission'
         ]
 
         for word in general_news_words:
             if word in text:
                 return True, "General news"
 
-        return False, "No relevant keywords found"
+        return True, "General news candidate"
 
     def ai_analyze(self, article):
         prompt = f"""You are an expert UPSC/Government exam preparation analyst.
@@ -136,8 +146,8 @@ If the article is NOT relevant for government exams:
                 stats['ai_errors'] += 1
                 consecutive_errors += 1
                 logger.warning(f"   AI analysis failed (Provider error or Invalid JSON)")
-                if consecutive_errors >= 3:
-                    logger.error("   Aborting article process due to 3 consecutive AI failures.")
+                if consecutive_errors >= 8:
+                    logger.error("   Aborting article process due to 8 consecutive AI failures.")
                     break
                 continue
             else:

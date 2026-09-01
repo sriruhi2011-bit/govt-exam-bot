@@ -112,10 +112,13 @@ class NewsScraper:
 
                     content = self.get_article_text(link)
 
-                    if not content and summary:
-                        content = summary
+                    if not content or len(content.strip()) < 20:
+                        if summary and len(summary.strip()) > 10:
+                            content = summary
+                        else:
+                            content = entry.get('title', '')
 
-                    if not content:
+                    if not content or len(content.strip()) < 5:
                         continue
 
                     article = {
