@@ -380,27 +380,28 @@ def run_current_time_job():
     total_minutes = now.hour * 60 + now.minute
     print(f"Auto-detecting job for current IST time: {now.strftime('%H:%M:%S')}...")
 
-    # Time boundaries (IST):
-    # 05:00 - 08:00 (300 - 480): Morning Kickoff
-    # 08:00 - 11:30 (480 - 690): Daily 360 Dossier
-    # 11:30 - 15:30 (690 - 930): Prelims Drill
-    # 15:30 - 18:30 (930 - 1110): Mains Challenge
-    # 18:30 - 20:15 (1110 - 1215): Capsule
-    # 20:15 - 21:15 (1215 - 1275): Model Answer
-    # 21:15 - 05:00: Night Reflection
-    if 300 <= total_minutes < 480:
+    # Quiet Hours Guard: Do not disturb aspirants between 10:30 PM and 05:30 AM IST
+    if total_minutes < 330:  # Before 05:30 AM IST
+        print(f"Quiet hours ({now.strftime('%H:%M')} IST). Sleeping, no message to post.")
+        return
+    elif total_minutes >= 1350:  # After 10:30 PM IST
+        print(f"Late night quiet hours ({now.strftime('%H:%M')} IST). Sleeping, no message to post.")
+        return
+
+    # Active daytime schedule (IST):
+    if 330 <= total_minutes < 480:  # 05:30 - 08:00 IST: Morning Kickoff
         job_morning_kickoff()
-    elif 480 <= total_minutes < 690:
+    elif 480 <= total_minutes < 690:  # 08:00 - 11:30 IST: Daily 360 Dossier
         job_daily_dossier()
-    elif 690 <= total_minutes < 930:
+    elif 690 <= total_minutes < 930:  # 11:30 - 15:30 IST: Prelims Drill
         job_prelims_drill()
-    elif 930 <= total_minutes < 1110:
+    elif 930 <= total_minutes < 1110:  # 15:30 - 18:30 IST: Mains Challenge
         job_mains_challenge()
-    elif 1110 <= total_minutes < 1215:
+    elif 1110 <= total_minutes < 1215:  # 18:30 - 20:15 IST: Capsule
         job_capsule()
-    elif 1215 <= total_minutes < 1275:
+    elif 1215 <= total_minutes < 1275:  # 20:15 - 21:15 IST: Model Answer
         job_model_answer()
-    else:
+    else:  # 21:15 - 22:30 IST: Night Reflection
         job_night_audit()
 
 
