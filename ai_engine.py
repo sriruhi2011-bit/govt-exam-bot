@@ -23,16 +23,16 @@ class AIEngine:
         # Keyed by (provider identity + prompt hash + temperature + max_tokens)
         self._cache: Dict[str, Optional[str]] = {}
         from config.settings import (
-            GEMINI_API_KEY, GROQ_API_KEY,
+            GEMINI_API_KEY, GEMINI_API_KEY_2, GROQ_API_KEY,
             CEREBRAS_API_KEY, OPENROUTER_API_KEY
         )
 
         self.providers = []
+        gemini_fallbacks = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"]
 
         if GEMINI_API_KEY and "PASTE_" not in GEMINI_API_KEY and "YOUR_" not in GEMINI_API_KEY and len(GEMINI_API_KEY) > 10:
-            gemini_fallbacks = ["gemini-2.0-flash", "gemini-1.5-flash-latest", "gemini-2.5-flash", "gemini-1.5-flash"]
             self.providers.append({
-                "name": "Gemini",
+                "name": "Gemini-1",
                 "type": "gemini",
                 "key": GEMINI_API_KEY,
                 "model": gemini_fallbacks[0],
@@ -42,7 +42,21 @@ class AIEngine:
                 "rpm": 15,
                 "fails": 0
             })
-            logger.info(f"  Provider added: Google Gemini ({gemini_fallbacks[0]})")
+            logger.info(f"  Provider added: Google Gemini Key 1 ({gemini_fallbacks[0]})")
+
+        if GEMINI_API_KEY_2 and "PASTE_" not in GEMINI_API_KEY_2 and "YOUR_" not in GEMINI_API_KEY_2 and len(GEMINI_API_KEY_2) > 10:
+            self.providers.append({
+                "name": "Gemini-2",
+                "type": "gemini",
+                "key": GEMINI_API_KEY_2,
+                "model": gemini_fallbacks[0],
+                "fallback_models": gemini_fallbacks,
+                "model_idx": 0,
+                "url": "https://generativelanguage.googleapis.com/v1beta/models/",
+                "rpm": 15,
+                "fails": 0
+            })
+            logger.info(f"  Provider added: Google Gemini Key 2 ({gemini_fallbacks[0]})")
 
         if GROQ_API_KEY and "PASTE_" not in GROQ_API_KEY and "YOUR_" not in GROQ_API_KEY and len(GROQ_API_KEY) > 10:
             groq_fallbacks = ["llama-3.3-70b-versatile", "llama3-8b-8192", "llama-3.2-3b-preview", "gemma2-9b-it", "llama-3.1-8b-instant"]
