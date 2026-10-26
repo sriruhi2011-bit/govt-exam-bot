@@ -374,6 +374,36 @@ def start():
         time.sleep(30)
 
 
+def run_current_time_job():
+    """Determine and execute the appropriate job for the current IST time"""
+    now = datetime.now(ist_offset)
+    total_minutes = now.hour * 60 + now.minute
+    print(f"Auto-detecting job for current IST time: {now.strftime('%H:%M:%S')}...")
+
+    # Time boundaries (IST):
+    # 05:00 - 08:00 (300 - 480): Morning Kickoff
+    # 08:00 - 11:30 (480 - 690): Daily 360 Dossier
+    # 11:30 - 15:30 (690 - 930): Prelims Drill
+    # 15:30 - 18:30 (930 - 1110): Mains Challenge
+    # 18:30 - 20:15 (1110 - 1215): Capsule
+    # 20:15 - 21:15 (1215 - 1275): Model Answer
+    # 21:15 - 05:00: Night Reflection
+    if 300 <= total_minutes < 480:
+        job_morning_kickoff()
+    elif 480 <= total_minutes < 690:
+        job_daily_dossier()
+    elif 690 <= total_minutes < 930:
+        job_prelims_drill()
+    elif 930 <= total_minutes < 1110:
+        job_mains_challenge()
+    elif 1110 <= total_minutes < 1215:
+        job_capsule()
+    elif 1215 <= total_minutes < 1275:
+        job_model_answer()
+    else:
+        job_night_audit()
+
+
 def run_full_test():
     print("\n" + "=" * 60)
     print("   RUNNING COMPLETE ASPIRANT ENGINE DEMO TEST")
@@ -414,10 +444,13 @@ if __name__ == '__main__':
     command = sys.argv[1].lower() if len(sys.argv) > 1 else 'start'
 
     # Route commands
-    if command in ['test', 'full']:
+    if command in ['auto', 'cron']:
+        run_current_time_job()
+    elif command in ['test', 'full']:
         run_full_test()
     elif command in ['kickoff', 'greeting', 'morning']:
         job_morning_kickoff()
+
     elif command in ['dossier', 'news', 'morning-news']:
         job_daily_dossier()
     elif command in ['drill', 'quiz', 'prelims']:

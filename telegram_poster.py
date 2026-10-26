@@ -99,7 +99,7 @@ class TelegramPoster:
             logger.error(f"Send quiz poll error: {e}")
             return False
 
-    async def send_poll_series(self, polls: list, target_channel: str = None) -> Tuple_Results:
+    async def send_poll_series(self, polls: list, target_channel: str = None) -> tuple:
         chat_id = target_channel or self.channel
         ok = 0
         fail = 0
@@ -123,5 +123,3 @@ def run_async(coro):
     finally:
         loop.close()
 
-
-Tuple_Results = tuple

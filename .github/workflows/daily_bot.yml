@@ -2,20 +2,20 @@ name: Aspirant Master Daily Automation
 
 on:
   schedule:
-    # 06:30 AM IST = 1:00 AM UTC (Morning Kickoff)
-    - cron: '0 1 * * *'
-    # 08:30 AM IST = 3:00 AM UTC (Daily 360° Issue Dossier)
-    - cron: '0 3 * * *'
-    # 01:00 PM IST = 7:30 AM UTC (Prelims & Objective Drill)
-    - cron: '30 7 * * *'
-    # 05:00 PM IST = 11:30 AM UTC (Daily Mains Challenge)
-    - cron: '30 11 * * *'
-    # 07:30 PM IST = 2:00 PM UTC (High-Yield Capsule)
-    - cron: '0 14 * * *'
-    # 08:30 PM IST = 3:00 PM UTC (Official Model Answer)
-    - cron: '0 15 * * *'
-    # 09:30 PM IST = 4:00 PM UTC (Night Revision Audit)
-    - cron: '0 16 * * *'
+    # 06:35 AM IST = 1:05 AM UTC (Morning Kickoff)
+    - cron: '5 1 * * *'
+    # 08:35 AM IST = 3:05 AM UTC (Daily 360° Issue Dossier)
+    - cron: '5 3 * * *'
+    # 01:05 PM IST = 7:35 AM UTC (Prelims & Objective Drill)
+    - cron: '35 7 * * *'
+    # 05:05 PM IST = 11:35 AM UTC (Daily Mains Challenge)
+    - cron: '35 11 * * *'
+    # 07:35 PM IST = 2:05 PM UTC (High-Yield Capsule)
+    - cron: '5 14 * * *'
+    # 08:35 PM IST = 3:05 PM UTC (Official Model Answer)
+    - cron: '5 15 * * *'
+    # 09:35 PM IST = 4:05 PM UTC (Night Revision Audit)
+    - cron: '5 16 * * *'
 
   # Allow manual trigger from GitHub website
   workflow_dispatch:
@@ -27,6 +27,7 @@ on:
         type: choice
         options:
           - all
+          - auto
           - kickoff
           - dossier
           - drill
@@ -70,7 +71,7 @@ jobs:
 
       - name: Determine and Run Appropriate Aspirant Job
         run: |
-          # Check if manual trigger
+          # If manual trigger from GitHub website
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             JOB="${{ github.event.inputs.job_type }}"
             if [ "$JOB" = "all" ]; then
@@ -81,39 +82,5 @@ jobs:
             exit 0
           fi
 
-          # Schedule mapping (cron UTC)
-          CRON="${{ github.event.schedule }}"
-          case "$CRON" in
-            "0 1 * * *")
-              echo "Executing 06:30 AM IST Morning Kickoff..."
-              python main.py kickoff
-              ;;
-            "0 3 * * *")
-              echo "Executing 08:30 AM IST Daily 360 Dossier..."
-              python main.py dossier
-              ;;
-            "30 7 * * *")
-              echo "Executing 01:00 PM IST Prelims Drill..."
-              python main.py drill
-              ;;
-            "30 11 * * *")
-              echo "Executing 05:00 PM IST Daily Mains Challenge..."
-              python main.py mains
-              ;;
-            "0 14 * * *")
-              echo "Executing 07:30 PM IST High-Yield Capsule..."
-              python main.py capsule
-              ;;
-            "0 15 * * *")
-              echo "Executing 08:30 PM IST Official Model Answer..."
-              python main.py model-answer
-              ;;
-            "0 16 * * *")
-              echo "Executing 09:30 PM IST Night Revision Audit..."
-              python main.py night
-              ;;
-            *)
-              echo "Defaulting to full check..."
-              python main.py kickoff
-              ;;
-          esac
+          # Scheduled trigger: automatically detect correct job based on IST time
+          python main.py auto
