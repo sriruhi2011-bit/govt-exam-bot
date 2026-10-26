@@ -1,40 +1,53 @@
-name: Daily Current Affairs Bot
+name: Aspirant Master Daily Automation
 
 on:
   schedule:
-    # 6:00 AM IST = 12:30 AM UTC (morning greeting)
-    - cron: '30 0 * * *'
-    # 7:00 AM IST = 1:30 AM UTC (morning news processing)
-    - cron: '30 1 * * *'
-    # 5:00 PM IST = 11:30 AM UTC (quiz processing - posts notification then quiz after 2 min)
+    # 06:30 AM IST = 1:00 AM UTC (Morning Kickoff)
+    - cron: '0 1 * * *'
+    # 08:30 AM IST = 3:00 AM UTC (Daily 360° Issue Dossier)
+    - cron: '0 3 * * *'
+    # 01:00 PM IST = 7:30 AM UTC (Prelims & Objective Drill)
+    - cron: '30 7 * * *'
+    # 05:00 PM IST = 11:30 AM UTC (Daily Mains Challenge)
     - cron: '30 11 * * *'
-    # 9:00 PM IST = 3:30 PM UTC (good night message)
-    - cron: '30 15 * * *'
+    # 07:30 PM IST = 2:00 PM UTC (High-Yield Capsule)
+    - cron: '0 14 * * *'
+    # 08:30 PM IST = 3:00 PM UTC (Official Model Answer)
+    - cron: '0 15 * * *'
+    # 09:30 PM IST = 4:00 PM UTC (Night Revision Audit)
+    - cron: '0 16 * * *'
 
   # Allow manual trigger from GitHub website
   workflow_dispatch:
     inputs:
       job_type:
-        description: 'Which job to run'
+        description: 'Which aspirant job to run'
         required: true
-        default: 'news'
+        default: 'all'
         type: choice
         options:
-          - news
-          - quiz
-          - greeting
-          - goodnight
-          - both
+          - all
+          - kickoff
+          - dossier
+          - drill
+          - mains
+          - capsule
+          - model-answer
+          - night
 
-# Force Node.js 24 to remove the warning
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+  CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
+  KAN_BOT_TOKEN: ${{ secrets.KAN_BOT_TOKEN }}
+  KAN_CHANNEL_ID: ${{ secrets.KAN_CHANNEL_ID }}
+  GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+  GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
 
 jobs:
-  morning-greeting:
-    if: github.event.schedule == '30 0 * * *' || github.event.inputs.job_type == 'greeting' || github.event.inputs.job_type == 'both'
+  run-aspirant-task:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     steps:
       - name: Checkout code
@@ -48,184 +61,58 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install feedparser beautifulsoup4 requests python-telegram-bot==20.7 schedule lxml openpyxl xlsxwriter filelock
+          pip install requests python-telegram-bot==20.7 schedule
 
-      - name: Send Morning Greeting
-        env:
-          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-          CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-        run: python main.py greeting
-
-  morning-news:
-    if: github.event.schedule == '30 1 * * *' || github.event.inputs.job_type == 'news' || github.event.inputs.job_type == 'both'
-    runs-on: ubuntu-latest
-    timeout-minutes: 120
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
-
-      - name: Clear cached files
+      - name: Create data and log directories
         run: |
-          find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
-          find . -type f -name '*.pyc' -delete 2>/dev/null || true
+          mkdir -p data logs
 
-      - name: Set up Python
-        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
-        with:
-          python-version: '3.12'
-
-      - name: Install dependencies
+      - name: Determine and Run Appropriate Aspirant Job
         run: |
-          pip install --upgrade pip
-          pip install feedparser beautifulsoup4 requests python-telegram-bot==20.7 schedule lxml openpyxl xlsxwriter filelock
-
-      - name: Create data directories
-        run: |
-          mkdir -p data/raw_news data/filtered_news data/quizzes data/excel_reports data/kannada/raw_news data/kannada/filtered_news data/kannada/quizzes logs
-
-      - name: Run Morning News (Process Only)
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-          CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
-          KAN_BOT_TOKEN: ${{ secrets.KAN_BOT_TOKEN }}
-          KAN_CHANNEL_ID: ${{ secrets.KAN_CHANNEL_ID }}
-          SKIP_TELEGRAM: 'true'
-        run: python main.py news
-
-
-
-      - name: Wait for 5:30 AM IST posting time
-        run: |
-          current_hour=$(date -u +"%-H")
-          current_min=$(date -u +"%-M")
-          current_total=$((10#$current_hour * 60 + 10#$current_min))
-          target=0
-          wait_minutes=$((target - current_total))
-          if [ $wait_minutes -gt 0 ]; then
-            echo "Waiting $wait_minutes minutes for 5:30 AM IST..."
-            sleep $((wait_minutes * 60))
-          else
-            echo "Already past 5:30 AM IST, posting now..."
+          # Check if manual trigger
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            JOB="${{ github.event.inputs.job_type }}"
+            if [ "$JOB" = "all" ]; then
+              python main.py test
+            else
+              python main.py "$JOB"
+            fi
+            exit 0
           fi
 
-      - name: Post Morning News to Telegram
-        env:
-          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-          CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
-        run: python main.py post-news
-
-      - name: Upload reports
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
-        with:
-          name: news-report-${{ github.run_number }}
-          path: |
-            data/excel_reports/
-            data/filtered_news/
-            logs/
-          retention-days: 30
-
-  evening-quiz:
-    if: github.event.schedule == '30 11 * * *' || github.event.inputs.job_type == 'quiz' || github.event.inputs.job_type == 'both'
-    runs-on: ubuntu-latest
-    timeout-minutes: 120
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
-
-      - name: Clear cached files
-        run: |
-          find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
-          find . -type f -name '*.pyc' -delete 2>/dev/null || true
-
-      - name: Set up Python
-        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
-        with:
-          python-version: '3.12'
-
-      - name: Install dependencies
-        run: |
-          pip install --upgrade pip
-          pip install feedparser beautifulsoup4 requests python-telegram-bot==20.7 schedule lxml openpyxl xlsxwriter filelock
-
-      - name: Create data directories
-        run: |
-          mkdir -p data/raw_news data/filtered_news data/quizzes data/excel_reports logs
-
-      - name: Run Evening Quiz (Process Only)
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-          CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
-          KAN_BOT_TOKEN: ${{ secrets.KAN_BOT_TOKEN }}
-          KAN_CHANNEL_ID: ${{ secrets.KAN_CHANNEL_ID }}
-          SKIP_TELEGRAM: 'true'
-        run: python main.py quiz
-
-
-
-      - name: Wait for 5:00 PM IST posting time
-        run: |
-          current_hour=$(date -u +"%-H")
-          current_min=$(date -u +"%-M")
-          current_total=$((10#$current_hour * 60 + 10#$current_min))
-          target=690
-          wait_minutes=$((target - current_total))
-          if [ $wait_minutes -gt 0 ]; then
-            echo "Waiting $wait_minutes minutes for 5:00 PM IST..."
-            sleep $((wait_minutes * 60))
-          else
-            echo "Already past 5:00 PM IST, posting now..."
-          fi
-
-      - name: Post Evening Quiz to Telegram
-        env:
-          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-          CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
-        run: python main.py post-quiz
-
-      - name: Upload reports
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
-        with:
-          name: quiz-report-${{ github.run_number }}
-          path: |
-            data/excel_reports/
-            data/filtered_news/
-            data/quizzes/
-            logs/
-          retention-days: 30
-
-  good-night:
-    if: github.event.schedule == '30 15 * * *' || github.event.inputs.job_type == 'goodnight' || github.event.inputs.job_type == 'both'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
-
-      - name: Set up Python
-        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
-        with:
-          python-version: '3.12'
-
-      - name: Install dependencies
-        run: |
-          pip install --upgrade pip
-          pip install feedparser beautifulsoup4 requests python-telegram-bot==20.7 schedule lxml openpyxl xlsxwriter filelock
-
-      - name: Send Good Night Message
-        env:
-          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-          CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-        run: python main.py goodnight
+          # Schedule mapping (cron UTC)
+          CRON="${{ github.event.schedule }}"
+          case "$CRON" in
+            "0 1 * * *")
+              echo "Executing 06:30 AM IST Morning Kickoff..."
+              python main.py kickoff
+              ;;
+            "0 3 * * *")
+              echo "Executing 08:30 AM IST Daily 360 Dossier..."
+              python main.py dossier
+              ;;
+            "30 7 * * *")
+              echo "Executing 01:00 PM IST Prelims Drill..."
+              python main.py drill
+              ;;
+            "30 11 * * *")
+              echo "Executing 05:00 PM IST Daily Mains Challenge..."
+              python main.py mains
+              ;;
+            "0 14 * * *")
+              echo "Executing 07:30 PM IST High-Yield Capsule..."
+              python main.py capsule
+              ;;
+            "0 15 * * *")
+              echo "Executing 08:30 PM IST Official Model Answer..."
+              python main.py model-answer
+              ;;
+            "0 16 * * *")
+              echo "Executing 09:30 PM IST Night Revision Audit..."
+              python main.py night
+              ;;
+            *)
+              echo "Defaulting to full check..."
+              python main.py kickoff
+              ;;
+          esac

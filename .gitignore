@@ -5,4 +5,5 @@ __pycache__/
 *.pyc
 .env
 my_keys.txt
+key.txt
 job_state.json

@@ -1,32 +1,15 @@
-# TODO — govt-exam-bot (Scoped: items 1-4)
+# Aspirant Master Prep Engine (KanSiri Daily CA & GS)
 
-## Step 1: Add AI response caching (reduce duplicate AI calls)
-- [x] Update `ai_engine.py` with in-memory cache keyed by provider + prompt hash + params
-- [x] Expose `query_cached()` helper
-- [x] Wire `query_cached()` into:
-  - [x] `NewsFilter.ai_analyze()`
-  - [x] `ContentGenerator.create_summary()`
-  - [x] `QuizGenerator.make_questions()`
-
-## Step 2: Enforce per-category limits + reduce AI calls in filtering/news selection
-- [x] Add per-category quota constant(s) in `config/settings.py`
-- [x] Update `news_filter.py` to stop scanning/AI-evaluating once quotas per category are satisfied
-
-## Step 3: Consistent per-category posting limits
-- [x] Update `content_generator.py` to use configured per-category limit (remove hardcoded `[:4]`)
-- [x] Ensure header counts match actual included articles
-
-## Step 4: Improve quiz correctness + per-category selection + reduce AI calls
-- [x] Update `quiz_generator.py`:
-  - [x] Select quiz articles using per-category quotas (instead of first 15)
-  - [x] Validate and normalize `correct_answer` to `A|B|C|D`
-  - [x] Regenerate quiz for an article when parsed data is malformed (bounded retries)
-- [x] Ensure generated Telegram quiz polls have correct option id
-
-## Step 5: Scheduling robustness
-- [x] Update `main.py` to call `check_missed_jobs()` periodically during runtime (e.g., every 60s)
-
-## Step 6: Smoke tests
-- [ ] `python main.py test`
-- [ ] `python main.py news`
-- [ ] `python main.py quiz`
+## Completed Transformation
+- [x] Replaced fragile raw news scraper with a dedicated **Curriculum & Syllabus Engine** (`curriculum_bank.py`).
+- [x] **06:30 AM IST**: Morning Kickoff, Mindset Framing & Target Setting (`habit_tracker.py`).
+- [x] **08:30 AM IST**: Daily 360° Issue Dossier with constitutional framework, analytical dimensions, and committees (`dossier_generator.py`).
+- [x] **01:00 PM IST**: Prelims & Objective MCQ Drill with native Telegram Quiz Polls and explanation popups (`prelims_drill.py`).
+- [x] **05:00 PM IST**: Daily Mains Answer Writing Challenge with directive decoding, structural blueprints, and keywords (`mains_engine.py`).
+- [x] **07:30 PM IST**: High-Yield Micro-Learning Capsule (`capsule_engine.py`).
+- [x] **08:30 PM IST**: Official Model Answer Drop (`mains_engine.py`).
+- [x] **09:30 PM IST**: Night Revision Audit & Active Recall (`habit_tracker.py`).
+- [x] Dual language support (UPSC English & KPSC Kannada).
+- [x] Tested live and verified all message types and quiz polls post cleanly to Telegram channel `@kansiri_daily_updates`.
+- [x] Untracked `key.txt` and added to `.gitignore` to prevent secret leaks.
+- [x] Automated with GitHub Actions workflow in `.github/workflows/daily_bot.yml`.

@@ -1,5 +1,12 @@
 # telegram_poster.py
-# WORKER 5 — Sends everything to Telegram channel
+"""
+Professional Telegram Posting Engine for Aspirant Master Bot.
+Supports:
+- Sending rich HTML-formatted messages with tag-safety fallback
+- Multi-question interactive Quiz Polls with explanations
+- Dual-channel support (Primary English channel & Kannada channel)
+- Automatic length-splitting and error handling
+"""
 
 import asyncio
 import time
@@ -9,33 +16,25 @@ from telegram.constants import ParseMode
 from datetime import datetime
 import html
 
-from config.settings import BOT_TOKEN, CHANNEL_ID, TELEGRAM_MESSAGE_SPLIT_LENGTH, TELEGRAM_DELAY_SECONDS
+from config.settings import BOT_TOKEN, CHANNEL_ID, KAN_BOT_TOKEN, KAN_CHANNEL_ID, TELEGRAM_MESSAGE_SPLIT_LENGTH, TELEGRAM_DELAY_SECONDS
 from config.logger import setup_logger
 
 logger = setup_logger("telegram")
 
 
 class TelegramPoster:
-    """
-    Handles sending messages and quizzes to Telegram channel.
-    
-    What it can do:
-    - Send text messages (news summaries)
-    - Send photos with captions
-    - Send quiz polls (interactive MCQs)
-    - Split long messages automatically
-    """
-    
-    def __init__(self):
-        self.bot = Bot(token=BOT_TOKEN)
-        self.channel = CHANNEL_ID
-    
-    async def send_text(self, text):
-        """Send a text message to the channel"""
+    def __init__(self, bot_token: str = None, channel_id: str = None):
+        self.token = bot_token or BOT_TOKEN
+        self.channel = channel_id or CHANNEL_ID
+
+    def _get_bot(self):
+        return Bot(token=self.token)
+
+    async def send_text(self, text: str, target_channel: str = None) -> bool:
+        """Send formatted text message with HTML parsing and plain-text fallback"""
+        chat_id = target_channel or self.channel
         try:
-            # Telegram has a 4096 character limit per message
             if len(text) > TELEGRAM_MESSAGE_SPLIT_LENGTH:
-                # Split into smaller parts
                 parts = []
                 current = ""
                 for line in text.split('\n'):
@@ -46,139 +45,77 @@ class TelegramPoster:
                         current += '\n' + line if current else line
                 if current:
                     parts.append(current)
-                
+
                 for part in parts:
-                    await self.bot.send_message(
-                        chat_id=self.channel, text=part, parse_mode=ParseMode.HTML
-                    )
-                    await asyncio.sleep(TELEGRAM_DELAY_SECONDS * 2)
+                    await self._send_single_message(chat_id, part)
+                    await asyncio.sleep(1)
             else:
-                await self.bot.send_message(
-                    chat_id=self.channel, text=text, parse_mode=ParseMode.HTML
-                )
-            
-            await asyncio.sleep(TELEGRAM_DELAY_SECONDS * 2)
+                await self._send_single_message(chat_id, text)
+
             return True
-            
         except Exception as e:
             logger.error(f"Send text error: {e}")
             return False
-    
-    async def send_photo_with_caption(self, photo_url, caption):
-        """Send a photo with caption to the channel"""
+
+    async def _send_single_message(self, chat_id: str, text: str):
+        bot = self._get_bot()
         try:
-            if not photo_url:
-                # No photo, just send text
-                return await self.send_text(caption)
-            
-            # Try to send by URL first
-            try:
-                await self.bot.send_photo(
-                    chat_id=self.channel,
-                    photo=photo_url,
-                    caption=caption[:1024],
-                    parse_mode=ParseMode.HTML
-                )
-                await asyncio.sleep(TELEGRAM_DELAY_SECONDS * 2)
-                return True
-            except Exception as url_error:
-                logger.warning(f"Could not send photo by URL: {url_error}")
-            
-            # Download image and send as bytes
-            try:
-                response = requests.get(photo_url, timeout=30)
-                if response.status_code == 200:
-                    await self.bot.send_photo(
-                        chat_id=self.channel,
-                        photo=response.content,
-                        caption=caption[:1024],
-                        parse_mode=ParseMode.HTML
-                    )
-                    await asyncio.sleep(TELEGRAM_DELAY_SECONDS * 2)
-                    return True
-            except Exception as e:
-                logger.warning(f"Could not download image: {e}")
-            
-            # Fallback to text-only
-            return await self.send_text(caption)
-            
-        except Exception as e:
-            logger.error(f"Send photo error: {e}")
-            return await self.send_text(caption)
-    
-    async def send_quiz(self, quiz_data):
-        """Send a quiz poll (interactive) to the channel"""
+            await bot.send_message(
+                chat_id=chat_id,
+                text=text,
+                parse_mode=ParseMode.HTML,
+                disable_web_page_preview=True
+            )
+        except Exception as html_err:
+            logger.warning(f"HTML send failed ({html_err}), retrying without parse_mode...")
+            await bot.send_message(
+                chat_id=chat_id,
+                text=text,
+                disable_web_page_preview=True
+            )
+
+    async def send_quiz(self, quiz_data: dict, target_channel: str = None) -> bool:
+        """Send an interactive Telegram Quiz Poll with correct answer & explanation"""
+        chat_id = target_channel or self.channel
         try:
             question = quiz_data['question'][:300]
-            options = quiz_data['options']
-            
-            await self.bot.send_poll(
-                chat_id=self.channel,
+            options = [opt[:100] for opt in quiz_data['options']][:10]
+            correct_id = quiz_data.get('correct_option_id', 0)
+            explanation = quiz_data.get('explanation', '')[:200]
+            bot = self._get_bot()
+
+            await bot.send_poll(
+                chat_id=chat_id,
                 question=question,
                 options=options,
                 type='quiz',
-                correct_option_id=quiz_data.get('correct_option_id', 0),
-                explanation=quiz_data.get('explanation', '')[:200],
+                correct_option_id=correct_id,
+                explanation=explanation,
                 is_anonymous=True
             )
-            
-            await asyncio.sleep(3)
+            await asyncio.sleep(2)
             return True
-            
         except Exception as e:
-            logger.error(f"Send quiz error: {e}")
+            logger.error(f"Send quiz poll error: {e}")
             return False
-    
-    async def post_news(self, posts):
-        """Post all news messages"""
-        logger.info(f"📤 Sending {len(posts)} news messages...")
+
+    async def send_poll_series(self, polls: list, target_channel: str = None) -> Tuple_Results:
+        chat_id = target_channel or self.channel
         ok = 0
         fail = 0
-        for i, post in enumerate(posts, 1):
-            logger.info(f"   Sending {i}/{len(posts)}...")
-            
-            if isinstance(post, dict):
-                # Post with image support
-                text = post.get('text', '')
-                image_url = post.get('image_url')
-                if image_url:
-                    result = await self.send_photo_with_caption(image_url, text)
-                else:
-                    result = await self.send_text(text)
-            else:
-                # Plain text post
-                result = await self.send_text(post)
-            
-            if result:
+        for i, p in enumerate(polls, 1):
+            logger.info(f"   Posting quiz poll {i}/{len(polls)}...")
+            res = await self.send_quiz(p, target_channel=chat_id)
+            if res:
                 ok += 1
             else:
                 fail += 1
-        logger.info(f"   Done: {ok} sent, {fail} failed")
-        return ok, fail
-    
-    async def post_quiz(self, quiz_posts):
-        """Post all quiz items"""
-        logger.info(f"📤 Sending {len(quiz_posts)} quiz items...")
-        ok = 0
-        fail = 0
-        for i, (ptype, content) in enumerate(quiz_posts, 1):
-            logger.info(f"   Sending {i}/{len(quiz_posts)}...")
-            if ptype == "text":
-                result = await self.send_text(content)
-            elif ptype == "quiz":
-                result = await self.send_quiz(content)
-            else:
-                continue
-            if result:
-                ok += 1
-            else:
-                fail += 1
-        logger.info(f"   Done: {ok} sent, {fail} failed")
+            await asyncio.sleep(2)
         return ok, fail
 
 
 def run_async(coro):
-    """Run async function from normal code"""
+    """Run async coroutine synchronously"""
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     try:
@@ -187,17 +124,4 @@ def run_async(coro):
         loop.close()
 
 
-# Test the bot when running this file directly
-if __name__ == "__main__":
-    print("Testing Telegram bot...")
-    print("Sending a test message to your channel...")
-    
-    poster = TelegramPoster()
-    result = run_async(
-        poster.send_text("🧪 Test message — Bot is working! ✅")
-    )
-    
-    if result:
-        print("✅ SUCCESS! Check your Telegram channel!")
-    else:
-        print("❌ FAILED! Check your BOT_TOKEN and CHANNEL_ID in settings.py")
+Tuple_Results = tuple

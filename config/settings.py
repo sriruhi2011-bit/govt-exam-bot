@@ -10,18 +10,27 @@ import os
 #  REPLACE each PASTE_xxx with your REAL key!
 # ════════════════════════════════════════════════════
 
-BOT_TOKEN = os.environ.get("BOT_TOKEN", "")
-# Example: "7123456789:AAHf-xxxxxxxxxxxxxxxxxxxxxxx"
+# Load local keys from gitignored files if running on local PC
+_base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+for _fname in [".env", "my_keys.txt", "key.txt"]:
+    _fpath = os.path.join(_base, _fname)
+    if os.path.exists(_fpath):
+        try:
+            with open(_fpath, "r", encoding="utf-8") as _f:
+                for _line in _f:
+                    if "=" in _line:
+                        _k, _v = _line.strip().split("=", 1)
+                        _k, _v = _k.strip(), _v.strip().strip('"').strip("'")
+                        if _k and _v and _k not in os.environ:
+                            os.environ[_k] = _v
+        except Exception:
+            pass
 
-CHANNEL_ID = os.environ.get("CHANNEL_ID", "")
-# Example: "@daily_ca_upsc_2025"
+BOT_TOKEN = os.environ.get("BOT_TOKEN", "")
+CHANNEL_ID = os.environ.get("CHANNEL_ID", "@kansiri_daily_updates")
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
-# Example: "AIzaSyxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
-# Example: "gsk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-
 CEREBRAS_API_KEY = os.environ.get("CEREBRAS_API_KEY", "")
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 
@@ -29,11 +38,8 @@ OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 #  KANNADA CHANNEL CONFIGURATION
 # ════════════════════════════════════════════════════
 
-KAN_BOT_TOKEN = os.environ.get("KAN_BOT_TOKEN", "")
-# Example: "7123456789:AAHf-xxxxxxxxxxxxxxxxxxxxxxx"
-
-KAN_CHANNEL_ID = os.environ.get("KAN_CHANNEL_ID", "")
-# Example: "@kannada_news_upsc"
+KAN_BOT_TOKEN = os.environ.get("KAN_BOT_TOKEN", BOT_TOKEN)
+KAN_CHANNEL_ID = os.environ.get("KAN_CHANNEL_ID", CHANNEL_ID)
 
 # ════════════════════════════════════════════════════
 #  CONSTANTS - Magic numbers extracted to named constants
@@ -51,13 +57,22 @@ MAX_RETRIES = 3  # Maximum retry attempts
 
 
 # ════════════════════════════════════════════════════
-#  SCHEDULE
+#  ASPIRANT MASTER SCHEDULE (IST)
 # ════════════════════════════════════════════════════
 
-MORNING_GREETING_TIME = "06:00"         # Morning greeting with motivation
-MORNING_NEWS_TIME = "07:00"          # Morning news posts
-EVENING_QUIZ_TIME = "17:00"          # Quiz notification + quiz posts
-GOOD_NIGHT_TIME = "21:00"            # Good night message (9 PM)
+MORNING_KICKOFF_TIME = "06:30"     # Mindset, Targets, Inspiration
+DAILY_DOSSIER_TIME = "08:30"       # 360° Issue Dossier (Syllabus deep dive)
+PRELIMS_DRILL_TIME = "13:00"       # 3 High-Yield Interactive Quiz Polls
+MAINS_CHALLENGE_TIME = "17:00"     # Mains Question + Blueprint + Keywords
+CAPSULE_TIME = "19:30"             # Micro-learning Flashcard Capsule
+MODEL_ANSWER_TIME = "20:30"        # Comprehensive Model Answer Drop
+NIGHT_AUDIT_TIME = "21:30"         # Active Recall Check + Night Reflection
+
+# Legacy schedule aliases for backwards compatibility
+MORNING_GREETING_TIME = MORNING_KICKOFF_TIME
+MORNING_NEWS_TIME = DAILY_DOSSIER_TIME
+EVENING_QUIZ_TIME = MAINS_CHALLENGE_TIME
+GOOD_NIGHT_TIME = NIGHT_AUDIT_TIME
 
 # ════════════════════════════════════════════════════
 #  LIMITS
