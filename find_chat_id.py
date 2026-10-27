@@ -72,47 +72,56 @@ def main():
         print("   python find_chat_id.py")
         return
 
-    # Step 2: If authorized, retrieve all chats
-    print("\nFetching connected chats, groups, and channels...")
-    url = f"https://api.green-api.com/waInstance{instance_id}/getChats/{token}"
-
+    # Step 2: If authorized, retrieve chats and contacts
+    print("\nFetching connected groups and contacts...")
+    
+    chats = []
+    # Try getChats first
     try:
-        res = requests.get(url, timeout=15)
-        if res.status_code != 200:
-            print(f"Error ({res.status_code}): {res.text}")
-            return
+        url_chats = f"https://api.green-api.com/waInstance{instance_id}/getChats/{token}"
+        c_res = requests.get(url_chats, timeout=15)
+        if c_res.status_code == 200 and isinstance(c_res.json(), list):
+            chats.extend(c_res.json())
+    except:
+        pass
 
-        chats = res.json()
-        if not chats:
-            print("\nNo chats found yet in your active history.")
-            print("💡 Tip: Send or open a message in your Channel or Group on your phone, then run this again!")
-            return
+    # Try getContacts
+    try:
+        url_contacts = f"https://api.green-api.com/waInstance{instance_id}/getContacts/{token}"
+        k_res = requests.get(url_contacts, timeout=15)
+        if k_res.status_code == 200 and isinstance(k_res.json(), list):
+            for c in k_res.json():
+                if c.get("id") and not any(x.get("id") == c.get("id") for x in chats):
+                    chats.append(c)
+    except:
+        pass
 
+    # Filter for groups and channels (and named chats)
+    relevant = []
+    for c in chats:
+        cid = c.get("id", "")
+        cname = c.get("name") or c.get("contactName") or ""
+        if "@newsletter" in cid:
+            relevant.append((1, "📢 CHANNEL", cname or "WhatsApp Channel", cid))
+        elif "@g.us" in cid:
+            relevant.append((2, "👥 GROUP", cname or "Unnamed Group", cid))
+
+    if relevant:
+        relevant.sort(key=lambda x: (x[0], x[2]))
         print("\n" + "=" * 65)
-        print("   FOUND WHATSAPP CHATS / GROUPS / CHANNELS")
+        print("   FOUND WHATSAPP GROUPS & CHANNELS")
         print("=" * 65)
-
-        for i, c in enumerate(chats, 1):
-            chat_id = c.get("id", "")
-            name = c.get("name") or "Unnamed"
-            chat_type = c.get("type", "chat")
-
-            if "@newsletter" in chat_id:
-                category = "📢 CHANNEL"
-            elif "@g.us" in chat_id:
-                category = "👥 GROUP"
-            elif "@c.us" in chat_id:
-                category = "👤 CONTACT"
-            else:
-                category = f"💬 {chat_type.upper()}"
-
-            print(f"\n{i}. [{category}] {name}")
-            print(f"   Chat ID: {chat_id}")
+        for i, (_, cat, name, cid) in enumerate(relevant, 1):
+            print(f"\n{i}. [{cat}] {name}")
+            print(f"   Chat ID: {cid}")
 
         print("\n" + "=" * 65)
-        print("👉 Copy the Chat ID above and set it in 'my_keys.txt':")
+        print("👉 Copy your target Chat ID and set it in 'my_keys.txt':")
         print("   WHATSAPP_CHAT_ID=<your_chat_id>")
         print("   WHATSAPP_ENABLED=true")
+        print("=" * 65)
+    else:
+        print("\nNo groups or channels detected yet.")
         print("=" * 65)
 
     except Exception as e:
