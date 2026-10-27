@@ -43,6 +43,15 @@ KAN_BOT_TOKEN = os.environ.get("KAN_BOT_TOKEN", BOT_TOKEN)
 KAN_CHANNEL_ID = os.environ.get("KAN_CHANNEL_ID", CHANNEL_ID)
 
 # ════════════════════════════════════════════════════
+#  WHATSAPP CHANNEL CONFIGURATION (Optional - Green API)
+# ════════════════════════════════════════════════════
+
+WHATSAPP_ENABLED = os.environ.get("WHATSAPP_ENABLED", "false").lower() == "true"
+WHATSAPP_INSTANCE_ID = os.environ.get("WHATSAPP_INSTANCE_ID", "")
+WHATSAPP_API_TOKEN = os.environ.get("WHATSAPP_API_TOKEN", "")
+WHATSAPP_CHAT_ID = os.environ.get("WHATSAPP_CHAT_ID", "")  # e.g., 120363xxx@newsletter or group ID
+
+# ════════════════════════════════════════════════════
 #  CONSTANTS - Magic numbers extracted to named constants
 # ════════════════════════════════════════════════════
 

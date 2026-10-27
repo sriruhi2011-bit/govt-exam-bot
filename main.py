@@ -33,6 +33,7 @@ from capsule_engine import CapsuleEngine
 from habit_tracker import HabitTracker
 from curriculum_bank import get_daily_module
 from telegram_poster import TelegramPoster, run_async
+from whatsapp_poster import WhatsAppPoster
 from config.settings import (
     DATA_DIR,
     MORNING_KICKOFF_TIME,
@@ -118,6 +119,7 @@ def job_morning_kickoff():
 
     tracker = HabitTracker()
     poster = TelegramPoster()
+    wa = WhatsAppPoster()
     module = get_daily_module()
 
     # Generate English and Kannada Kickoffs
@@ -125,13 +127,17 @@ def job_morning_kickoff():
     kn_msg = tracker.generate_morning_kickoff(module, is_kannada=True)
 
     # Post to primary channel
-    print("   Posting English Kickoff...")
+    print("   Posting English Kickoff to Telegram...")
     run_async(poster.send_text(en_msg, target_channel=CHANNEL_ID))
 
     # If Kannada channel is distinct, post Kannada version
     if KAN_CHANNEL_ID and KAN_CHANNEL_ID != CHANNEL_ID:
         print("   Posting Kannada Kickoff to KanSiri channel...")
         run_async(poster.send_text(kn_msg, target_channel=KAN_CHANNEL_ID))
+
+    if wa.is_enabled:
+        print("   Broadcasting Morning Kickoff to WhatsApp...")
+        wa.send_text(en_msg)
 
     mark_done('morning_kickoff')
     print("   DONE: Morning kickoff posted successfully!")
@@ -149,6 +155,7 @@ def job_daily_dossier():
 
     dossier_gen = DossierGenerator()
     poster = TelegramPoster()
+    wa = WhatsAppPoster()
     module = get_daily_module()
 
     en_dossier = dossier_gen.generate_english_dossier(module)
@@ -160,6 +167,10 @@ def job_daily_dossier():
     if KAN_CHANNEL_ID and KAN_CHANNEL_ID != CHANNEL_ID:
         print("   Posting Kannada Dossier to KanSiri channel...")
         run_async(poster.send_text(kn_dossier, target_channel=KAN_CHANNEL_ID))
+
+    if wa.is_enabled:
+        print("   Broadcasting Daily Dossier to WhatsApp...")
+        wa.send_text(en_dossier)
 
     mark_done('daily_dossier')
     print("   DONE: Daily 360° Dossier posted successfully!")
@@ -177,6 +188,7 @@ def job_prelims_drill():
 
     drill = PrelimsDrillEngine()
     poster = TelegramPoster()
+    wa = WhatsAppPoster()
     module = get_daily_module()
 
     intro_text = drill.generate_drill_intro(module, is_kannada=False)
@@ -192,6 +204,12 @@ def job_prelims_drill():
         kn_intro = drill.generate_drill_intro(module, is_kannada=True)
         run_async(poster.send_text(kn_intro, target_channel=KAN_CHANNEL_ID))
         run_async(poster.send_poll_series(polls, target_channel=KAN_CHANNEL_ID))
+
+    if wa.is_enabled:
+        print("   Broadcasting Prelims Drill to WhatsApp...")
+        wa.send_text(intro_text)
+        for p in polls:
+            wa.send_quiz_poll(p)
 
     mark_done('prelims_drill')
     print("   DONE: Prelims Drill posted successfully!")
@@ -209,6 +227,7 @@ def job_mains_challenge():
 
     mains = MainsEngine()
     poster = TelegramPoster()
+    wa = WhatsAppPoster()
     module = get_daily_module()
 
     en_q = mains.generate_question_drop(module, is_kannada=False)
@@ -220,6 +239,10 @@ def job_mains_challenge():
     if KAN_CHANNEL_ID and KAN_CHANNEL_ID != CHANNEL_ID:
         print("   Posting Kannada Mains Question...")
         run_async(poster.send_text(kn_q, target_channel=KAN_CHANNEL_ID))
+
+    if wa.is_enabled:
+        print("   Broadcasting Mains Challenge to WhatsApp...")
+        wa.send_text(en_q)
 
     mark_done('mains_challenge')
     print("   DONE: Daily Mains Challenge posted successfully!")
@@ -237,6 +260,7 @@ def job_capsule():
 
     capsule_gen = CapsuleEngine()
     poster = TelegramPoster()
+    wa = WhatsAppPoster()
     module = get_daily_module()
 
     en_cap = capsule_gen.generate_capsule(module, is_kannada=False)
@@ -248,6 +272,10 @@ def job_capsule():
     if KAN_CHANNEL_ID and KAN_CHANNEL_ID != CHANNEL_ID:
         print("   Posting Kannada Revision Capsule...")
         run_async(poster.send_text(kn_cap, target_channel=KAN_CHANNEL_ID))
+
+    if wa.is_enabled:
+        print("   Broadcasting Capsule to WhatsApp...")
+        wa.send_text(en_cap)
 
     mark_done('capsule')
     print("   DONE: High-Yield Capsule posted successfully!")
@@ -265,6 +293,7 @@ def job_model_answer():
 
     mains = MainsEngine()
     poster = TelegramPoster()
+    wa = WhatsAppPoster()
     module = get_daily_module()
 
     en_ans = mains.generate_model_answer_drop(module, is_kannada=False)
@@ -276,6 +305,10 @@ def job_model_answer():
     if KAN_CHANNEL_ID and KAN_CHANNEL_ID != CHANNEL_ID:
         print("   Posting Kannada Model Answer...")
         run_async(poster.send_text(kn_ans, target_channel=KAN_CHANNEL_ID))
+
+    if wa.is_enabled:
+        print("   Broadcasting Model Answer to WhatsApp...")
+        wa.send_text(en_ans)
 
     mark_done('model_answer')
     print("   DONE: Official Model Answer posted successfully!")
@@ -293,6 +326,7 @@ def job_night_audit():
 
     tracker = HabitTracker()
     poster = TelegramPoster()
+    wa = WhatsAppPoster()
     module = get_daily_module()
 
     en_night = tracker.generate_night_audit(module, is_kannada=False)
@@ -304,6 +338,10 @@ def job_night_audit():
     if KAN_CHANNEL_ID and KAN_CHANNEL_ID != CHANNEL_ID:
         print("   Posting Kannada Night Audit...")
         run_async(poster.send_text(kn_night, target_channel=KAN_CHANNEL_ID))
+
+    if wa.is_enabled:
+        print("   Broadcasting Night Audit to WhatsApp...")
+        wa.send_text(en_night)
 
     mark_done('night_audit')
     print("   DONE: Night Audit posted successfully!")
