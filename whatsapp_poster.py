@@ -14,6 +14,7 @@ Features:
 
 import re
 import html
+import time
 import requests
 from typing import Dict, Any, List
 
@@ -32,9 +33,12 @@ class WhatsAppPoster:
     def __init__(self, instance_id: str = None, api_token: str = None, chat_id: str = None):
         self.instance_id = instance_id or WHATSAPP_INSTANCE_ID
         self.api_token = api_token or WHATSAPP_API_TOKEN
-        self.chat_id = chat_id or WHATSAPP_CHAT_ID
+        raw_ids = chat_id or WHATSAPP_CHAT_ID or ""
+        # Support single or multiple comma-separated chat/group IDs
+        self.chat_ids = [c.strip() for c in raw_ids.split(",") if c.strip()]
+        self.chat_id = self.chat_ids[0] if self.chat_ids else ""
         self.is_enabled = bool(
-            WHATSAPP_ENABLED and self.instance_id and self.api_token and self.chat_id
+            WHATSAPP_ENABLED and self.instance_id and self.api_token and self.chat_ids
         )
 
     def html_to_whatsapp(self, text: str) -> str:
@@ -85,32 +89,44 @@ class WhatsAppPoster:
         return out.strip()
 
     def send_text(self, text: str, target_chat: str = None) -> bool:
-        """Send formatted text message to WhatsApp Channel or Group"""
+        """Send formatted text message to one or multiple WhatsApp Channels / Groups"""
         if not self.is_enabled:
             logger.debug("WhatsApp is not configured/enabled. Skipping.")
             return False
 
-        chat_id = target_chat or self.chat_id
-        wa_text = self.html_to_whatsapp(text)
+        if target_chat:
+            targets = [t.strip() for t in target_chat.split(",") if t.strip()]
+        else:
+            targets = self.chat_ids
 
-        url = f"https://api.green-api.com/waInstance{self.instance_id}/sendMessage/{self.api_token}"
-        payload = {
-            "chatId": chat_id,
-            "message": wa_text
-        }
-
-        try:
-            logger.info(f"📤 Sending message to WhatsApp ({chat_id[:15]}...)...")
-            res = requests.post(url, json=payload, timeout=15)
-            if res.status_code == 200:
-                logger.info("   WhatsApp message sent successfully!")
-                return True
-            else:
-                logger.error(f"   WhatsApp error {res.status_code}: {res.text[:200]}")
-                return False
-        except Exception as e:
-            logger.error(f"   WhatsApp send exception: {e}")
+        if not targets:
             return False
+
+        wa_text = self.html_to_whatsapp(text)
+        url = f"https://api.green-api.com/waInstance{self.instance_id}/sendMessage/{self.api_token}"
+
+        success_count = 0
+        for i, cid in enumerate(targets):
+            payload = {
+                "chatId": cid,
+                "message": wa_text
+            }
+            try:
+                logger.info(f"📤 Broadcasting to WhatsApp ({cid[:18]}... [{i+1}/{len(targets)}])...")
+                res = requests.post(url, json=payload, timeout=15)
+                if res.status_code == 200:
+                    logger.info(f"   WhatsApp message sent to {cid}!")
+                    success_count += 1
+                else:
+                    logger.error(f"   WhatsApp error {res.status_code} for {cid}: {res.text[:200]}")
+            except Exception as e:
+                logger.error(f"   WhatsApp send exception for {cid}: {e}")
+
+            # Small 1-second delay between multiple groups to stay courteous
+            if i < len(targets) - 1:
+                time.sleep(1)
+
+        return success_count > 0
 
     def send_quiz_poll(self, quiz_data: Dict[str, Any], target_chat: str = None) -> bool:
         """
