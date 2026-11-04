@@ -92,7 +92,18 @@ Dr. B.R. Ambedkar envisioned the Governor as an ornament of constitutional propr
                     "1, 2 and 3"
                 ],
                 "correct_option_id": 1,
-                "explanation": "Statements 1 and 3 are correct. Under Art 200, once repassed, the Governor cannot withhold assent. A Money Bill cannot be returned for reconsideration. Statement 2 is incorrect because Article 200 uses 'as soon as possible' and provides no fixed 30-day limit."
+                "explanation": "Statements 1 and 3 are correct. Under Art 200, once repassed, the Governor cannot withhold assent. A Money Bill cannot be returned for reconsideration. Statement 2 is incorrect because Article 200 uses 'as soon as possible' and provides no fixed 30-day limit.",
+                "bilingual_poll": {
+                    "question": "Under Art 200, which is correct regarding Governor's assent to Bills?\n200ನೇ ವಿಧಿಯಡಿ ಮಸೂದೆಗಳಿಗೆ ರಾಜ್ಯಪಾಲರ ಒಪ್ಪಿಗೆ ಕುರಿತು ಯಾವುದು ಸರಿಯಾಗಿದೆ?",
+                    "options": [
+                        "Must assent if repassed | ಪುನಃ ಅಂಗೀಕರಿಸಿದರೆ ಒಪ್ಪಿಗೆ ಕಡ್ಡಾಯ",
+                        "Strict 30-day deadline | 30 ದಿನಗಳ ಕಡ್ಡಾಯ ಕಾಲಮಿತಿ",
+                        "Can return Money Bills | ಹಣಕಾಸು ಮಸೂದೆ ಮರಳಿಸಬಹುದು",
+                        "None of the above | ಮೇಲಿನ ಯಾವುದೂ ಅಲ್ಲ"
+                    ],
+                    "correct_option_id": 0,
+                    "explanation": "Under Art 200, repassed bills require assent.\n200ನೇ ವಿಧಿಯಂತೆ ಶಾಸನಸಭೆ ಪುನಃ ಅಂಗೀಕರಿಸಿದರೆ ರಾಜ್ಯಪಾಲರು ಒಪ್ಪಿಗೆ ನೀಡಲೇಬೇಕು."
+                }
             },
             {
                 "question": "Which of the following landmark judgments of the Supreme Court of India is primarily associated with laying down guidelines to prevent the misuse of Article 356 (President's Rule)?",
@@ -103,7 +114,18 @@ Dr. B.R. Ambedkar envisioned the Governor as an ornament of constitutional propr
                     "Navtej Singh Johar v. Union of India (2018)"
                 ],
                 "correct_option_id": 1,
-                "explanation": "S.R. Bommai v. Union of India (1994) is the historic ruling that established that proclamation of Article 356 is subject to judicial review and floor test is the only constitutional way to test majority."
+                "explanation": "S.R. Bommai v. Union of India (1994) is the historic ruling that established that proclamation of Article 356 is subject to judicial review and floor test is the only constitutional way to test majority.",
+                "bilingual_poll": {
+                    "question": "Which SC judgment laid down guidelines to prevent misuse of Article 356?\n356ನೇ ವಿಧಿಯ ದುರುಪಯೋಗ ತಡೆಯಲು ಮಾರ್ಗಸೂಚಿ ನೀಡಿದ ಸುಪ್ರೀಂ ಕೋರ್ಟ್ ತೀರ್ಪು ಯಾವುದು?",
+                    "options": [
+                        "Kesavananda Bharati (1973) | ಕೇಶವಾನಂದ ಭಾರತಿ",
+                        "S.R. Bommai case (1994) | ಎಸ್.ಆರ್. ಬೊಮ್ಮಾಯಿ ತೀರ್ಪು",
+                        "Minerva Mills (1980) | ಮಿನರ್ವಾ ಮಿಲ್ಸ್ ಕೇಸ್",
+                        "Navtej Johar (2018) | ನವತೇಜ್ ಜೋಹರ್ ಕೇಸ್"
+                    ],
+                    "correct_option_id": 1,
+                    "explanation": "S.R. Bommai (1994) made Art 356 subject to judicial review.\nಎಸ್.ಆರ್. ಬೊಮ್ಮಾಯಿ ತೀರ್ಪು 356ನೇ ವಿಧಿಯನ್ನು ನ್ಯಾಯಾಂಗ ಪರಿಶೀಲನೆಗೆ ಒಳಪಡಿಸಿತು."
+                }
             },
             {
                 "question": "Which Commission recommended that the appointment of the Governor should be made in consultation with the Chief Minister of the State and that active politicians should not be appointed?",
@@ -114,7 +136,18 @@ Dr. B.R. Ambedkar envisioned the Governor as an ornament of constitutional propr
                     "Nanavati Commission"
                 ],
                 "correct_option_id": 1,
-                "explanation": "The Sarkaria Commission on Centre-State Relations (1988) recommended that the Governor should be an eminent person from outside the state, appointed in consultation with the Chief Minister."
+                "explanation": "The Sarkaria Commission on Centre-State Relations (1988) recommended that the Governor should be an eminent person from outside the state, appointed in consultation with the Chief Minister.",
+                "bilingual_poll": {
+                    "question": "Which Commission recommended consulting the CM when appointing Governors?\nರಾಜ್ಯಪಾಲರ ನೇಮಕಕ್ಕೆ ಮುಖ್ಯಮಂತ್ರಿಗಳ ಸಮಾಲೋಚನೆ ಶಿಫಾರಸು ಮಾಡಿದ ಆಯೋಗ ಯಾವುದು?",
+                    "options": [
+                        "Kothari Commission | ಕೊಠಾರಿ ಆಯೋಗ",
+                        "Sarkaria Commission | ಸರ್ಕಾರಿಯಾ ಆಯೋಗ",
+                        "Balwant Rai Mehta | ಬಲ್ವಂತ್ ರಾಯ್ ಮೆಹ್ತಾ",
+                        "Nanavati Commission | ನಾನಾವತಿ ಆಯೋಗ"
+                    ],
+                    "correct_option_id": 1,
+                    "explanation": "Sarkaria Commission (1988) recommended CM consultation.\nಸರ್ಕಾರಿಯಾ ಆಯೋಗವು (1988) ರಾಜ್ಯಪಾಲರ ನೇಮಕಕ್ಕೆ ಸಿಎಂ ಸಮಾಲೋಚನೆಗೆ ಶಿಫಾರಸು ಮಾಡಿತು."
+                }
             }
         ],
         "capsule": {
@@ -198,7 +231,18 @@ Fiscal federalism requires mutual trust. The 16th Finance Commission under Dr. A
                     "1, 2 and 3"
                 ],
                 "correct_option_id": 1,
-                "explanation": "Statements 1 and 3 are correct. Under Art 280, the President constitutes the FC, and its recommendations are advisory. Statement 2 is false: under Article 271, cesses and surcharges are excluded from the divisible pool."
+                "explanation": "Statements 1 and 3 are correct. Under Art 280, the President constitutes the FC, and its recommendations are advisory. Statement 2 is false: under Article 271, cesses and surcharges are excluded from the divisible pool.",
+                "bilingual_poll": {
+                    "question": "Which Article of the Constitution provides for the Finance Commission?\nಸಂವಿಧಾನದ ಯಾವ ವಿಧಿಯು ಹಣಕಾಸು ಆಯೋಗದ ರಚನೆಗೆ ಅವಕಾಶ ಕಲ್ಪಿಸುತ್ತದೆ?",
+                    "options": [
+                        "Article 268 | 268ನೇ ವಿಧಿ",
+                        "Article 280 | 280ನೇ ವಿಧಿ",
+                        "Article 300 | 300ನೇ ವಿಧಿ",
+                        "Article 360 | 360ನೇ ವಿಧಿ"
+                    ],
+                    "correct_option_id": 1,
+                    "explanation": "Article 280 empowers President to constitute Finance Commission.\n280ನೇ ವಿಧಿಯು ರಾಷ್ಟ್ರಪತಿಗಳಿಗೆ ಹಣಕಾಸು ಆಯೋಗ ರಚಿಸುವ ಅಧಿಕಾರ ನೀಡುತ್ತದೆ."
+                }
             },
             {
                 "question": "Who has been appointed as the Chairman of the 16th Finance Commission of India?",
@@ -209,7 +253,18 @@ Fiscal federalism requires mutual trust. The 16th Finance Commission under Dr. A
                     "Dr. C. Rangarajan"
                 ],
                 "correct_option_id": 2,
-                "explanation": "Dr. Arvind Panagariya (former Vice-Chairman of NITI Aayog) is the Chairman of the 16th Finance Commission. N.K. Singh headed the 15th FC."
+                "explanation": "Dr. Arvind Panagariya (former Vice-Chairman of NITI Aayog) is the Chairman of the 16th Finance Commission. N.K. Singh headed the 15th FC.",
+                "bilingual_poll": {
+                    "question": "Who is the Chairman of the 16th Finance Commission of India?\nಭಾರತದ 16ನೇ ಹಣಕಾಸು ಆಯೋಗದ ಅಧ್ಯಕ್ಷರು ಯಾರು?",
+                    "options": [
+                        "Dr. N.K. Singh | ಡಾ. ಎನ್.ಕೆ. ಸಿಂಗ್",
+                        "Dr. Y.V. Reddy | ಡಾ. ವೈ.ವಿ. ರೆಡ್ಡಿ",
+                        "Dr. Arvind Panagariya | ಡಾ. ಅರವಿಂದ್ ಪನಗಾರಿಯಾ",
+                        "Dr. C. Rangarajan | ಡಾ. ಸಿ. ರಂಗರಾಜನ್"
+                    ],
+                    "correct_option_id": 2,
+                    "explanation": "Dr. Arvind Panagariya heads 16th FC; N.K. Singh led 15th FC.\n16ನೇ ಹಣಕಾಸು ಆಯೋಗದ ಅಧ್ಯಕ್ಷರು ಡಾ. ಅರವಿಂದ್ ಪನಗಾರಿಯಾ; 15ನೇ ಆಯೋಗಕ್ಕೆ ಎನ್.ಕೆ. ಸಿಂಗ್."
+                }
             },
             {
                 "question": "Which of the following criteria carried the highest weightage in the horizontal devolution formula of the 15th Finance Commission?",
@@ -220,7 +275,18 @@ Fiscal federalism requires mutual trust. The 16th Finance Commission under Dr. A
                     "Tax and Fiscal Effort"
                 ],
                 "correct_option_id": 1,
-                "explanation": "Income Distance carried the highest weightage of 45% in the 15th Finance Commission formula, followed by Area (15%) and Population 2011 (15%)."
+                "explanation": "Income Distance carried the highest weightage of 45% in the 15th Finance Commission formula, followed by Area (15%) and Population 2011 (15%).",
+                "bilingual_poll": {
+                    "question": "Which criterion had the highest weightage in 15th Finance Commission?\n15ನೇ ಹಣಕಾಸು ಆಯೋಗದ ಸೂತ್ರದಲ್ಲಿ ಗರಿಷ್ಠ ಪ್ರಾಮುಖ್ಯತೆ ಹೊಂದಿದ್ದ ಮಾನದಂಡ ಯಾವುದು?",
+                    "options": [
+                        "Demographic Effort | ಜನಸಂಖ್ಯಾ ಸಾಧನೆ",
+                        "Income Distance (45%) | ಆದಾಯ ಅಂತರ (45%)",
+                        "Forest & Ecology | ಅರಣ್ಯ ಮತ್ತು ಪರಿಸರ",
+                        "Area | ವಿಸ್ತೀರ್ಣ"
+                    ],
+                    "correct_option_id": 1,
+                    "explanation": "Income distance had 45% weightage in 15th Finance Commission.\n15ನೇ ಹಣಕಾಸು ಆಯೋಗದ ಸೂತ್ರದಲ್ಲಿ ಆದಾಯ ಅಂತರಕ್ಕೆ ಅತಿ ಹೆಚ್ಚು (45%) ತೂಕವಿತ್ತು."
+                }
             }
         ],
         "capsule": {
@@ -310,7 +376,18 @@ Ecological security cannot be traded for short-term commercial growth. Adopting 
                     "1, 2 and 3"
                 ],
                 "correct_option_id": 1,
-                "explanation": "Statements 1 and 3 are correct. The Western Ghats cover 6 states (Gujarat, Maharashtra, Goa, Karnataka, Kerala, Tamil Nadu) and Shola forests are tropical montane forests. Statement 2 is incorrect because the 37% recommendation was made by the Kasturirangan Committee, whereas Gadgil recommended covering the entire Ghats across 3 zones."
+                "explanation": "Statements 1 and 3 are correct. The Western Ghats cover 6 states (Gujarat, Maharashtra, Goa, Karnataka, Kerala, Tamil Nadu) and Shola forests are tropical montane forests. Statement 2 is incorrect because the 37% recommendation was made by the Kasturirangan Committee, whereas Gadgil recommended covering the entire Ghats across 3 zones.",
+                "bilingual_poll": {
+                    "question": "Across how many Indian states do the Western Ghats spread?\nಪಶ್ಚಿಮ ಘಟ್ಟಗಳು ಭಾರತದ ಎಷ್ಟು ರಾಜ್ಯಗಳಲ್ಲಿ ವಿಸ್ತರಿಸಿವೆ?",
+                    "options": [
+                        "4 States | 4 ರಾಜ್ಯಗಳು",
+                        "5 States | 5 ರಾಜ್ಯಗಳು",
+                        "6 States | 6 ರಾಜ್ಯಗಳು",
+                        "7 States | 7 ರಾಜ್ಯಗಳು"
+                    ],
+                    "correct_option_id": 2,
+                    "explanation": "Western Ghats spread across 6 states: GJ, MH, GA, KA, KL, TN.\nಪಶ್ಚಿಮ ಘಟ್ಟಗಳು 6 ರಾಜ್ಯಗಳಲ್ಲಿ (ಗುಜರಾತ್, ಮಹಾರಾಷ್ಟ್ರ, ಗೋವಾ, ಕರ್ನಾಟಕ, ಕೇರಳ, ತಮಿಳುನಾಡು) ಹರಡಿವೆ."
+                }
             },
             {
                 "question": "Which among the following rivers does NOT originate in the Western Ghats?",
@@ -321,7 +398,18 @@ Ecological security cannot be traded for short-term commercial growth. Adopting 
                     "Netravati"
                 ],
                 "correct_option_id": 2,
-                "explanation": "Narmada originates from the Amarkantak plateau in Madhya Pradesh (Maikal range), not in the Western Ghats. Godavari (Trimbak), Cauvery (Talakaveri), and Netravati (Kudremukh) originate in the Western Ghats."
+                "explanation": "Narmada originates from the Amarkantak plateau in Madhya Pradesh (Maikal range), not in the Western Ghats. Godavari (Trimbak), Cauvery (Talakaveri), and Netravati (Kudremukh) originate in the Western Ghats.",
+                "bilingual_poll": {
+                    "question": "Which of the following rivers does NOT originate in the Western Ghats?\nಕೆಳಗಿನ ಯಾವ ನದಿಯು ಪಶ್ಚಿಮ ಘಟ್ಟಗಳಲ್ಲಿ ಉಗಮಿಸುವುದಿಲ್ಲ?",
+                    "options": [
+                        "Godavari | ಗೋದಾವರಿ",
+                        "Cauvery | ಕಾವೇರಿ",
+                        "Narmada | ನರ್ಮದಾ",
+                        "Netravati | ನೇತ್ರಾವತಿ"
+                    ],
+                    "correct_option_id": 2,
+                    "explanation": "Narmada originates from Amarkantak, MP (Maikal range).\nನರ್ಮದಾ ನದಿಯು ಮಧ್ಯಪ್ರದೇಶದ ಅಮರಕಂಟಕದಲ್ಲಿ ಉಗಮಿಸುತ್ತದೆ, ಪಶ್ಚಿಮ ಘಟ್ಟದಲ್ಲಲ್ಲ."
+                }
             },
             {
                 "question": "Under which statutory legislation are Ecologically Sensitive Areas (ESAs) notified in India?",
@@ -332,7 +420,18 @@ Ecological security cannot be traded for short-term commercial growth. Adopting 
                     "Biological Diversity Act, 2002"
                 ],
                 "correct_option_id": 2,
-                "explanation": "Ecologically Sensitive Areas (ESAs) and Eco-Sensitive Zones (ESZs) are notified under Section 3 of the Environment (Protection) Act, 1986."
+                "explanation": "Ecologically Sensitive Areas (ESAs) and Eco-Sensitive Zones (ESZs) are notified under Section 3 of the Environment (Protection) Act, 1986.",
+                "bilingual_poll": {
+                    "question": "Under which Act are Ecologically Sensitive Areas (ESAs) notified?\nಪರಿಸರ ಸೂಕ್ಷ್ಮ ಪ್ರದೇಶಗಳನ್ನು (ESA) ಯಾವ ಕಾಯ್ದೆಯಡಿ ಅಧಿಸೂಚಿಸಲಾಗುತ್ತದೆ?",
+                    "options": [
+                        "Wildlife Act 1972 | ವನ್ಯಜೀವಿ ಕಾಯ್ದೆ 1972",
+                        "Forest Act 1980 | ಅರಣ್ಯ ಸಂರಕ್ಷಣಾ ಕಾಯ್ದೆ 1980",
+                        "Environment Act 1986 | ಪರಿಸರ ಸಂರಕ್ಷಣಾ ಕಾಯ್ದೆ 1986",
+                        "Bio Diversity Act 2002 | ಜೀವವೈವಿಧ್ಯ ಕಾಯ್ದೆ 2002"
+                    ],
+                    "correct_option_id": 2,
+                    "explanation": "ESAs are notified under Section 3 of Environment Protection Act 1986.\n1986ರ ಪರಿಸರ ಸಂರಕ್ಷಣಾ ಕಾಯ್ದೆಯ 3ನೇ ಸೆಕ್ಷನ್ ಅಡಿಯಲ್ಲಿ ESA ಅಧಿಸೂಚನೆ ಹೊರಡಿಸಲಾಗುತ್ತದೆ."
+                }
             }
         ],
         "capsule": {
@@ -409,7 +508,18 @@ Following the Vijay Bhaskar Commission (KARC-2) recommendations, Karnataka shoul
                     "2015"
                 ],
                 "correct_option_id": 2,
-                "explanation": "The Karnataka Guarantee of Services to Citizens Act (Sakala) was passed unanimously by the Karnataka Legislature in December 2011 and implemented across the state in 2012."
+                "explanation": "The Karnataka Guarantee of Services to Citizens Act (Sakala) was passed unanimously by the Karnataka Legislature in December 2011 and implemented across the state in 2012.",
+                "bilingual_poll": {
+                    "question": "In which year was the Karnataka Sakala Services Act enacted?\nಕರ್ನಾಟಕದ ಸಕಾಲ ಸೇವೆಗಳ ಖಾತರಿ ಕಾಯ್ದೆಯನ್ನು ಯಾವ ವರ್ಷದಲ್ಲಿ ಜಾರಿಗೊಳಿಸಲಾಯಿತು?",
+                    "options": [
+                        "2005 | 2005 ರಲ್ಲಿ",
+                        "2009 | 2009 ರಲ್ಲಿ",
+                        "2011 | 2011 ರಲ್ಲಿ",
+                        "2015 | 2015 ರಲ್ಲಿ"
+                    ],
+                    "correct_option_id": 2,
+                    "explanation": "Sakala Act was enacted in 2011 and launched state-wide in 2012.\nಸಕಾಲ ಕಾಯ್ದೆಯನ್ನು 2011 ರಲ್ಲಿ ಅಂಗೀಕರಿಸಿ 2012 ರಲ್ಲಿ ರಾಜ್ಯಾದ್ಯಂತ ಜಾರಿಗೊಳಿಸಲಾಯಿತು."
+                }
             },
             {
                 "question": "The 'Sevottam' model, developed by DARPG in India, is an assessment framework for:",
@@ -420,7 +530,18 @@ Following the Vijay Bhaskar Commission (KARC-2) recommendations, Karnataka shoul
                     "Environmental impact assessment"
                 ],
                 "correct_option_id": 1,
-                "explanation": "Sevottam (Service + Uttam) is a quality management framework developed by DARPG to assess and enhance the quality of public service delivery, implementation of Citizen's Charters, and grievance redressal mechanisms."
+                "explanation": "Sevottam (Service + Uttam) is a quality management framework developed by DARPG to assess and enhance the quality of public service delivery, implementation of Citizen's Charters, and grievance redressal mechanisms.",
+                "bilingual_poll": {
+                    "question": "The 'Sevottam' model developed by DARPG is an assessment for:\nDARPG ಅಭಿವೃದ್ಧಿಪಡಿಸಿದ 'ಸೇವೋತ್ತಮ್' ಮಾದರಿಯು ಯಾವುದರ ಮೌಲ್ಯಮಾಪನವಾಗಿದೆ?",
+                    "options": [
+                        "Public procurement | ಸಾರ್ವಜನಿಕ ಸಂಗ್ರಹಣೆ",
+                        "Service delivery | ಸಾರ್ವಜನಿಕ ಸೇವಾ ವಿತರಣೆ",
+                        "Direct taxes | ನೇರ ತೆರಿಗೆ ಸರಳೀಕರಣ",
+                        "Forest surveys | ಅರಣ್ಯ ಸಮೀಕ್ಷೆ"
+                    ],
+                    "correct_option_id": 1,
+                    "explanation": "Sevottam is a framework for public service delivery and charters.\nಸೇವೋತ್ತಮ್ ಸಾರ್ವಜನಿಕ ಸೇವಾ ವಿತರಣೆ ಮತ್ತು ನಾಗರಿಕ ಸನ್ನದುಗಳ ಮೌಲ್ಯಮಾಪನ ಮಾದರಿ."
+                }
             },
             {
                 "question": "Which Committee/Commission in Karnataka recently submitted comprehensive recommendations for administrative rationalization, civil service reforms, and reducing citizen paperwork?",
@@ -431,7 +552,18 @@ Following the Vijay Bhaskar Commission (KARC-2) recommendations, Karnataka shoul
                     "K. Kasturirangan Task Force"
                 ],
                 "correct_option_id": 0,
-                "explanation": "The Karnataka Administrative Reforms Commission-2 (KARC-2), headed by former Chief Secretary T.M. Vijay Bhaskar, submitted extensive reports recommending reduction of redundant forms, cadre rationalization, and citizen-friendly digital delivery."
+                "explanation": "The Karnataka Administrative Reforms Commission-2 (KARC-2), headed by former Chief Secretary T.M. Vijay Bhaskar, submitted extensive reports recommending reduction of redundant forms, cadre rationalization, and citizen-friendly digital delivery.",
+                "bilingual_poll": {
+                    "question": "Who headed Karnataka's 2nd Administrative Reforms Commission (KARC-2)?\nಕರ್ನಾಟಕದ 2ನೇ ಆಡಳಿತ ಸುಧಾರಣಾ ಆಯೋಗದ (KARC-2) ಅಧ್ಯಕ್ಷರು ಯಾರಾಗಿದ್ದರು?",
+                    "options": [
+                        "T.M. Vijay Bhaskar | ಟಿ.ಎಂ. ವಿಜಯ ಭಾಸ್ಕರ್",
+                        "D.M. Nanjundappa | ಡಿ.ಎಂ. ನಂಜುಂಡಪ್ಪ",
+                        "Chinnappa Reddy | ನ್ಯಾ. ಚಿನ್ನಪ್ಪ ರೆಡ್ಡಿ",
+                        "K. Kasturirangan | ಡಾ. ಕಸ್ತೂರಿರಂಗನ್"
+                    ],
+                    "correct_option_id": 0,
+                    "explanation": "KARC-2 was headed by former Chief Secretary T.M. Vijay Bhaskar.\nಕರ್ನಾಟಕ ಆಡಳಿತ ಸುಧಾರಣಾ ಆಯೋಗ-2ರ ಅಧ್ಯಕ್ಷತೆಯನ್ನು ಟಿ.ಎಂ. ವಿಜಯ ಭಾಸ್ಕರ್ ವಹಿಸಿದ್ದರು."
+                }
             }
         ],
         "capsule": {
@@ -514,7 +646,18 @@ Wildlife conservation cannot succeed in opposition to local communities. Moving 
                     "Gulf of Mannar Biosphere Reserve"
                 ],
                 "correct_option_id": 1,
-                "explanation": "The Nilgiri Biosphere Reserve, established in 1986, was India's first biosphere reserve under UNESCO's Man and the Biosphere (MAB) programme."
+                "explanation": "The Nilgiri Biosphere Reserve, established in 1986, was India's first biosphere reserve under UNESCO's Man and the Biosphere (MAB) programme.",
+                "bilingual_poll": {
+                    "question": "Which was the first Biosphere Reserve to be established in India?\nಭಾರತದಲ್ಲಿ ಸ್ಥಾಪನೆಯಾದ ಮೊಟ್ಟಮೊದಲ ಜೀವಗೋಳ ಮೀಸಲು ಪ್ರದೇಶ (ಬಯೋಸ್ಫಿಯರ್) ಯಾವುದು?",
+                    "options": [
+                        "Nanda Devi | ನಂದಾದೇವಿ ಬಯೋಸ್ಫಿಯರ್",
+                        "Nilgiri | ನೀಲಗಿರಿ ಬಯೋಸ್ಫಿಯರ್",
+                        "Sundarbans | ಸುಂದರಬನ್ಸ್ ಬಯೋಸ್ಫಿಯರ್",
+                        "Gulf of Mannar | ಮನ್ನಾರ್ ಕೊಲ್ಲಿ"
+                    ],
+                    "correct_option_id": 1,
+                    "explanation": "Nilgiri Biosphere Reserve (1986) was India's first biosphere reserve.\n1986ರಲ್ಲಿ ಸ್ಥಾಪನೆಯಾದ ನೀಲಗಿರಿ ಬಯೋಸ್ಫಿಯರ್ ಭಾರತದ ಮೊದಲ ಜೀವಗೋಳ ಮೀಸಲು ಪ್ರದೇಶವಾಗಿದೆ."
+                }
             },
             {
                 "question": "Consider the following Tiger Reserves in Karnataka:\n1. Bandipur\n2. Bhadra\n3. Kali (Anshi-Dandeli)\n4. Biligiri Ranganatha Temple (BRT)\nWhich of the above are located in the Western Ghats / Nilgiri landscape?",
@@ -525,7 +668,18 @@ Wildlife conservation cannot succeed in opposition to local communities. Moving 
                     "1, 2, 3 and 4"
                 ],
                 "correct_option_id": 3,
-                "explanation": "All four (Bandipur, Bhadra, Kali, and BRT, along with Nagarahole) are declared Tiger Reserves in Karnataka located in the Western Ghats / Nilgiris biogeographical zone."
+                "explanation": "All four (Bandipur, Bhadra, Kali, and BRT, along with Nagarahole) are declared Tiger Reserves in Karnataka located in the Western Ghats / Nilgiris biogeographical zone.",
+                "bilingual_poll": {
+                    "question": "How many Tiger Reserves are currently situated in Karnataka?\nಪ್ರಸ್ತುತ ಕರ್ನಾಟಕದಲ್ಲಿರುವ ಹುಲಿ ಸಂರಕ್ಷಿತ ಪ್ರದೇಶಗಳ ಸಂಖ್ಯೆ ಎಷ್ಟು?",
+                    "options": [
+                        "3 Reserves | 3 ಪ್ರದೇಶಗಳು",
+                        "4 Reserves | 4 ಪ್ರದೇಶಗಳು",
+                        "5 Reserves | 5 ಪ್ರದೇಶಗಳು",
+                        "6 Reserves | 6 ಪ್ರದೇಶಗಳು"
+                    ],
+                    "correct_option_id": 2,
+                    "explanation": "Karnataka has 5 Tiger Reserves: Bandipur, Nagarahole, Bhadra, Kali, BRT.\nಕರ್ನಾಟಕದಲ್ಲಿ 5 ಹುಲಿ ಪ್ರದೇಶಗಳಿವೆ: ಬಂಡೀಪುರ, ನಾಗರಹೊಳೆ, ಭದ್ರಾ, ಕಾಳಿ, ಬಿಆರ್‌ಟಿ."
+                }
             },
             {
                 "question": "The National Tiger Conservation Authority (NTCA) is a statutory body constituted under the provisions of which Act?",
@@ -536,7 +690,18 @@ Wildlife conservation cannot succeed in opposition to local communities. Moving 
                     "Biological Diversity Act, 2002"
                 ],
                 "correct_option_id": 1,
-                "explanation": "The NTCA was constituted under Section 38L (1) of the Wildlife (Protection) Act, 1972, via the 2006 amendment following recommendations of the Tiger Task Force."
+                "explanation": "The NTCA was constituted under Section 38L (1) of the Wildlife (Protection) Act, 1972, via the 2006 amendment following recommendations of the Tiger Task Force.",
+                "bilingual_poll": {
+                    "question": "Under which Act was the National Tiger Conservation Authority (NTCA) formed?\nರಾಷ್ಟ್ರೀಯ ಹುಲಿ ಸಂರಕ್ಷಣಾ ಪ್ರಾಧಿಕಾರ (NTCA) ಯಾವ ಕಾಯ್ದೆಯಡಿ ರಚನೆಯಾಗಿದೆ?",
+                    "options": [
+                        "Environment Act 1986 | ಪರಿಸರ ಕಾಯ್ದೆ 1986",
+                        "Wildlife Act 1972 | ವನ್ಯಜೀವಿ ಕಾಯ್ದೆ 1972",
+                        "Forest Act 1980 | ಅರಣ್ಯ ಕಾಯ್ದೆ 1980",
+                        "Biodiversity Act | ಜೀವವೈವಿಧ್ಯ ಕಾಯ್ದೆ"
+                    ],
+                    "correct_option_id": 1,
+                    "explanation": "NTCA is a statutory body under Wildlife Protection Act 1972.\nಎನ್‌ಟಿಸಿಎ (NTCA) ವನ್ಯಜೀವಿ ಸಂರಕ್ಷಣಾ ಕಾಯ್ದೆ 1972ರ ಅಡಿಯಲ್ಲಿ ರಚನೆಯಾದ ಶಾಸನಬದ್ಧ ಸಂಸ್ಥೆಯಾಗಿದೆ."
+                }
             }
         ],
         "capsule": {

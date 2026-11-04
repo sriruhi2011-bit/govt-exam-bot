@@ -177,7 +177,7 @@ def job_daily_dossier():
 
 
 def job_prelims_drill():
-    """01:00 PM - Prelims & Objective MCQ Drill (Interactive Telegram Polls)"""
+    """01:00 PM - Prelims & Objective MCQ Drill (Interactive Bilingual Telegram Polls)"""
     if is_done_today('prelims_drill'):
         print('Prelims drill already done today! Skipping.')
         return
@@ -191,18 +191,18 @@ def job_prelims_drill():
     wa = WhatsAppPoster()
     module = get_daily_module()
 
-    intro_text = drill.generate_drill_intro(module, is_kannada=False)
-    polls = drill.get_poll_items(module)
+    intro_text = drill.generate_drill_intro(module, is_bilingual=True)
+    polls = drill.get_poll_items(module, is_bilingual=True)
 
-    print("   Posting Drill Intro...")
+    print("   Posting Bilingual Drill Intro...")
     run_async(poster.send_text(intro_text, target_channel=CHANNEL_ID))
 
-    print(f"   Posting {len(polls)} interactive Quiz Polls...")
+    print(f"   Posting {len(polls)} interactive Bilingual Quiz Polls...")
     run_async(poster.send_poll_series(polls, target_channel=CHANNEL_ID))
 
     if KAN_CHANNEL_ID and KAN_CHANNEL_ID != CHANNEL_ID:
-        kn_intro = drill.generate_drill_intro(module, is_kannada=True)
-        run_async(poster.send_text(kn_intro, target_channel=KAN_CHANNEL_ID))
+        print("   Posting Bilingual Drill to Kannada channel...")
+        run_async(poster.send_text(intro_text, target_channel=KAN_CHANNEL_ID))
         run_async(poster.send_poll_series(polls, target_channel=KAN_CHANNEL_ID))
 
     if wa.is_enabled:
