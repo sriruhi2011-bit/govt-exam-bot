@@ -8,9 +8,6 @@ Schedule (IST):
 06:30 AM - Morning Kickoff & Focus Targets
 08:30 AM - Daily 360° Issue Dossier
 01:00 PM - Prelims & Objective MCQ Drill (Interactive Telegram Polls)
-05:00 PM - Daily Mains Answer Writing Challenge
-07:30 PM - High-Yield Micro Capsule (Articles / Maps / Schemes)
-08:30 PM - Official Model Answer Drop
 09:30 PM - Night Revision Audit & Rest
 """
 
@@ -359,9 +356,6 @@ def check_missed_jobs(quiet=False):
         ("morning_kickoff", MORNING_KICKOFF_TIME, job_morning_kickoff),
         ("daily_dossier", DAILY_DOSSIER_TIME, job_daily_dossier),
         ("prelims_drill", PRELIMS_DRILL_TIME, job_prelims_drill),
-        ("mains_challenge", MAINS_CHALLENGE_TIME, job_mains_challenge),
-        ("capsule", CAPSULE_TIME, job_capsule),
-        ("model_answer", MODEL_ANSWER_TIME, job_model_answer),
         ("night_audit", NIGHT_AUDIT_TIME, job_night_audit),
     ]
 
@@ -381,9 +375,6 @@ def start():
     print(f"   Morning Kickoff:      {MORNING_KICKOFF_TIME} IST")
     print(f"   Daily 360° Dossier:   {DAILY_DOSSIER_TIME} IST")
     print(f"   Prelims Quiz Drill:   {PRELIMS_DRILL_TIME} IST")
-    print(f"   Mains Challenge:      {MAINS_CHALLENGE_TIME} IST")
-    print(f"   Revision Capsule:     {CAPSULE_TIME} IST")
-    print(f"   Official Model Answer:{MODEL_ANSWER_TIME} IST")
     print(f"   Night Revision Audit: {NIGHT_AUDIT_TIME} IST")
     print("=" * 60)
 
@@ -393,9 +384,6 @@ def start():
     schedule.every().day.at(get_local_time_for_ist(MORNING_KICKOFF_TIME)).do(job_morning_kickoff)
     schedule.every().day.at(get_local_time_for_ist(DAILY_DOSSIER_TIME)).do(job_daily_dossier)
     schedule.every().day.at(get_local_time_for_ist(PRELIMS_DRILL_TIME)).do(job_prelims_drill)
-    schedule.every().day.at(get_local_time_for_ist(MAINS_CHALLENGE_TIME)).do(job_mains_challenge)
-    schedule.every().day.at(get_local_time_for_ist(CAPSULE_TIME)).do(job_capsule)
-    schedule.every().day.at(get_local_time_for_ist(MODEL_ANSWER_TIME)).do(job_model_answer)
     schedule.every().day.at(get_local_time_for_ist(NIGHT_AUDIT_TIME)).do(job_night_audit)
 
     print("\nScheduler initialized. Running... Press Ctrl+C to exit.\n")
@@ -433,14 +421,10 @@ def run_current_time_job():
         job_daily_dossier()
     elif 690 <= total_minutes < 930:  # 11:30 - 15:30 IST: Prelims Drill
         job_prelims_drill()
-    elif 930 <= total_minutes < 1110:  # 15:30 - 18:30 IST: Mains Challenge
-        job_mains_challenge()
-    elif 1110 <= total_minutes < 1215:  # 18:30 - 20:15 IST: Capsule
-        job_capsule()
-    elif 1215 <= total_minutes < 1275:  # 20:15 - 21:15 IST: Model Answer
-        job_model_answer()
-    else:  # 21:15 - 22:30 IST: Night Reflection
+    elif 1275 <= total_minutes < 1350:  # 21:15 - 22:30 IST: Night Reflection
         job_night_audit()
+    else:
+        print(f"No scheduled daily job for current time ({now.strftime('%H:%M')} IST). Nothing to post.")
 
 
 def run_full_test():
@@ -459,19 +443,7 @@ def run_full_test():
     job_prelims_drill()
     time.sleep(2)
 
-    print("\n>>> 4. Testing Mains Challenge...")
-    job_mains_challenge()
-    time.sleep(2)
-
-    print("\n>>> 5. Testing High-Yield Capsule...")
-    job_capsule()
-    time.sleep(2)
-
-    print("\n>>> 6. Testing Official Model Answer...")
-    job_model_answer()
-    time.sleep(2)
-
-    print("\n>>> 7. Testing Night Revision Audit...")
+    print("\n>>> 4. Testing Night Revision Audit...")
     job_night_audit()
 
     print("\n" + "=" * 60)
@@ -525,4 +497,4 @@ if __name__ == '__main__':
             print("   No history.")
     else:
         print(f"Unknown command: '{command}'")
-        print("Usage: python main.py [start|test|kickoff|dossier|drill|mains|capsule|model-answer|night|reset|status]")
+        print("Usage: python main.py [start|test|kickoff|dossier|drill|night|reset|status]")

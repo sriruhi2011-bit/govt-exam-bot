@@ -59,7 +59,7 @@ class DossierGenerator:
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 🎯 <b>Exam Takeaway:</b>
-<i>Use this dossier for today's 5:00 PM Mains Challenge and 1:00 PM Prelims Quiz Drill!</i>
+<i>Use this dossier for today's 1:00 PM Prelims Quiz Drill!</i>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 #UPSC #KPSC #KAS #Mains360 #{module['id'].split('_')[0]}"""
         return post
@@ -103,7 +103,7 @@ class DossierGenerator:
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 🎯 <b>ಪರೀಕ್ಷಾ ದೃಷ್ಟಿಕೋನ:</b>
-<i>ಇಂದಿನ ಮೈನ್ಸ್ ಪ್ರಶ್ನೆ ಹಾಗೂ ಪ್ರಿಲಿಮ್ಸ್ ಕ್ವಿಜ್ ಈ ವಿಷಯದ ಮೇಲಿರುತ್ತದೆ!</i>
+<i>ಇಂದಿನ ಪ್ರಿಲಿಮ್ಸ್ ಕ್ವಿಜ್ ಈ ವಿಷಯದ ಮೇಲಿರುತ್ತದೆ!</i>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 #KPSC #KAS #PSI #FDA #UPSCಕನ್ನಡ"""
         return post

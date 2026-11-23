@@ -93,7 +93,7 @@ def main():
         test_url = f"https://api.green-api.com/waInstance{instance_id}/sendMessage/{token}"
         test_res = requests.post(test_url, json={
             "chatId": detected_id,
-            "message": "🚀 *KanSiri Exam Prep Bot Connected Successfully!*\nDaily 360° Dossiers, Prelims Drills & Mains challenges will be posted here."
+            "message": "🚀 *KanSiri Exam Prep Bot Connected Successfully!*\nDaily 360° Dossiers & Prelims Drills will be posted here."
         }, timeout=15)
         if test_res.status_code == 200:
             print("✅ Verified! Check your WhatsApp Channel — the confirmation message has arrived!")

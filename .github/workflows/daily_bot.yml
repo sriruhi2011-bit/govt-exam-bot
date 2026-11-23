@@ -16,9 +16,6 @@ on:
           - kickoff
           - dossier
           - drill
-          - mains
-          - capsule
-          - model-answer
           - night
 
 env:
