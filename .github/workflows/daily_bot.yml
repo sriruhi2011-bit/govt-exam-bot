@@ -1,6 +1,24 @@
 name: Aspirant Master Daily Automation
 
 on:
+  schedule:
+    # 06:30 AM IST = 01:00 UTC (Morning Kickoff)
+    - cron: '0 1 * * *'
+    # 08:30 AM IST = 03:00 UTC (Daily 360° Issue Dossier)
+    - cron: '0 3 * * *'
+    # 11:00 AM IST = 05:30 UTC (Exam Notification Scan)
+    - cron: '30 5 * * *'
+    # 01:00 PM IST = 07:30 UTC (Prelims Quiz Drill)
+    - cron: '30 7 * * *'
+    # 03:30 PM IST = 10:00 UTC (Exam Notification Scan)
+    - cron: '0 10 * * *'
+    # 05:15 PM IST = 11:45 UTC (Newspaper Study Material PDF Prep - Admin Approval)
+    - cron: '45 11 * * *'
+    # 06:35 PM IST = 13:05 UTC (Broadcast Approved PDFs to Channels)
+    - cron: '5 13 * * *'
+    # 09:30 PM IST = 16:00 UTC (Night Revision Audit)
+    - cron: '0 16 * * *'
+
   # Triggered automatically at exact IST times by cron-job.org via API
   # Also allows manual trigger from GitHub website
   workflow_dispatch:
@@ -8,20 +26,27 @@ on:
       job_type:
         description: 'Which aspirant job to run'
         required: true
-        default: 'all'
+        default: 'auto'
         type: choice
         options:
-          - all
           - auto
           - kickoff
           - dossier
           - drill
+          - prep
+          - broadcast
+          - check-notifications
+          - list-notifications
           - night
+          - status
+          - all
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
   CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
+  ADMIN_TELEGRAM_ID: ${{ secrets.ADMIN_TELEGRAM_ID }}
+  ADMIN_PHONE: ${{ secrets.ADMIN_PHONE }}
   KAN_BOT_TOKEN: ${{ secrets.KAN_BOT_TOKEN }}
   KAN_CHANNEL_ID: ${{ secrets.KAN_CHANNEL_ID }}
   GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -35,7 +60,7 @@ env:
 jobs:
   run-aspirant-task:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
       - name: Checkout code
@@ -46,14 +71,20 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Install system fonts and libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fonts-noto-core fonts-noto-cjk fonts-noto-extra fonts-lohit-knda
+
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install requests python-telegram-bot==20.7 schedule
+          pip install -r requirements.txt
+          playwright install chromium --with-deps
 
       - name: Create data and log directories
         run: |
-          mkdir -p data logs
+          mkdir -p data/pdfs data/notifications logs
 
       - name: Determine and Run Appropriate Aspirant Job
         run: |

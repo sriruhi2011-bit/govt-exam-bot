@@ -1,7 +1,9 @@
 feedparser
 requests
 beautifulsoup4
-python-telegram-bot
+python-telegram-bot==20.7
 openpyxl
 filelock
 schedule
+jinja2
+playwright
