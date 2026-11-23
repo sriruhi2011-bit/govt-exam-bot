@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{ title }} - {{ date_str }}</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+    @page {
+      size: A4;
+      margin: 8mm 8mm 10mm 8mm;
+      @bottom-left {
+        content: "{{ footer_tagline | default('Prelims · important items with static depth') }}";
+        font-family: 'Lora', serif;
+        font-size: 7pt;
+        font-style: italic;
+        color: #555;
+      }
+      @bottom-right {
+        content: "{{ channel_handle | default('t.me/TheCivilsVault') }} · Page " counter(page) " of " counter(pages);
+        font-family: 'Lora', serif;
+        font-size: 7pt;
+        font-style: italic;
+        color: #555;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #fcf9f2;
+      color: #1c1917;
+      font-family: 'Lora', Georgia, serif;
+      font-size: 7.8pt;
+      line-height: 1.34;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page-container {
+      page-break-after: always;
+    }
+    .page-container:last-child {
+      page-break-after: avoid;
+    }
+
+    /* Top Brand Header */
+    .top-meta-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 7.5pt;
+      font-style: italic;
+      color: #444;
+      margin-bottom: 2px;
+    }
+    .brand-name {
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+
+    .main-banner-title {
+      font-size: 19pt;
+      font-weight: 700;
+      font-style: italic;
+      color: #853625;
+      line-height: 1.1;
+      margin-bottom: 3px;
+    }
+
+    .header-rule {
+      height: 2px;
+      background: #853625;
+      margin-bottom: 8px;
+    }
+
+    /* Two-column Newspaper layout */
+    .columns-2 {
+      column-count: 2;
+      column-gap: 14px;
+      column-rule: 1px solid #e7decb;
+    }
+
+    .article-item {
+      break-inside: avoid;
+      margin-bottom: 10px;
+    }
+
+    .item-header {
+      margin-bottom: 3px;
+    }
+
+    .item-title {
+      font-size: 9.8pt;
+      font-weight: 700;
+      font-style: italic;
+      color: #7d3324;
+      display: inline;
+    }
+
+    .badge-high-yield {
+      background: #eee1c0;
+      color: #735017;
+      font-size: 6.8pt;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 600;
+      padding: 1px 4px;
+      border-radius: 2px;
+      margin-left: 4px;
+      vertical-align: middle;
+      display: inline-block;
+    }
+
+    .in-news-p {
+      margin-top: 2px;
+      margin-bottom: 4px;
+      text-align: justify;
+    }
+    .in-news-label {
+      font-weight: 700;
+      font-style: italic;
+      color: #7d3324;
+    }
+
+    .bullet-point {
+      margin-bottom: 2.5px;
+      padding-left: 11px;
+      text-indent: -11px;
+      text-align: justify;
+    }
+    .bullet-arrow {
+      color: #7d3324;
+      font-weight: bold;
+    }
+    .law-ref {
+      font-weight: 600;
+      text-decoration: underline dotted #888;
+    }
+
+    /* Statement Trap Box */
+    .trap-box {
+      background: #faecea;
+      border-left: 3px solid #cb4436;
+      border-radius: 2px;
+      padding: 3px 6px;
+      margin: 4px 0 2px 0;
+      font-size: 7.5pt;
+      color: #721c15;
+      line-height: 1.3;
+    }
+    .trap-label {
+      font-weight: 700;
+      font-style: italic;
+    }
+
+    /* Mains Editorial Styles */
+    .flowchart-box {
+      background: #f4ecdc;
+      border-radius: 3px;
+      padding: 4px 7px;
+      margin: 4px 0 6px 0;
+      font-size: 7.3pt;
+      font-weight: 600;
+      color: #553a15;
+      text-align: center;
+    }
+
+    .section-subhead {
+      font-size: 8.5pt;
+      font-weight: 700;
+      font-style: italic;
+      color: #7d3324;
+      margin-top: 5px;
+      margin-bottom: 2px;
+    }
+
+    .keywords-line {
+      font-size: 7.2pt;
+      margin-top: 4px;
+      color: #3b3a36;
+    }
+    .keywords-label {
+      font-weight: 700;
+      color: #7d3324;
+    }
+
+    .practice-q-box {
+      background: #f7f1e4;
+      border-left: 3px solid #94713c;
+      padding: 4px 6px;
+      margin-top: 5px;
+      font-size: 7.5pt;
+      font-style: italic;
+    }
+    .practice-q-label {
+      font-weight: 700;
+      color: #735017;
+      font-style: normal;
+    }
+
+    /* MCQ Styles */
+    .mcq-item {
+      break-inside: avoid;
+      margin-bottom: 9px;
+      background: #faf6ec;
+      padding: 5px 7px;
+      border-radius: 3px;
+      border: 1px solid #ebdcc5;
+    }
+    .mcq-title {
+      font-size: 8.8pt;
+      font-weight: 700;
+      color: #7d3324;
+      margin-bottom: 3px;
+    }
+    .mcq-stmt {
+      margin-left: 8px;
+      margin-bottom: 1.5px;
+    }
+    .mcq-options {
+      margin: 3px 0 4px 0;
+      font-weight: 600;
+      font-size: 7.6pt;
+    }
+    .mcq-ans-box {
+      background: #eef5e9;
+      border-left: 3px solid #4a7c36;
+      padding: 3px 5px;
+      font-size: 7.3pt;
+      color: #234d13;
+      border-radius: 2px;
+    }
+    .ans-bold {
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PAGE 1: PRELIMS NOTES -->
+  <div class="page-container">
+    <div class="top-meta-row">
+      <span class="brand-name">{{ brand_title | default('The Civils Vault') }}</span>
+      <span>{{ source_name | default('The Hindu') }} · {{ date_str }}</span>
+    </div>
+    <div class="main-banner-title">Prelims Notes · Part 1</div>
+    <div class="header-rule"></div>
+
+    <div class="columns-2">
+      {% for item in prelims_items %}
+      <div class="article-item">
+        <div class="item-header">
+          <span class="item-title">{{ loop.index }} · {{ item.title }}</span>
+          {% if item.badge %}
+          <span class="badge-high-yield">{{ item.badge }}</span>
+          {% endif %}
+        </div>
+        
+        <p class="in-news-p">
+          <span class="in-news-label">In news:</span> {{ item.in_news }}
+        </p>
+
+        {% for pt in item.static_points %}
+        <div class="bullet-point">
+          <span class="bullet-arrow">→</span> {{ pt | safe }}
+        </div>
+        {% endfor %}
+
+        {% if item.trap %}
+        <div class="trap-box">
+          <span class="trap-label">→ Trap:</span> {{ item.trap }}
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% if mains_editorials and mains_editorials|length > 0 %}
+  <!-- PAGE 2: MAINS KEY EDITORIALS -->
+  <div class="page-container">
+    <div class="top-meta-row">
+      <span class="brand-name">{{ brand_title | default('The Civils Vault') }}</span>
+      <span>{{ source_name | default('The Hindu') }} · {{ date_str }}</span>
+    </div>
+    <div class="main-banner-title">Mains Notes · Key Editorials</div>
+    <div class="header-rule"></div>
+
+    <div class="columns-2">
+      {% for ed in mains_editorials %}
+      <div class="article-item">
+        <div class="item-header">
+          <span class="item-title">{{ loop.index }} · {{ ed.title }}</span>
+          <span class="badge-high-yield">{{ ed.paper | default('GS2') }}</span>
+        </div>
+
+        <p class="in-news-p">
+          <span class="in-news-label">Context:</span> {{ ed.context }}
+        </p>
+
+        {% if ed.flowchart %}
+        <div class="flowchart-box">
+          {{ ed.flowchart }}
+        </div>
+        {% endif %}
+
+        <div class="section-subhead">Body Analysis</div>
+        {% for pt in ed.body_points %}
+        <div class="bullet-point">
+          <span class="bullet-arrow">→</span> {{ pt | safe }}
+        </div>
+        {% endfor %}
+
+        <div class="section-subhead">Way Forward</div>
+        {% for pt in ed.way_forward_points %}
+        <div class="bullet-point">
+          <span class="bullet-arrow">→</span> {{ pt | safe }}
+        </div>
+        {% endfor %}
+
+        {% if ed.keywords %}
+        <div class="keywords-line">
+          <span class="keywords-label">Keywords:</span> {{ ed.keywords }}
+        </div>
+        {% endif %}
+
+        {% if ed.practice_question %}
+        <div class="practice-q-box">
+          <span class="practice-q-label">Practice Q:</span> {{ ed.practice_question }}
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if mcqs and mcqs|length > 0 %}
+  <!-- PAGE 3: PRACTICE MCQS -->
+  <div class="page-container">
+    <div class="top-meta-row">
+      <span class="brand-name">{{ brand_title | default('The Civils Vault') }}</span>
+      <span>{{ source_name | default('The Hindu') }} · {{ date_str }}</span>
+    </div>
+    <div class="main-banner-title">Practice MCQs with Explanations</div>
+    <div class="header-rule"></div>
+
+    <div class="columns-2">
+      {% for q in mcqs %}
+      <div class="mcq-item">
+        <div class="mcq-title">{{ loop.index }} · {{ q.topic }}</div>
+        {% for s in q.statements %}
+        <div class="mcq-stmt"><b>{{ loop.index }}.</b> {{ s }}</div>
+        {% endfor %}
+        <div class="mcq-options">{{ q.options }}</div>
+        <div class="mcq-ans-box">
+          <span class="ans-bold">Answer {{ q.answer }}.</span> {{ q.explanation }}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+</body>
+</html>

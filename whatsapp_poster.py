@@ -12,6 +12,7 @@ Features:
 - Fails gracefully if WhatsApp credentials are not yet configured (zero impact on Telegram)
 """
 
+import os
 import re
 import html
 import time
@@ -157,6 +158,40 @@ class WhatsAppPoster:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━"""
 
         return self.send_text(wa_post, target_chat=target_chat)
+
+    def send_document(self, file_path: str, caption: str = "", target_chat: str = None) -> bool:
+        """Upload and send a PDF file to WhatsApp channel/groups via Green API"""
+        if not self.is_enabled:
+            return False
+
+        if not os.path.exists(file_path):
+            logger.error(f"File to send not found: {file_path}")
+            return False
+
+        targets = [target_chat] if target_chat else self.chat_ids
+        upload_url = f"https://api.green-api.com/waInstance{self.instance_id}/sendFileByUpload/{self.api_token}"
+
+        success_count = 0
+        file_name = os.path.basename(file_path)
+
+        for i, cid in enumerate(targets):
+            try:
+                with open(file_path, "rb") as f:
+                    files = {"file": (file_name, f, "application/pdf")}
+                    data = {"chatId": cid, "caption": caption}
+                    res = requests.post(upload_url, files=files, data=data, timeout=30)
+                if res.status_code == 200:
+                    success_count += 1
+                    logger.info(f"   WhatsApp document delivered to {cid}")
+                else:
+                    logger.error(f"   WhatsApp document error {res.status_code} for {cid}: {res.text[:200]}")
+            except Exception as e:
+                logger.error(f"   WhatsApp document upload error for {cid}: {e}")
+
+            if i < len(targets) - 1:
+                time.sleep(1)
+
+        return success_count > 0
 
 
 if __name__ == "__main__":

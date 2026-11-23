@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="kn">
+<head>
+  <meta charset="utf-8">
+  <title>{{ main_banner }} - {{ date_str }}</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Kannada:wght@400;500;600;700;800&family=Noto+Serif+Kannada:wght@400;600;700&display=swap');
+
+    @page {
+      size: A4;
+      margin: 8mm 8mm 10mm 8mm;
+      @bottom-left {
+        content: "{{ footer_brand | default('KPSCinsights | Daily Exam Analysis | Join Telegram Channel') }}";
+        font-family: 'Noto Sans Kannada', sans-serif;
+        font-size: 6.8pt;
+        color: #555;
+      }
+      @bottom-right {
+        content: "Page " counter(page) " of " counter(pages);
+        font-family: 'Noto Sans Kannada', sans-serif;
+        font-size: 6.8pt;
+        color: #555;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #ffffff;
+      color: #1a1a1a;
+      font-family: 'Noto Sans Kannada', sans-serif;
+      font-size: 7.6pt;
+      line-height: 1.38;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page-container {
+      page-break-after: always;
+    }
+    .page-container:last-child {
+      page-break-after: avoid;
+    }
+
+    /* Top Meta */
+    .brand-top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 7pt;
+      color: #666;
+      margin-bottom: 2px;
+    }
+    .brand-name {
+      font-weight: 700;
+      color: #8f281e;
+    }
+
+    .main-banner-title {
+      font-size: 13.5pt;
+      font-weight: 800;
+      color: #a3281c;
+      text-align: center;
+      letter-spacing: 0.3px;
+      margin-top: 2px;
+    }
+    .sub-banner-title {
+      font-size: 8.5pt;
+      font-weight: 600;
+      color: #444;
+      text-align: center;
+      margin-bottom: 4px;
+    }
+
+    .header-rule {
+      height: 2px;
+      background: #a3281c;
+      margin-bottom: 8px;
+    }
+
+    /* 2-Column Newspaper Layout */
+    .columns-2 {
+      column-count: 2;
+      column-gap: 14px;
+      column-rule: 1px solid #eee;
+    }
+
+    .topic-block {
+      break-inside: avoid;
+      margin-bottom: 12px;
+    }
+
+    .topic-title {
+      font-size: 9.6pt;
+      font-weight: 700;
+      color: #111;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 2px;
+      margin-bottom: 4px;
+      line-height: 1.25;
+    }
+
+    .section-title {
+      font-size: 8.2pt;
+      font-weight: 700;
+      color: #b52c1e;
+      margin-top: 4px;
+      margin-bottom: 2px;
+    }
+
+    .text-para {
+      text-align: justify;
+      margin-bottom: 3px;
+    }
+
+    .bullet-pt {
+      margin-bottom: 2px;
+      padding-left: 11px;
+      text-indent: -11px;
+      text-align: justify;
+    }
+    .bullet-arrow {
+      color: #b52c1e;
+      font-weight: 700;
+    }
+
+    /* Statement Trap Box */
+    .trap-card {
+      background: #fff5f5;
+      border: 1px solid #f0bcbc;
+      border-left: 3.5px solid #d93829;
+      border-radius: 3px;
+      padding: 4px 6px;
+      margin: 4px 0;
+      font-size: 7.2pt;
+    }
+    .trap-head {
+      font-weight: 700;
+      color: #b52c1e;
+      margin-bottom: 2px;
+    }
+
+    /* Karnataka Perspective Box */
+    .state-card {
+      background: #fbfbf4;
+      border: 1px solid #e2e2cc;
+      border-left: 3.5px solid #8c8c38;
+      border-radius: 3px;
+      padding: 4px 6px;
+      margin: 4px 0;
+      font-size: 7.2pt;
+    }
+    .state-head {
+      font-weight: 700;
+      color: #69691f;
+      margin-bottom: 2px;
+    }
+
+    .source-label {
+      font-size: 6.8pt;
+      color: #777;
+      font-style: italic;
+      margin-top: 3px;
+    }
+
+    /* One-liners Section */
+    .oneliners-box {
+      border: 1.5px solid #e4a135;
+      border-radius: 4px;
+      padding: 6px 8px;
+      background: #fffdfa;
+      margin-top: 8px;
+      break-inside: avoid;
+    }
+    .oneliners-head {
+      font-weight: 700;
+      color: #b86e00;
+      font-size: 8.5pt;
+      margin-bottom: 4px;
+      text-align: center;
+      border-bottom: 1px solid #f0cf98;
+      padding-bottom: 2px;
+    }
+
+    /* Practice MCQs Kannada */
+    .mcq-kn-card {
+      break-inside: avoid;
+      background: #ffffff;
+      border: 1px solid #e8e8e8;
+      border-radius: 3px;
+      padding: 5px 7px;
+      margin-bottom: 8px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .mcq-q-header {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 3px;
+    }
+    .q-num-pill {
+      background: #194676;
+      color: #fff;
+      font-weight: 700;
+      font-size: 7.5pt;
+      padding: 1px 5px;
+      border-radius: 2px;
+      margin-right: 5px;
+      flex-shrink: 0;
+    }
+    .q-question-text {
+      font-weight: 700;
+      font-size: 7.9pt;
+      color: #111;
+    }
+    .opt-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px 8px;
+      margin: 4px 0;
+      font-size: 7.4pt;
+    }
+    .ans-kn-box {
+      background: #f1f8ed;
+      border-left: 3px solid #3e8e2b;
+      padding: 3px 5px;
+      font-size: 7.2pt;
+      color: #1c5211;
+      border-radius: 2px;
+      margin-top: 3px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PAGE 1: CURRENT AFFAIRS ANALYSIS -->
+  <div class="page-container">
+    <div class="brand-top-row">
+      <span class="brand-name">{{ brand_title | default('KPSCinsights') }}</span>
+      <span>{{ source_title | default('ಪ್ರಜಾವಾಣಿ & ಡೆಕ್ಕನ್ ಹೆರಾಲ್ಡ್') }} · {{ date_str }}</span>
+    </div>
+    <div class="main-banner-title">{{ main_banner | default('KPSC / KEA Exams: KAS · PSI · PDO · FDA · SDA & more') }}</div>
+    <div class="sub-banner-title">{{ sub_banner | default('Daily Exam Analysis') }} · {{ date_str }}</div>
+    <div class="header-rule"></div>
+
+    <div class="columns-2">
+      {% for topic in topics %}
+      <div class="topic-block">
+        <div class="topic-title">{{ topic.title }}</div>
+        
+        <div class="section-title">ಸುದ್ದಿಯ ಹಿನ್ನೆಲೆ (Why in News?)</div>
+        <p class="text-para">{{ topic.why_in_news }}</p>
+
+        <div class="section-title">ಸ್ಥಿರ ವಿಷಯಗಳ ಹಿನ್ನೆಲೆ (Static Background)</div>
+        {% for pt in topic.static_points %}
+        <div class="bullet-pt"><span class="bullet-arrow">→</span> {{ pt | safe }}</div>
+        {% endfor %}
+
+        {% if topic.exam_points %}
+        <div class="section-title">ಪರೀಕ್ಷೆಗೆ ಮುಖ್ಯವಾದ ಅಂಶಗಳು</div>
+        {% for pt in topic.exam_points %}
+        <div class="bullet-pt"><span class="bullet-arrow">→</span> {{ pt | safe }}</div>
+        {% endfor %}
+        {% endif %}
+
+        {% if topic.trap %}
+        <div class="trap-card">
+          <div class="trap-head">ಸ್ಟೇಟ್‌ಮೆಂಟ್ ಟ್ರ್ಯಾಪ್</div>
+          <div>{{ topic.trap | safe }}</div>
+        </div>
+        {% endif %}
+
+        {% if topic.state_angle %}
+        <div class="state-card">
+          <div class="state-head">ಕರ್ನಾಟಕದ ದೃಷ್ಟಿಯಿಂದ</div>
+          <div>{{ topic.state_angle | safe }}</div>
+        </div>
+        {% endif %}
+
+        {% if topic.source %}
+        <div class="source-label">ಮೂಲ: {{ topic.source }}</div>
+        {% endif %}
+      </div>
+      {% endfor %}
+
+      {% if oneliners and oneliners|length > 0 %}
+      <div class="oneliners-box">
+        <div class="oneliners-head">ಇಂದಿನ ಒಂದು ಸಾಲಿನ ಸಂಗತಿಗಳು (Daily One-Liners)</div>
+        {% for ol in oneliners %}
+        <div class="bullet-pt"><span class="bullet-arrow">→</span> {{ ol | safe }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if mcqs and mcqs|length > 0 %}
+  <!-- PAGE 2: PRACTICE MCQS -->
+  <div class="page-container">
+    <div class="brand-top-row">
+      <span class="brand-name">{{ brand_title | default('KPSCinsights') }}</span>
+      <span>{{ source_title | default('ಪ್ರಜಾವಾಣಿ & ಡೆಕ್ಕನ್ ಹೆರಾಲ್ಡ್') }} · {{ date_str }}</span>
+    </div>
+    <div class="main-banner-title">Practice MCQs · ಅಭ್ಯಾಸ ಪ್ರಶ್ನೆಗಳು</div>
+    <div class="sub-banner-title">ದೈನಂದಿನ ಪರೀಕ್ಷಾ ಮಾದರಿ ಬಹುಆಯ್ಕೆ ಪ್ರಶ್ನೆಗಳು</div>
+    <div class="header-rule"></div>
+
+    <div class="columns-2">
+      {% for q in mcqs %}
+      <div class="mcq-kn-card">
+        <div class="mcq-q-header">
+          <span class="q-num-pill">{{ loop.index }}</span>
+          <span class="q-question-text">{{ q.question }}</span>
+        </div>
+
+        {% if q.statements %}
+        <div style="margin: 3px 0 2px 4px;">
+          {% for st in q.statements %}
+          <div><b>{{ loop.index }}.</b> {{ st }}</div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="opt-grid">
+          <div>(A) {{ q.opt_a }}</div>
+          <div>(B) {{ q.opt_b }}</div>
+          <div>(C) {{ q.opt_c }}</div>
+          <div>(D) {{ q.opt_d }}</div>
+        </div>
+
+        <div class="ans-kn-box">
+          <b>ಉತ್ತರ ({{ q.answer }}).</b> {{ q.explanation }}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+</body>
+</html>

@@ -27,6 +27,7 @@ for _fname in [".env", "my_keys.txt", "key.txt"]:
             pass
 
 BOT_TOKEN = os.environ.get("BOT_TOKEN", "")
+ADMIN_TELEGRAM_ID = os.environ.get("ADMIN_TELEGRAM_ID", "7709068207")
 CHANNEL_ID = os.environ.get("CHANNEL_ID", "@kansiri_daily_updates")
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
@@ -73,15 +74,14 @@ MAX_RETRIES = 3  # Maximum retry attempts
 MORNING_KICKOFF_TIME = "06:30"     # Mindset, Targets, Inspiration
 DAILY_DOSSIER_TIME = "08:30"       # 360° Issue Dossier (Syllabus deep dive)
 PRELIMS_DRILL_TIME = "13:00"       # 3 High-Yield Interactive Quiz Polls
-MAINS_CHALLENGE_TIME = "17:00"     # Mains Question + Blueprint + Keywords
-CAPSULE_TIME = "19:30"             # Micro-learning Flashcard Capsule
-MODEL_ANSWER_TIME = "20:30"        # Comprehensive Model Answer Drop
+NEWSPAPER_PREP_TIME = "17:15"      # Daily The Hindu & Prajavani PDFs ready & sent to admin for approval
+NEWSPAPER_BROADCAST_TIME = "18:35" # Broadcast confirmed PDFs to group at 6:35 PM IST
 NIGHT_AUDIT_TIME = "21:30"         # Active Recall Check + Night Reflection
 
 # Legacy schedule aliases for backwards compatibility
 MORNING_GREETING_TIME = MORNING_KICKOFF_TIME
 MORNING_NEWS_TIME = DAILY_DOSSIER_TIME
-EVENING_QUIZ_TIME = MAINS_CHALLENGE_TIME
+EVENING_QUIZ_TIME = PRELIMS_DRILL_TIME
 GOOD_NIGHT_TIME = NIGHT_AUDIT_TIME
 
 # ════════════════════════════════════════════════════

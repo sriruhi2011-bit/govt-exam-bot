@@ -36,9 +36,8 @@ from config.settings import (
     MORNING_KICKOFF_TIME,
     DAILY_DOSSIER_TIME,
     PRELIMS_DRILL_TIME,
-    MAINS_CHALLENGE_TIME,
-    CAPSULE_TIME,
-    MODEL_ANSWER_TIME,
+    NEWSPAPER_PREP_TIME,
+    NEWSPAPER_BROADCAST_TIME,
     NIGHT_AUDIT_TIME,
     KAN_CHANNEL_ID,
     CHANNEL_ID
@@ -344,6 +343,54 @@ def job_night_audit():
     print("   DONE: Night Audit posted successfully!")
 
 
+def job_publish_study_pdf(lang='both'):
+    """Generate and broadcast daily high-yield Study Material PDF to channels"""
+    from generate_study_material import get_demo_english_data, get_demo_kannada_data
+    from pdf_engine import PDFEngine
+    poster = TelegramPoster()
+    wa = WhatsAppPoster()
+    engine = PDFEngine()
+
+    print("\n" + "=" * 55)
+    print("   📑 PUBLISHING HIGH-YIELD STUDY MATERIAL PDF")
+    print("=" * 55)
+
+    if lang in ['both', 'en', 'english']:
+        print("   Generating English 'The Civils Vault' PDF...")
+        en_data = get_demo_english_data()
+        en_pdf = engine.generate_english_pdf(en_data)
+        caption = "📚 <b>Daily Prelims & Mains Analysis PDF</b>\nComprehensive current affairs with static depth & practice MCQs."
+        run_async(poster.send_document(en_pdf, caption=caption, target_channel=CHANNEL_ID))
+        if wa.is_enabled:
+            wa.send_document(en_pdf, caption="📚 *Daily Prelims & Mains Analysis PDF*")
+
+    if lang in ['both', 'kn', 'kannada']:
+        print("   Generating Kannada 'KPSCinsights' PDF...")
+        kn_data = get_demo_kannada_data()
+        kn_pdf = engine.generate_kannada_pdf(kn_data)
+        kn_caption = "📚 <b>ದೈನಂದಿನ ಪರೀಕ್ಷಾ ಮಾರ್ಗದರ್ಶಿ PDF</b>\nಪ್ರಜಾವಾಣಿ & ಡೆಕ್ಕನ್ ಹೆರಾಲ್ಡ್ ಸಮಗ್ರ ಪರೀಕ್ಷಾ ವಿಶ್ಲೇಷಣೆ."
+        target_kn = KAN_CHANNEL_ID if (KAN_CHANNEL_ID and KAN_CHANNEL_ID != CHANNEL_ID) else CHANNEL_ID
+        run_async(poster.send_document(kn_pdf, caption=kn_caption, target_channel=target_kn))
+        if wa.is_enabled:
+            wa.send_document(kn_pdf, caption="📚 *ದೈನಂದಿನ ಪ್ರಜಾವಾಣಿ ಪರೀಕ್ಷಾ ವಿಶ್ಲೇಷಣೆ PDF*")
+
+    print("   DONE: Study Material PDF generated and posted successfully!")
+
+
+def job_newspaper_prep():
+    """17:15 IST (Before 5:30 PM) - Generate The Hindu & Prajavani PDFs and send to admin for approval"""
+    from approval_manager import ApprovalManager
+    mgr = ApprovalManager()
+    mgr.prepare_and_send_for_approval()
+
+
+def job_newspaper_broadcast():
+    """18:35 IST (6:35 PM) - Broadcast confirmed PDFs to public channels"""
+    from approval_manager import ApprovalManager
+    mgr = ApprovalManager()
+    mgr.broadcast_at_635pm()
+
+
 # ════════════════════════════════════════════════════
 #  SCHEDULING & AUTOMATION
 # ════════════════════════════════════════════════════
@@ -356,6 +403,8 @@ def check_missed_jobs(quiet=False):
         ("morning_kickoff", MORNING_KICKOFF_TIME, job_morning_kickoff),
         ("daily_dossier", DAILY_DOSSIER_TIME, job_daily_dossier),
         ("prelims_drill", PRELIMS_DRILL_TIME, job_prelims_drill),
+        ("newspaper_prep", NEWSPAPER_PREP_TIME, job_newspaper_prep),
+        ("newspaper_broadcast", NEWSPAPER_BROADCAST_TIME, job_newspaper_broadcast),
         ("night_audit", NIGHT_AUDIT_TIME, job_night_audit),
     ]
 
@@ -368,14 +417,24 @@ def check_missed_jobs(quiet=False):
             func()
 
 
+def job_exam_notifications():
+    try:
+        from exam_notification_monitor import ExamNotificationMonitor
+        ExamNotificationMonitor().scan_and_process()
+    except Exception as e:
+        logger.error(f"Exam notification scan error: {e}")
+
+
 def start():
     print("\n" + "=" * 60)
     print("   ASPIRANT MASTER ENGINE - 24/7 SCHEDULER ACTIVE")
     print("=" * 60)
-    print(f"   Morning Kickoff:      {MORNING_KICKOFF_TIME} IST")
-    print(f"   Daily 360° Dossier:   {DAILY_DOSSIER_TIME} IST")
-    print(f"   Prelims Quiz Drill:   {PRELIMS_DRILL_TIME} IST")
-    print(f"   Night Revision Audit: {NIGHT_AUDIT_TIME} IST")
+    print(f"   Morning Kickoff:          {MORNING_KICKOFF_TIME} IST")
+    print(f"   Daily 360° Dossier:       {DAILY_DOSSIER_TIME} IST")
+    print(f"   Prelims Quiz Drill:       {PRELIMS_DRILL_TIME} IST")
+    print(f"   PDF Prep (Admin Approval):{NEWSPAPER_PREP_TIME} IST (Ready before 5:30 PM)")
+    print(f"   PDF Public Broadcast:     {NEWSPAPER_BROADCAST_TIME} IST (6:35 PM)")
+    print(f"   Night Revision Audit:     {NIGHT_AUDIT_TIME} IST")
     print("=" * 60)
 
     check_missed_jobs()
@@ -384,7 +443,11 @@ def start():
     schedule.every().day.at(get_local_time_for_ist(MORNING_KICKOFF_TIME)).do(job_morning_kickoff)
     schedule.every().day.at(get_local_time_for_ist(DAILY_DOSSIER_TIME)).do(job_daily_dossier)
     schedule.every().day.at(get_local_time_for_ist(PRELIMS_DRILL_TIME)).do(job_prelims_drill)
+    schedule.every().day.at(get_local_time_for_ist(NEWSPAPER_PREP_TIME)).do(job_newspaper_prep)
+    schedule.every().day.at(get_local_time_for_ist(NEWSPAPER_BROADCAST_TIME)).do(job_newspaper_broadcast)
     schedule.every().day.at(get_local_time_for_ist(NIGHT_AUDIT_TIME)).do(job_night_audit)
+    # Check official exam sites periodically (every 60 minutes)
+    schedule.every(60).minutes.do(job_exam_notifications)
 
     print("\nScheduler initialized. Running... Press Ctrl+C to exit.\n")
 
@@ -415,16 +478,24 @@ def run_current_time_job():
         return
 
     # Active daytime schedule (IST):
+    # Also check official exam notifications during active portal hours (10:00 AM to 07:30 PM IST)
+    if 600 <= total_minutes <= 1170:
+        job_exam_notifications()
+
     if 330 <= total_minutes < 480:  # 05:30 - 08:00 IST: Morning Kickoff
         job_morning_kickoff()
     elif 480 <= total_minutes < 690:  # 08:00 - 11:30 IST: Daily 360 Dossier
         job_daily_dossier()
-    elif 690 <= total_minutes < 930:  # 11:30 - 15:30 IST: Prelims Drill
+    elif 690 <= total_minutes < 990:  # 11:30 - 16:30 IST: Prelims Drill
         job_prelims_drill()
+    elif 990 <= total_minutes < 1080:  # 16:30 - 18:00 IST: Newspaper PDFs Prep & Send to Admin
+        job_newspaper_prep()
+    elif 1100 <= total_minutes < 1200:  # 18:20 - 20:00 IST: Broadcast at 6:35 PM if approved
+        job_newspaper_broadcast()
     elif 1275 <= total_minutes < 1350:  # 21:15 - 22:30 IST: Night Reflection
         job_night_audit()
     else:
-        print(f"No scheduled daily job for current time ({now.strftime('%H:%M')} IST). Nothing to post.")
+        print(f"No scheduled daily job for current time ({now.strftime('%H:%M')} IST).")
 
 
 def run_full_test():
@@ -474,6 +545,38 @@ if __name__ == '__main__':
         job_model_answer()
     elif command in ['night', 'goodnight', 'audit']:
         job_night_audit()
+    elif command in ['pdf', 'material', 'study-material']:
+        job_publish_study_pdf('both')
+    elif command in ['pdf-en', 'pdf-english']:
+        job_publish_study_pdf('english')
+    elif command in ['pdf-kn', 'pdf-kannada']:
+        job_publish_study_pdf('kannada')
+    elif command in ['prep-pdf', 'prep-newspaper', 'prep']:
+        job_newspaper_prep()
+    elif command in ['approve', 'confirm']:
+        arg = sys.argv[2] if len(sys.argv) > 2 else None
+        if arg and arg.upper().startswith("NOTIF-"):
+            from notification_approval import NotificationApprovalManager
+            NotificationApprovalManager().approve(arg.upper())
+        else:
+            from approval_manager import ApprovalManager
+            ApprovalManager().approve()
+    elif command in ['reject', 'redo']:
+        arg = sys.argv[2] if len(sys.argv) > 2 else None
+        if arg and arg.upper().startswith("NOTIF-"):
+            from notification_approval import NotificationApprovalManager
+            NotificationApprovalManager().reject(arg.upper())
+        else:
+            from approval_manager import ApprovalManager
+            ApprovalManager().reject()
+    elif command in ['check-notifications', 'scan-notifications', 'notifications', 'notif']:
+        from exam_notification_monitor import ExamNotificationMonitor
+        ExamNotificationMonitor().scan_and_process()
+    elif command in ['list-notifications', 'show-notifications', 'notif-list']:
+        from notification_approval import NotificationApprovalManager
+        NotificationApprovalManager().list_notifications()
+    elif command in ['broadcast', 'post-pdf']:
+        job_newspaper_broadcast()
     elif command == 'start':
         start()
     elif command == 'reset':
@@ -492,9 +595,40 @@ if __name__ == '__main__':
                 for j, t in state[today].items():
                     print(f"   Done: {j} at {t}")
             else:
-                print("   No jobs recorded today.")
+                print("   No standard jobs recorded today.")
         else:
             print("   No history.")
+
+        # Also show PDF Approval Status
+        from approval_manager import APPROVAL_STATE_FILE
+        if os.path.exists(APPROVAL_STATE_FILE):
+            try:
+                with open(APPROVAL_STATE_FILE, 'r') as f:
+                    pdf_st = json.load(f)
+                if today in pdf_st:
+                    p = pdf_st[today]
+                    print(f"\n   📄 Newspaper PDFs ({today}):")
+                    print(f"      • Status:       {p.get('status').upper()}")
+                    print(f"      • Generated At: {p.get('generated_at')}")
+                    print(f"      • Approved At:  {p.get('approved_at')}")
+                    print(f"      • Posted At:    {p.get('posted_at')}")
+            except Exception:
+                pass
+
+        # Also show Official Exam Notifications Status
+        from exam_notification_monitor import REGISTRY_FILE
+        if os.path.exists(REGISTRY_FILE):
+            try:
+                with open(REGISTRY_FILE, 'r', encoding='utf-8') as f:
+                    reg = json.load(f)
+                pending_cnt = sum(1 for v in reg.values() if v.get("status") == "pending_admin")
+                posted_cnt = sum(1 for v in reg.values() if v.get("status") == "broadcasted")
+                print(f"\n   🔔 Official Exam Notifications:")
+                print(f"      • Total Detected: {len(reg)}")
+                print(f"      • Awaiting You:   {pending_cnt} (Run 'python main.py list-notifications')")
+                print(f"      • Broadcasted:    {posted_cnt}")
+            except Exception:
+                pass
     else:
         print(f"Unknown command: '{command}'")
-        print("Usage: python main.py [start|test|kickoff|dossier|drill|night|reset|status]")
+        print("Usage: python main.py [start|test|kickoff|dossier|drill|night|prep-pdf|approve|reject|broadcast|pdf|check-notifications|list-notifications|status]")

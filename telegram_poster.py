@@ -8,6 +8,7 @@ Supports:
 - Automatic length-splitting and error handling
 """
 
+import os
 import asyncio
 import time
 import requests
@@ -112,6 +113,30 @@ class TelegramPoster:
                 fail += 1
             await asyncio.sleep(2)
         return ok, fail
+
+    async def send_document(self, file_path: str, caption: str = "", target_channel: str = None) -> bool:
+        """Send a PDF or file document to the specified channel"""
+        chat_id = target_channel or self.channel
+        if not os.path.exists(file_path):
+            logger.error(f"Document file not found: {file_path}")
+            return False
+        try:
+            bot = self._get_bot()
+            with open(file_path, "rb") as doc:
+                await bot.send_document(
+                    chat_id=chat_id,
+                    document=doc,
+                    caption=caption[:1000],
+                    parse_mode=ParseMode.HTML,
+                    read_timeout=90,
+                    write_timeout=90,
+                    connect_timeout=30
+                )
+            logger.info(f"Document sent successfully: {file_path}")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to send document: {e}")
+            return False
 
 
 def run_async(coro):

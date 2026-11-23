@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="kn">
+<head>
+  <meta charset="utf-8">
+  <title>Prajavani - Daily Exam Analysis - {{ date_str }}</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Kannada:wght@400;500;600;700;800&family=Noto+Serif+Kannada:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+
+    @page {
+      size: A4;
+      margin: 8mm 9mm 10mm 9mm;
+      @bottom-left {
+        content: "KANSIRI";
+        font-family: 'Plus Jakarta Sans', 'Noto Sans Kannada', sans-serif;
+        font-size: 7.5pt;
+        font-weight: 800;
+        letter-spacing: 0.8px;
+        color: #881337;
+      }
+      @bottom-right {
+        content: "Page " counter(page) " of " counter(pages);
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 6.8pt;
+        font-weight: 600;
+        color: #881337;
+      }
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: #f8fafc; /* Crisp light slate backdrop so white cards pop visibly */
+      color: #1e293b;
+      font-family: 'Noto Sans Kannada', 'Plus Jakarta Sans', sans-serif;
+      font-size: 8pt;
+      line-height: 1.4;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page-section {
+      page-break-after: always;
+    }
+    .page-section:last-child {
+      page-break-after: avoid;
+    }
+
+    /* KPSC Royal Crimson Header */
+    .kpsc-header-band {
+      background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 50%, #881337 100%);
+      color: #ffffff;
+      padding: 7px 12px;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 5px rgba(127, 29, 29, 0.2);
+    }
+
+    .kpsc-top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 7.2pt;
+      font-weight: 700;
+      color: #fef08a; /* Gold accent */
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 2px;
+    }
+
+    .kpsc-badge-gold {
+      background: #f59e0b;
+      color: #78350f;
+      font-weight: 800;
+      padding: 1.5px 6px;
+      border-radius: 3px;
+      font-size: 6.8pt;
+    }
+
+    .kpsc-main-title {
+      font-family: 'Noto Serif Kannada', Georgia, serif;
+      font-size: 14.5pt;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1.2;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+    }
+
+    .kpsc-sub-title {
+      font-size: 7.8pt;
+      font-weight: 600;
+      color: #fed7aa;
+      margin-top: 2px;
+      letter-spacing: 0.3px;
+    }
+
+    /* 2-Column Layout with Wide Breathing Gap */
+    .columns-2 {
+      column-count: 2;
+      column-gap: 16px;
+    }
+
+    /* DISTINCTIVE ROYAL CRIMSON CARD CONTAINER */
+    .kpsc-card {
+      break-inside: avoid;
+      page-break-inside: avoid;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-top: 4.5px solid #991b1b; /* Royal Crimson accent stripe */
+      border-radius: 6px;
+      padding: 9px 11px;
+      margin-bottom: 14px; /* Generous gap so news items NEVER blend together */
+      box-shadow: 0 2px 4px rgba(153, 27, 27, 0.04);
+    }
+
+    .card-meta-row {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+
+    .topic-badge-crimson {
+      background: #991b1b;
+      color: #ffffff;
+      font-size: 6.8pt;
+      font-weight: 800;
+      padding: 1.5px 6px;
+      border-radius: 3px;
+      letter-spacing: 0.3px;
+    }
+
+    .syllabus-pill {
+      background: #fff1f2;
+      color: #9f1239;
+      border: 1px solid #fecdd3;
+      font-size: 6.8pt;
+      font-weight: 700;
+      padding: 1.5px 6px;
+      border-radius: 3px;
+    }
+
+    .topic-headline {
+      font-family: 'Noto Serif Kannada', Georgia, serif;
+      font-size: 10.5pt;
+      font-weight: 700;
+      color: #0f172a;
+      line-height: 1.3;
+      margin-bottom: 6px;
+    }
+
+    /* Sub-section labels inside card */
+    .label-pill {
+      display: inline-block;
+      font-size: 6.8pt;
+      font-weight: 800;
+      color: #475569;
+      background: #f1f5f9;
+      padding: 1.5px 5px;
+      border-radius: 3px;
+      text-transform: uppercase;
+      margin-top: 4px;
+      margin-bottom: 2px;
+      letter-spacing: 0.3px;
+    }
+
+    .news-desc {
+      text-align: justify;
+      margin-bottom: 5px;
+      font-size: 7.8pt;
+      color: #334155;
+    }
+
+    .bullet-point {
+      margin-bottom: 3px;
+      padding-left: 11px;
+      text-indent: -11px;
+      text-align: justify;
+      font-size: 7.7pt;
+      color: #1e293b;
+    }
+    .bullet-arrow {
+      color: #991b1b;
+      font-weight: 800;
+    }
+
+    /* Statement Trap Box - Distinct Rose/Crimson Tint */
+    .trap-card-crimson {
+      background: #fff1f2;
+      border: 1px solid #fecdd3;
+      border-left: 4px solid #e11d48;
+      border-radius: 4px;
+      padding: 5px 7px;
+      margin-top: 6px;
+      margin-bottom: 4px;
+      font-size: 7.4pt;
+      color: #881337;
+      line-height: 1.32;
+    }
+    .trap-title {
+      font-weight: 800;
+      font-size: 7pt;
+      color: #be123c;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+
+    /* Karnataka Perspective Box - Olive / Amber Tint */
+    .state-card-olive {
+      background: #fefce8;
+      border: 1px solid #fef08a;
+      border-left: 4px solid #ca8a04;
+      border-radius: 4px;
+      padding: 5px 7px;
+      margin-top: 5px;
+      font-size: 7.3pt;
+      color: #713f12;
+      line-height: 1.32;
+    }
+    .state-title {
+      font-weight: 800;
+      font-size: 7pt;
+      color: #a16207;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+
+    .source-tag {
+      font-size: 6.8pt;
+      color: #64748b;
+      font-style: italic;
+      margin-top: 4px;
+      text-align: right;
+    }
+
+    /* Daily One-Liners */
+    .oneliners-card {
+      break-inside: avoid;
+      page-break-inside: avoid;
+      border: 1.5px solid #d97706;
+      border-top: 4px solid #b45309;
+      border-radius: 6px;
+      padding: 8px 10px;
+      background: #fffbeb;
+      margin-bottom: 14px;
+    }
+    .oneliners-header {
+      font-weight: 800;
+      color: #92400e;
+      font-size: 8.6pt;
+      margin-bottom: 5px;
+      text-align: center;
+      border-bottom: 1px dashed #fcd34d;
+      padding-bottom: 3px;
+    }
+
+    /* Practice MCQs with Royal Crimson & Navy styling */
+    .kpsc-mcq-card {
+      break-inside: avoid;
+      page-break-inside: avoid;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-top: 4px solid #1e3a8a;
+      border-radius: 6px;
+      padding: 8px 10px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+    .mcq-question-head {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 4px;
+    }
+    .mcq-badge {
+      background: #1e3a8a;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 7.2pt;
+      padding: 1.5px 5.5px;
+      border-radius: 3px;
+      margin-right: 6px;
+      flex-shrink: 0;
+    }
+    .mcq-text {
+      font-weight: 700;
+      font-size: 8pt;
+      color: #0f172a;
+      line-height: 1.3;
+    }
+    .mcq-statements {
+      margin: 3px 0 3px 8px;
+      font-size: 7.6pt;
+      color: #334155;
+    }
+    .mcq-options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3px 8px;
+      margin: 4px 0;
+      font-size: 7.5pt;
+      font-weight: 600;
+      color: #1e293b;
+    }
+    .mcq-explanation-box {
+      background: #f0fdf4;
+      border-left: 3.5px solid #16a34a;
+      padding: 4px 6px;
+      font-size: 7.3pt;
+      color: #14532d;
+      border-radius: 3px;
+      margin-top: 4px;
+      line-height: 1.32;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PART 1: ENGLISH EDITION (PRAJAVANI KARNATAKA SPECIAL) -->
+  <div class="page-section">
+    <div class="kpsc-header-band">
+      <div class="kpsc-top-row">
+        <span>PRAJAVANI · DAILY KARNATAKA & NATIONAL DIGEST</span>
+        <span class="kpsc-badge-gold">PART 1: ENGLISH EDITION</span>
+        <span>{{ date_str }}</span>
+      </div>
+      <div class="kpsc-main-title">Prajavani: Karnataka & National Analytical Digest</div>
+      <div class="kpsc-sub-title">Section I: English Analytical Edition · Comprehensive Governance & State Affairs</div>
+    </div>
+
+    <div class="columns-2">
+      {% for topic in en_topics %}
+      <div class="kpsc-card">
+        <div class="card-meta-row">
+          <span class="topic-badge-crimson">TOPIC {{ loop.index }}</span>
+        </div>
+
+        <div class="topic-headline">{{ topic.title }}</div>
+
+        <div class="label-pill">📌 In Focus (Current Context)</div>
+        <p class="news-desc">{{ topic.why_in_news }}</p>
+
+        <div class="label-pill">🏛️ Core Static Framework</div>
+        {% for pt in topic.static_points %}
+        <div class="bullet-point">
+          <span class="bullet-arrow">→</span> {{ pt | safe }}
+        </div>
+        {% endfor %}
+
+        {% if topic.exam_points and topic.exam_points|length > 0 %}
+        <div class="label-pill">🎯 Key Analytical Takeaways</div>
+        {% for pt in topic.exam_points %}
+        <div class="bullet-point">
+          <span class="bullet-arrow">→</span> {{ pt | safe }}
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        {% if topic.trap %}
+        <div class="trap-card-crimson">
+          <div class="trap-title">⚠️ Critical Conceptual Trap</div>
+          <div>{{ topic.trap | safe }}</div>
+        </div>
+        {% endif %}
+
+        {% if topic.state_angle %}
+        <div class="state-card-olive">
+          <div class="state-title">🌾 Karnataka State Perspective</div>
+          <div>{{ topic.state_angle | safe }}</div>
+        </div>
+        {% endif %}
+
+        {% if topic.source %}
+        <div class="source-tag">Source: {{ topic.source }}</div>
+        {% endif %}
+      </div>
+      {% endfor %}
+
+      {% if en_oneliners and en_oneliners|length > 0 %}
+      <div class="oneliners-card">
+        <div class="oneliners-header">⚡ High-Yield Daily One-Liners (Karnataka & National)</div>
+        {% for ol in en_oneliners %}
+        <div class="bullet-point"><span class="bullet-arrow">→</span> {{ ol | safe }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% if en_mcqs and en_mcqs|length > 0 %}
+      <div style="break-inside: avoid; margin-top: 6px;">
+        <div style="font-size: 8.8pt; font-weight: 800; color: #1e3a8a; margin-bottom: 6px; text-transform: uppercase;">
+          🎯 Practice Conceptual Questions with Explanations (English)
+        </div>
+        {% for q in en_mcqs %}
+        <div class="kpsc-mcq-card">
+          <div class="mcq-question-head">
+            <span class="mcq-badge">Q{{ loop.index }}</span>
+            <span class="mcq-text">{{ q.question }}</span>
+          </div>
+          {% if q.statements %}
+          <div class="mcq-statements">
+            {% for s in q.statements %}
+            <div><b>{{ loop.index }}.</b> {{ s }}</div>
+            {% endfor %}
+          </div>
+          {% endif %}
+          <div class="mcq-options-grid">
+            <div>(A) {{ q.opt_a }}</div>
+            <div>(B) {{ q.opt_b }}</div>
+            <div>(C) {{ q.opt_c }}</div>
+            <div>(D) {{ q.opt_d }}</div>
+          </div>
+          <div class="mcq-explanation-box">
+            <b>Answer ({{ q.answer }}):</b> {{ q.explanation }}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- PART 2: KANNADA EDITION (ಪ್ರಜಾವಾಣಿ ಸಮಗ್ರ ವಿಶ್ಲೇಷಣೆ) -->
+  <div class="page-section">
+    <div class="kpsc-header-band">
+      <div class="kpsc-top-row">
+        <span>ಪ್ರಜಾವಾಣಿ · ದಿನಪತ್ರಿಕೆ ಸಂಪಾದಕೀಯ ಮತ್ತು ಪ್ರಚಲಿತ ವಿದ್ಯಮಾನಗಳ ವಿಶ್ಲೇಷಣೆ</span>
+        <span class="kpsc-badge-gold">ವಿಭಾಗ 2: ಕನ್ನಡ ಆವೃತ್ತಿ</span>
+        <span>{{ date_str }}</span>
+      </div>
+      <div class="kpsc-main-title">ಪ್ರಜಾವಾಣಿ: ದಿನಪತ್ರಿಕೆ ಸಮಗ್ರ ವಿಶ್ಲೇಷಣೆ</div>
+      <div class="kpsc-sub-title">ವಿಭಾಗ II: ಕನ್ನಡ ಆವೃತ್ತಿ · ಕರ್ನಾಟಕ ಮತ್ತು ರಾಷ್ಟ್ರೀಯ ವಿದ್ಯಮಾನಗಳ ಸಮಗ್ರ ಸಂಗ್ರಹ</div>
+    </div>
+
+    <div class="columns-2">
+      {% for topic in kn_topics %}
+      <div class="kpsc-card">
+        <div class="card-meta-row">
+          <span class="topic-badge-crimson">ವಿಷಯ {{ loop.index }}</span>
+        </div>
+
+        <div class="topic-headline">{{ topic.title }}</div>
+
+        <div class="label-pill">📌 ಪ್ರಸ್ತುತ ವಿದ್ಯಮಾನ (In Focus)</div>
+        <p class="news-desc">{{ topic.why_in_news }}</p>
+
+        <div class="label-pill">🏛️ ಸ್ಥಿರ ವಿಷಯಗಳ ಚೌಕಟ್ಟು (Static Background)</div>
+        {% for pt in topic.static_points %}
+        <div class="bullet-point">
+          <span class="bullet-arrow">→</span> {{ pt | safe }}
+        </div>
+        {% endfor %}
+
+        {% if topic.exam_points and topic.exam_points|length > 0 %}
+        <div class="label-pill">🎯 ಪ್ರಮುಖ ಮುಖ್ಯಾಂಶಗಳು</div>
+        {% for pt in topic.exam_points %}
+        <div class="bullet-point">
+          <span class="bullet-arrow">→</span> {{ pt | safe }}
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        {% if topic.trap %}
+        <div class="trap-card-crimson">
+          <div class="trap-title">⚠️ ಪ್ರಮುಖ ಪರಿಕಲ್ಪನಾ ಎಚ್ಚರಿಕೆ (Concept Alert)</div>
+          <div>{{ topic.trap | safe }}</div>
+        </div>
+        {% endif %}
+
+        {% if topic.state_angle %}
+        <div class="state-card-olive">
+          <div class="state-title">🌾 ಕರ್ನಾಟಕದ ಪ್ರಮುಖ ನೋಟ</div>
+          <div>{{ topic.state_angle | safe }}</div>
+        </div>
+        {% endif %}
+
+        {% if topic.source %}
+        <div class="source-tag">ಮೂಲ: {{ topic.source }}</div>
+        {% endif %}
+      </div>
+      {% endfor %}
+
+      {% if kn_oneliners and kn_oneliners|length > 0 %}
+      <div class="oneliners-card">
+        <div class="oneliners-header">⚡ ಇಂದಿನ ಒಂದು ಸಾಲಿನ ಪ್ರಮುಖ ಸಂಗತಿಗಳು (Daily One-Liners)</div>
+        {% for ol in kn_oneliners %}
+        <div class="bullet-point"><span class="bullet-arrow">→</span> {{ ol | safe }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% if kn_mcqs and kn_mcqs|length > 0 %}
+      <div style="break-inside: avoid; margin-top: 6px;">
+        <div style="font-size: 8.8pt; font-weight: 800; color: #1e3a8a; margin-bottom: 6px; text-transform: uppercase;">
+          🎯 ಅಭ್ಯಾಸ ಪ್ರಶ್ನೋತ್ತರಗಳು ಮತ್ತು ಸಮಗ್ರ ವಿವರಣೆಗಳು
+        </div>
+        {% for q in kn_mcqs %}
+        <div class="kpsc-mcq-card">
+          <div class="mcq-question-head">
+            <span class="mcq-badge">ಪ್ರಶ್ನೆ {{ loop.index }}</span>
+            <span class="mcq-text">{{ q.question }}</span>
+          </div>
+          {% if q.statements %}
+          <div class="mcq-statements">
+            {% for s in q.statements %}
+            <div><b>{{ loop.index }}.</b> {{ s }}</div>
+            {% endfor %}
+          </div>
+          {% endif %}
+          <div class="mcq-options-grid">
+            <div>(A) {{ q.opt_a }}</div>
+            <div>(B) {{ q.opt_b }}</div>
+            <div>(C) {{ q.opt_c }}</div>
+            <div>(D) {{ q.opt_d }}</div>
+          </div>
+          <div class="mcq-explanation-box">
+            <b>ಉತ್ತರ ({{ q.answer }}):</b> {{ q.explanation }}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>The Hindu - Daily Civil Services Digest - {{ date_str }}</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Lora:ital,wght@0,500;0,600;0,700;1,400;1,600&family=Noto+Sans+Kannada:wght@400;500;600;700;800&display=swap');
+
+    @page {
+      size: A4;
+      margin: 8mm 9mm 10mm 9mm;
+      @bottom-left {
+        content: "KANSIRI";
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 7.5pt;
+        font-weight: 800;
+        letter-spacing: 0.8px;
+        color: #ea580c;
+      }
+      @bottom-right {
+        content: "Page " counter(page) " of " counter(pages);
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 7pt;
+        font-weight: 600;
+        color: #64748b;
+      }
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: #f1f5f9; /* Subtle cool slate background to make white article cards POP */
+      color: #1e293b;
+      font-family: 'Plus Jakarta Sans', 'Noto Sans Kannada', sans-serif;
+      font-size: 8pt;
+      line-height: 1.4;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page-section {
+      page-break-after: always;
+    }
+    .page-section:last-child {
+      page-break-after: avoid;
+    }
+
+    /* Top Broadsheet Header */
+    .top-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 7.2pt;
+      font-weight: 700;
+      color: #64748b;
+      margin-bottom: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .badge-nordic {
+      background: #ea580c;
+      color: #ffffff;
+      padding: 2px 7px;
+      border-radius: 3px;
+      font-weight: 800;
+      font-size: 6.8pt;
+    }
+
+    .main-banner {
+      font-family: 'Lora', Georgia, serif;
+      font-size: 16.5pt;
+      font-weight: 700;
+      color: #0f172a;
+      line-height: 1.15;
+    }
+    .sub-banner {
+      font-size: 7.8pt;
+      font-weight: 700;
+      color: #ea580c;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .amber-rule {
+      height: 3px;
+      background: linear-gradient(90deg, #ea580c 0%, #f97316 45%, #fed7aa 100%);
+      border-radius: 2px;
+      margin-bottom: 10px;
+    }
+
+    /* 2-Column Layout with Wide Breathing Gap */
+    .columns-2 {
+      column-count: 2;
+      column-gap: 16px;
+    }
+
+    /* CLEARLY DEMARCATED ARTICLE CARDS */
+    .article-card {
+      break-inside: avoid;
+      page-break-inside: avoid;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-top: 4px solid #ea580c; /* Bold Amber Accent Strip */
+      border-radius: 6px;
+      padding: 9px 11px;
+      margin-bottom: 14px; /* Generous gap so news items never blend */
+      box-shadow: 0 2px 4px rgba(15, 23, 42, 0.04);
+    }
+
+    .card-top-row {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+    .item-num-badge {
+      background: #0f172a;
+      color: #ffffff;
+      font-size: 6.8pt;
+      font-weight: 800;
+      padding: 1.5px 5px;
+      border-radius: 3px;
+      letter-spacing: 0.3px;
+    }
+    .paper-tag {
+      background: #ffedd5;
+      color: #c2410c;
+      font-size: 6.8pt;
+      font-weight: 700;
+      padding: 1.5px 6px;
+      border-radius: 3px;
+      text-transform: uppercase;
+    }
+
+    .article-title {
+      font-family: 'Lora', Georgia, 'Noto Sans Kannada', serif;
+      font-size: 10.5pt;
+      font-weight: 700;
+      color: #0f172a;
+      line-height: 1.3;
+      margin-bottom: 6px;
+    }
+
+    /* Section Sub-labels inside Card */
+    .section-badge {
+      display: inline-block;
+      font-size: 6.8pt;
+      font-weight: 800;
+      color: #475569;
+      background: #f1f5f9;
+      padding: 1.5px 5px;
+      border-radius: 3px;
+      text-transform: uppercase;
+      margin-top: 4px;
+      margin-bottom: 2px;
+      letter-spacing: 0.3px;
+    }
+
+    .news-p {
+      text-align: justify;
+      margin-bottom: 5px;
+      font-size: 7.8pt;
+      color: #334155;
+    }
+
+    .bullet-pt {
+      margin-bottom: 3px;
+      padding-left: 11px;
+      text-indent: -11px;
+      text-align: justify;
+      font-size: 7.7pt;
+      color: #1e293b;
+    }
+    .bullet-arrow {
+      color: #ea580c;
+      font-weight: 800;
+    }
+
+    /* Pastel Amber Warning Trap Box */
+    .trap-box {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-left: 4px solid #f59e0b;
+      border-radius: 4px;
+      padding: 5px 7px;
+      margin-top: 6px;
+      margin-bottom: 4px;
+      font-size: 7.4pt;
+      color: #78350f;
+      line-height: 1.32;
+    }
+    .trap-head {
+      font-weight: 800;
+      font-size: 7pt;
+      color: #b45309;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    /* Blue PYQ Alignment Box */
+    .pyq-box {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-left: 4px solid #3b82f6;
+      border-radius: 4px;
+      padding: 5px 7px;
+      margin-top: 5px;
+      font-size: 7.3pt;
+      color: #1e3a8a;
+      line-height: 1.32;
+    }
+    .pyq-head {
+      font-weight: 800;
+      font-size: 7pt;
+      color: #1d4ed8;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+
+    /* Practice MCQs Container */
+    .mcq-card {
+      break-inside: avoid;
+      page-break-inside: avoid;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-top: 3.5px solid #0f172a;
+      border-radius: 6px;
+      padding: 7px 9px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+    .mcq-head {
+      font-size: 8.2pt;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 3px;
+    }
+    .mcq-stmt {
+      margin-left: 7px;
+      margin-bottom: 2px;
+      font-size: 7.6pt;
+    }
+    .mcq-opts {
+      margin: 4px 0;
+      font-size: 7.5pt;
+      font-weight: 700;
+      color: #334155;
+    }
+    .mcq-ans {
+      background: #f0fdf4;
+      border-left: 3px solid #16a34a;
+      padding: 4px 6px;
+      border-radius: 3px;
+      font-size: 7.3pt;
+      color: #14532d;
+      margin-top: 3px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PART 1: ENGLISH EDITION (THE HINDU) -->
+  <div class="page-section">
+    <div class="top-meta">
+      <span>THE HINDU · DAILY CURRENT AFFAIRS & EDITORIAL DIGEST</span>
+      <span class="badge-nordic">PART 1: ENGLISH EDITION</span>
+      <span>{{ date_str }}</span>
+    </div>
+    <div class="main-banner">The Hindu: Daily Current Affairs & Editorial Analysis</div>
+    <div class="sub-banner">Section I: English Edition · Comprehensive Conceptual & Analytical Depth</div>
+    <div class="amber-rule"></div>
+
+    <div class="columns-2">
+      {% for item in en_articles %}
+      <div class="article-card">
+        <div class="card-top-row">
+          <span class="item-num-badge">TOPIC {{ loop.index }}</span>
+        </div>
+
+        <div class="article-title">{{ item.title }}</div>
+
+        <div class="section-badge">📌 In Focus (Current Context)</div>
+        <p class="news-p">{{ item.in_news }}</p>
+
+        <div class="section-badge">🏛️ Static Depth & Constitutional Mandate</div>
+        {% for pt in item.static_framework %}
+        <div class="bullet-pt">
+          <span class="bullet-arrow">→</span> {{ pt | safe }}
+        </div>
+        {% endfor %}
+
+        {% if item.pyq_link %}
+        <div class="pyq-box">
+          <div class="pyq-head">🎯 Analytical Concept & Linkage</div>
+          <div>{{ item.pyq_link }}</div>
+        </div>
+        {% endif %}
+
+        {% if item.trap %}
+        <div class="trap-box">
+          <div class="trap-head">⚠️ Critical Conceptual Alert</div>
+          <div>{{ item.trap }}</div>
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+
+      {% if en_mcqs and en_mcqs|length > 0 %}
+      <div style="break-inside: avoid; margin-top: 6px;">
+        <div style="font-size: 9pt; font-weight: 800; color: #0f172a; margin-bottom: 6px; text-transform: uppercase;">
+          🎯 Practice Conceptual Questions with Explanations
+        </div>
+        {% for q in en_mcqs %}
+        <div class="mcq-card">
+          <div class="mcq-head">Q{{ loop.index }}. {{ q.topic }}</div>
+          {% for s in q.statements %}
+          <div class="mcq-stmt"><b>{{ loop.index }}.</b> {{ s }}</div>
+          {% endfor %}
+          <div class="mcq-opts">{{ q.options }}</div>
+          <div class="mcq-ans">
+            <b>Answer ({{ q.answer }}):</b> {{ q.explanation }}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- PART 2: KANNADA EDITION (ದಿ ಹಿಂದೂ ಕನ್ನಡ ಆವೃತ್ತಿ) -->
+  <div class="page-section">
+    <div class="top-meta">
+      <span>THE HINDU · ಸಂಪಾದಕೀಯ ಮತ್ತು ಪ್ರಚಲಿತ ವಿದ್ಯಮಾನಗಳ ಸಮಗ್ರ ವಿಶ್ಲೇಷಣೆ</span>
+      <span class="badge-nordic">ವಿಭಾಗ 2: ಕನ್ನಡ ಆವೃತ್ತಿ</span>
+      <span>{{ date_str }}</span>
+    </div>
+    <div class="main-banner" style="font-family: 'Noto Sans Kannada', sans-serif;">ದಿ ಹಿಂದೂ: ದೈನಂದಿನ ಸಮಗ್ರ ಸುದ್ದಿ & ಸಂಪಾದಕೀಯ ವಿಶ್ಲೇಷಣೆ</div>
+    <div class="sub-banner">ವಿಭಾಗ II: ಕನ್ನಡ ಆವೃತ್ತಿ · ಪಠ್ಯಕ್ರಮ ಮತ್ತು ಪ್ರಚಲಿತ ವಿದ್ಯಮಾನಗಳ ಸಂಯೋಜನೆ</div>
+    <div class="amber-rule"></div>
+
+    <div class="columns-2">
+      {% for item in kn_articles %}
+      <div class="article-card">
+        <div class="card-top-row">
+          <span class="item-num-badge">ವಿಷಯ {{ loop.index }}</span>
+        </div>
+
+        <div class="article-title" style="font-family: 'Noto Sans Kannada', sans-serif;">{{ item.title }}</div>
+
+        <div class="section-badge">📌 ಸುದ್ದಿ ಮುಖ್ಯಾಂಶ (ಪ್ರಸ್ತುತ ಹಿನ್ನೆಲೆ)</div>
+        <p class="news-p">{{ item.in_news }}</p>
+
+        <div class="section-badge">🏛️ ಸಾಂವಿಧಾನಿಕ & ಸ್ಥಿರ ಚೌಕಟ್ಟು</div>
+        {% for pt in item.static_framework %}
+        <div class="bullet-pt">
+          <span class="bullet-arrow">→</span> {{ pt | safe }}
+        </div>
+        {% endfor %}
+
+        {% if item.pyq_link %}
+        <div class="pyq-box">
+          <div class="pyq-head">🎯 ಪರಿಕಲ್ಪನಾ ಪ್ರಶ್ನೆಗಳ ವಿಶ್ಲೇಷಣೆ</div>
+          <div>{{ item.pyq_link }}</div>
+        </div>
+        {% endif %}
+
+        {% if item.trap %}
+        <div class="trap-box">
+          <div class="trap-head">⚠️ ಪ್ರಮುಖ ಪರಿಕಲ್ಪನಾ ಎಚ್ಚರಿಕೆ (Concept Alert)</div>
+          <div>{{ item.trap }}</div>
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+
+      {% if kn_mcqs and kn_mcqs|length > 0 %}
+      <div style="break-inside: avoid; margin-top: 6px;">
+        <div style="font-size: 9pt; font-weight: 800; color: #0f172a; margin-bottom: 6px;">
+          🎯 ಅಭ್ಯಾಸ ಬಹುಆಯ್ಕೆ ಪ್ರಶ್ನೆಗಳು ಮತ್ತು ಸಮಗ್ರ ವಿವರಣೆಗಳು
+        </div>
+        {% for q in kn_mcqs %}
+        <div class="mcq-card">
+          <div class="mcq-head" style="font-family: 'Noto Sans Kannada', sans-serif;">ಪ್ರಶ್ನೆ {{ loop.index }}. {{ q.topic }}</div>
+          {% for s in q.statements %}
+          <div class="mcq-stmt"><b>{{ loop.index }}.</b> {{ s }}</div>
+          {% endfor %}
+          <div class="mcq-opts">{{ q.options }}</div>
+          <div class="mcq-ans">
+            <b>ಉತ್ತರ ({{ q.answer }}):</b> {{ q.explanation }}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+</body>
+</html>
