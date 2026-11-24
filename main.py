@@ -478,8 +478,8 @@ def run_current_time_job():
         return
 
     # Active daytime schedule (IST):
-    # Also check official exam notifications during active portal hours (10:00 AM to 07:30 PM IST)
-    if 600 <= total_minutes <= 1170:
+    # Check official exam notifications during all daytime/evening hours (06:00 AM to 10:30 PM IST)
+    if 360 <= total_minutes <= 1350:
         job_exam_notifications()
 
     if 330 <= total_minutes < 480:  # 05:30 - 08:00 IST: Morning Kickoff
@@ -490,7 +490,7 @@ def run_current_time_job():
         job_prelims_drill()
     elif 990 <= total_minutes < 1080:  # 16:30 - 18:00 IST: Newspaper PDFs Prep & Send to Admin
         job_newspaper_prep()
-    elif 1100 <= total_minutes < 1200:  # 18:20 - 20:00 IST: Broadcast at 6:35 PM if approved
+    elif 1100 <= total_minutes < 1275:  # 18:20 - 21:15 IST: Broadcast at 6:35 PM if approved
         job_newspaper_broadcast()
     elif 1275 <= total_minutes < 1350:  # 21:15 - 22:30 IST: Night Reflection
         job_night_audit()

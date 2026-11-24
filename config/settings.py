@@ -27,7 +27,8 @@ for _fname in [".env", "my_keys.txt", "key.txt"]:
             pass
 
 BOT_TOKEN = os.environ.get("BOT_TOKEN", "")
-ADMIN_TELEGRAM_ID = os.environ.get("ADMIN_TELEGRAM_ID", "7709068207")
+ADMIN_TELEGRAM_ID = os.environ.get("ADMIN_TELEGRAM_ID") or "7709068207"
+ADMIN_PHONE = os.environ.get("ADMIN_PHONE") or "918660632301"
 CHANNEL_ID = os.environ.get("CHANNEL_ID", "@kansiri_daily_updates")
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")

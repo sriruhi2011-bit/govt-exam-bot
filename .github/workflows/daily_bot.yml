@@ -45,8 +45,8 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
   CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
-  ADMIN_TELEGRAM_ID: ${{ secrets.ADMIN_TELEGRAM_ID }}
-  ADMIN_PHONE: ${{ secrets.ADMIN_PHONE }}
+  ADMIN_TELEGRAM_ID: ${{ secrets.ADMIN_TELEGRAM_ID || '7709068207' }}
+  ADMIN_PHONE: ${{ secrets.ADMIN_PHONE || '918660632301' }}
   KAN_BOT_TOKEN: ${{ secrets.KAN_BOT_TOKEN }}
   KAN_CHANNEL_ID: ${{ secrets.KAN_CHANNEL_ID }}
   GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -71,6 +71,14 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Restore cache for data directory
+        uses: actions/cache@v4
+        with:
+          path: data
+          key: aspirant-data-cache-${{ github.run_id }}
+          restore-keys: |
+            aspirant-data-cache-
+
       - name: Install system fonts and libraries
         run: |
           sudo apt-get update
@@ -93,11 +101,48 @@ jobs:
             JOB="${{ github.event.inputs.job_type }}"
             if [ "$JOB" = "all" ]; then
               python main.py test
+            elif [ "$JOB" = "auto" ]; then
+              python main.py auto
             else
               python main.py "$JOB"
             fi
             exit 0
           fi
 
-          # Scheduled trigger: automatically detect correct job based on IST time
-          python main.py auto
+          # Deterministic scheduled trigger routing (based on cron UTC)
+          CRON="${{ github.event.schedule }}"
+          echo "Scheduled cron event: $CRON"
+          case "$CRON" in
+            "30 5 * * *"|"0 10 * * *")
+              echo "Executing Official Exam Notifications Scan..."
+              python main.py check-notifications
+              ;;
+            "45 11 * * *")
+              echo "Executing 05:15 PM IST Daily Newspaper Study Material Prep & Admin Review..."
+              python main.py prep
+              ;;
+            "5 13 * * *")
+              echo "Executing 06:35 PM IST Daily Newspaper Study Material Broadcast..."
+              python main.py broadcast
+              ;;
+            "0 1 * * *")
+              echo "Executing 06:30 AM IST Morning Kickoff..."
+              python main.py kickoff
+              ;;
+            "0 3 * * *")
+              echo "Executing 08:30 AM IST Daily 360 Dossier..."
+              python main.py dossier
+              ;;
+            "30 7 * * *")
+              echo "Executing 01:00 PM IST Prelims Drill..."
+              python main.py drill
+              ;;
+            "0 16 * * *")
+              echo "Executing 09:30 PM IST Night Revision Audit..."
+              python main.py night
+              ;;
+            *)
+              echo "Defaulting to auto-detection..."
+              python main.py auto
+              ;;
+          esac

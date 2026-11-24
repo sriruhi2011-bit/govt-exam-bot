@@ -205,8 +205,8 @@ class ExamNotificationMonitor:
             UPSCAdapter()
         ]
         self.wa = WhatsAppPoster()
-        self.admin_wa_chat = os.environ.get("ADMIN_WHATSAPP_ID", WHATSAPP_CHAT_ID)
-        self.admin_tg_chat = os.environ.get("ADMIN_TELEGRAM_ID", ADMIN_TELEGRAM_ID)
+        self.admin_wa_chat = os.environ.get("ADMIN_WHATSAPP_ID") or WHATSAPP_CHAT_ID or "918660632301@c.us"
+        self.admin_tg_chat = os.environ.get("ADMIN_TELEGRAM_ID") or ADMIN_TELEGRAM_ID or "7709068207"
         self.poster = TelegramPoster()
 
     def get_ist_now(self):
@@ -327,11 +327,42 @@ class ExamNotificationMonitor:
     # ════════════════════════════════════════════════════
     # CORE SCANNER & ADMIN APPROVAL DISPATCH
     # ════════════════════════════════════════════════════
+    def check_and_process_telegram_approvals(self):
+        """Checks if admin replied on Telegram with APPROVE NOTIF-... to broadcast"""
+        try:
+            from telegram import Bot
+            bot = Bot(token=BOT_TOKEN)
+            updates = run_async(bot.get_updates())
+            admin_id_str = str(self.admin_tg_chat)
+            from notification_approval import NotificationApprovalManager
+            mgr = NotificationApprovalManager()
+
+            for u in updates:
+                uid = None
+                txt = ""
+                if u.message and u.message.from_user:
+                    uid = str(u.message.from_user.id)
+                    txt = (u.message.text or "").strip().upper()
+                elif u.callback_query and u.callback_query.from_user:
+                    uid = str(u.callback_query.from_user.id)
+                    txt = (u.callback_query.data or "").strip().upper()
+
+                if uid == admin_id_str:
+                    matches = re.findall(r"(?:APPROVE|CONFIRM)\s+(NOTIF-\d+-\d+)", txt)
+                    for notif_id in matches:
+                        logger.info(f"Admin approved notification via Telegram: {notif_id}")
+                        mgr.approve(notif_id)
+        except Exception as e:
+            logger.error(f"Error checking Telegram approvals for notifications: {e}")
+
     def scan_and_process(self) -> List[Dict[str, Any]]:
         """
         Scans all official portals, filters competitive exam items,
         downloads PDFs, deduplicates, and requests admin approval.
         """
+        # First process any incoming approvals from admin
+        self.check_and_process_telegram_approvals()
+
         registry = self.load_registry()
         existing_hashes = {v.get("sha256") for v in registry.values() if v.get("sha256")}
         existing_urls = {v.get("url") for v in registry.values() if v.get("url")}

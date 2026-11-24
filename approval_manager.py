@@ -37,8 +37,8 @@ class ApprovalManager:
         self.poster = TelegramPoster()
         self.wa = WhatsAppPoster()
         # Admin personal WhatsApp ID (e.g. 918660632301@c.us)
-        self.admin_wa_chat = os.environ.get("ADMIN_WHATSAPP_ID", WHATSAPP_CHAT_ID)
-        self.admin_tg_chat = os.environ.get("ADMIN_TELEGRAM_ID", ADMIN_TELEGRAM_ID)
+        self.admin_wa_chat = os.environ.get("ADMIN_WHATSAPP_ID") or WHATSAPP_CHAT_ID or "918660632301@c.us"
+        self.admin_tg_chat = os.environ.get("ADMIN_TELEGRAM_ID") or ADMIN_TELEGRAM_ID or "7709068207"
 
     def get_ist_now(self):
         return datetime.now(self.ist_offset)
@@ -181,6 +181,39 @@ class ApprovalManager:
         self.prepare_and_send_for_approval(force_regenerate=True)
         return True
 
+    def check_telegram_for_approval(self) -> str:
+        """
+        Polls Telegram Bot API getUpdates to check if the admin
+        sent 'APPROVE' or 'REJECT' directly from their phone.
+        Returns 'approved', 'rejected', or 'pending'.
+        """
+        try:
+            from telegram import Bot
+            from config.settings import BOT_TOKEN
+            bot = Bot(token=BOT_TOKEN)
+            updates = run_async(bot.get_updates())
+            admin_id_str = str(self.admin_tg_chat)
+            for u in reversed(updates):
+                uid = None
+                txt = ""
+                if u.message and u.message.from_user:
+                    uid = str(u.message.from_user.id)
+                    txt = (u.message.text or "").strip().upper()
+                elif u.callback_query and u.callback_query.from_user:
+                    uid = str(u.callback_query.from_user.id)
+                    txt = (u.callback_query.data or "").strip().upper()
+
+                if uid == admin_id_str:
+                    if any(kw in txt for kw in ["APPROVE", "CONFIRM", "OK", "YES", "POST"]):
+                        logger.info(f"Admin approval confirmed via Telegram message: '{txt}'")
+                        return "approved"
+                    elif any(kw in txt for kw in ["REJECT", "CANCEL", "NO", "STOP"]):
+                        logger.info(f"Admin rejection confirmed via Telegram message: '{txt}'")
+                        return "rejected"
+        except Exception as e:
+            logger.error(f"Error checking Telegram updates for approval: {e}")
+        return "pending"
+
     # ════════════════════════════════════════════════════
     # STEP 3: BROADCAST AT 6:35 PM IST (IF APPROVED)
     # ════════════════════════════════════════════════════
@@ -200,8 +233,7 @@ class ApprovalManager:
         print("=" * 60)
 
         if today not in state:
-            print("❌ No PDFs generated for today. Skipping public broadcast.")
-            return False
+            state[today] = {"status": "pending_approval"}
 
         current_status = state[today].get("status")
 
@@ -209,25 +241,42 @@ class ApprovalManager:
             print("✅ Already posted to public groups today.")
             return True
 
+        # Check cloud Telegram if not already marked approved locally
+        if current_status != "approved":
+            print("   Checking Telegram cloud inbox for admin confirmation...")
+            tg_decision = self.check_telegram_for_approval()
+            if tg_decision == "approved":
+                print("   ✅ Admin confirmation found on Telegram!")
+                current_status = "approved"
+                state[today]["status"] = "approved"
+                state[today]["approved_at"] = now_time
+                self.save_state(state)
+            elif tg_decision == "rejected":
+                print("   ❌ Admin rejection found on Telegram. Broadcast cancelled.")
+                return False
+
         if current_status != "approved":
             warning_msg = (
                 f"⚠️ *BROADCAST BLOCKED AT 6:35 PM IST:*\n"
                 f"The daily PDFs for {today} have status '{current_status}'.\n"
                 f"They were NOT confirmed before 6:00 PM, so nothing was posted to the group.\n"
-                f"To approve and send now, run: `python main.py approve` then `python main.py broadcast`."
+                f"To approve and send now, reply 'APPROVE' on Telegram, then run broadcast."
             )
             print(f"\n{warning_msg}\n")
             if self.wa.is_enabled and self.admin_wa_chat:
                 self.wa.send_text(warning_msg, target_chat=self.admin_wa_chat)
             return False
 
-        # Status is APPROVED -> Proceed to public broadcast
+        # Status is APPROVED -> Ensure PDFs exist (re-render on clean cloud runners)
         hindu_pdf = state[today].get("the_hindu_pdf")
         prajavani_pdf = state[today].get("prajavani_pdf")
 
-        if not os.path.exists(hindu_pdf) or not os.path.exists(prajavani_pdf):
-            print(f"❌ PDF file paths not found on disk: {hindu_pdf}, {prajavani_pdf}")
-            return False
+        if not (hindu_pdf and os.path.exists(hindu_pdf) and prajavani_pdf and os.path.exists(prajavani_pdf)):
+            print("   Compiling fresh study PDFs for broadcast (cloud runner)...")
+            hindu_pdf, prajavani_pdf = self.pipeline.run_daily_generation()
+            state[today]["the_hindu_pdf"] = hindu_pdf
+            state[today]["prajavani_pdf"] = prajavani_pdf
+            self.save_state(state)
 
         print("   Posting 'The Hindu' study material to group...")
         hindu_caption = (

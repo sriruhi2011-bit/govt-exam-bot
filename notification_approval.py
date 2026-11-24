@@ -87,7 +87,18 @@ class NotificationApprovalManager:
         title = item.get("title")
 
         if not pdf_path or not os.path.exists(pdf_path):
-            print(f"❌ PDF file not found at: {pdf_path}")
+            url = item.get("url")
+            if url:
+                print(f"   Downloading PDF from {url}...")
+                from exam_notification_monitor import ExamNotificationMonitor
+                res = ExamNotificationMonitor().download_pdf(url, agency, title)
+                if res:
+                    pdf_path = res[0]
+                    item["pdf_path"] = pdf_path
+                    self.save_registry(registry)
+
+        if not pdf_path or not os.path.exists(pdf_path):
+            print(f"❌ PDF file not found and could not be downloaded for {target_id}")
             return False
 
         print("\n" + "=" * 65)
