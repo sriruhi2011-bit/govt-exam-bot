@@ -430,16 +430,22 @@ def job_newspaper_prep(force: bool = False):
 
 
 def job_newspaper_broadcast(force: bool = False):
-    """18:35 IST (6:35 PM) - Broadcast confirmed PDFs to public channels"""
+    """18:35 IST (6:35 PM) - Directly broadcast newspaper study material PDFs to channels"""
     if not force and not is_within_time_window("18:15", "23:00"):
         msg = f"Newspaper broadcast dropped: current IST time ({get_ist_time()}) is outside allowed evening window (18:15 - 23:00)."
         logger.warning(msg)
         print(f"⚠️ {msg}")
         return
 
+    if is_done_today('newspaper_broadcast') and not force:
+        print("Newspaper study material PDFs already broadcasted today! Skipping.")
+        return
+
     from approval_manager import ApprovalManager
     mgr = ApprovalManager()
-    mgr.broadcast_at_635pm()
+    success = mgr.broadcast_at_635pm()
+    if success:
+        mark_done('newspaper_broadcast')
 
 
 # ════════════════════════════════════════════════════

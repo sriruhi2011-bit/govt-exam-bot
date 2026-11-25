@@ -105,53 +105,52 @@ class ApprovalManager:
         # Generate both bilingual PDFs
         hindu_pdf, prajavani_pdf = self.pipeline.run_daily_generation()
 
-        # Update state to pending_approval
+        # Update state to ready for 6:35 PM broadcast
         current_time_str = self.get_ist_now().strftime("%H:%M:%S")
         state[today] = {
             "the_hindu_pdf": hindu_pdf,
             "prajavani_pdf": prajavani_pdf,
-            "status": "pending_approval",
+            "status": "ready",
             "generated_at": current_time_str,
-            "approved_at": None,
+            "approved_at": current_time_str,
             "posted_at": None
         }
         self.save_state(state)
 
         print("\n" + "=" * 60)
-        print("   📤 SENDING TO ADMIN PERSONALLY FOR CONFIRMATION (BEFORE 6:00 PM)")
+        print("   📤 DELIVERING PREVIEW TO ADMIN (DIRECT BROADCAST AT 6:35 PM)")
         print("=" * 60)
 
-        approval_caption = (
-            f"📑 *DAILY EXAM STUDY MATERIAL READY FOR REVIEW!*\n"
+        preview_caption = (
+            f"📑 *DAILY EXAM STUDY MATERIAL READY!*\n"
             f"📅 Date: {today}\n\n"
             f"1️⃣ *The Hindu* (Nordic Amber Focus — Bilingual)\n"
             f"2️⃣ *Prajavani* (KPSC Royal Crimson — Bilingual)\n\n"
-            f"⏰ *Action Required before 6:00 PM IST:*\n"
-            f"👉 Reply *APPROVE* (or run: `python main.py approve`) to confirm broadcast at 6:35 PM.\n"
-            f"👉 Reply *REJECT* (or run: `python main.py reject`) to regenerate."
+            f"🚀 *Direct Broadcast Schedule:*\n"
+            f"Both PDFs will be directly posted to the group at *6:35 PM IST* automatically."
         )
 
-        # 1. Send to WhatsApp Admin directly
+        # 1. Send preview to WhatsApp Admin directly if enabled
         if self.wa.is_enabled and self.admin_wa_chat:
             try:
                 print(f"   Delivering PDFs to Admin WhatsApp ({self.admin_wa_chat})...")
                 self.wa.send_document(hindu_pdf, caption="📰 The Hindu (Bilingual Analysis)", target_chat=self.admin_wa_chat)
                 self.wa.send_document(prajavani_pdf, caption="📰 Prajavani (Bilingual Analysis)", target_chat=self.admin_wa_chat)
-                self.wa.send_text(approval_caption, target_chat=self.admin_wa_chat)
+                self.wa.send_text(preview_caption, target_chat=self.admin_wa_chat)
             except Exception as e:
                 logger.warning(f"WhatsApp delivery error: {e}")
 
-        # 2. Send to Telegram Admin if configured
+        # 2. Send preview to Telegram Admin if configured
         if self.admin_tg_chat:
             try:
                 print(f"   Delivering PDFs to Admin Telegram ({self.admin_tg_chat})...")
                 run_async(self.poster.send_document(hindu_pdf, caption="📰 <b>The Hindu — Daily Current Affairs & Analysis</b>", target_channel=self.admin_tg_chat))
                 run_async(self.poster.send_document(prajavani_pdf, caption="📰 <b>Prajavani — Daily Analytical Digest</b>", target_channel=self.admin_tg_chat))
-                run_async(self.poster.send_text(approval_caption, target_channel=self.admin_tg_chat))
+                run_async(self.poster.send_text(preview_caption, target_channel=self.admin_tg_chat))
             except Exception as e:
                 logger.warning(f"Telegram delivery error: {e}")
 
-        print("\n✅ PDFs delivered to admin personally. Awaiting approval before 6:00 PM IST.")
+        print("\n✅ PDFs pre-rendered and saved. Direct broadcast scheduled at 6:35 PM IST.")
         return state[today]
 
     # ════════════════════════════════════════════════════
@@ -260,7 +259,7 @@ class ApprovalManager:
             return False
 
         if today not in state:
-            state[today] = {"status": "pending_approval"}
+            state[today] = {"status": "ready"}
 
         current_status = state[today].get("status")
 
@@ -268,33 +267,7 @@ class ApprovalManager:
             print("✅ Already posted to public groups today.")
             return True
 
-        # Check cloud Telegram if not already marked approved locally
-        if current_status != "approved":
-            print("   Checking Telegram cloud inbox for admin confirmation...")
-            tg_decision = self.check_telegram_for_approval()
-            if tg_decision == "approved":
-                print("   ✅ Admin confirmation found on Telegram!")
-                current_status = "approved"
-                state[today]["status"] = "approved"
-                state[today]["approved_at"] = now_time
-                self.save_state(state)
-            elif tg_decision == "rejected":
-                print("   ❌ Admin rejection found on Telegram. Broadcast cancelled.")
-                return False
-
-        if current_status != "approved":
-            warning_msg = (
-                f"⚠️ *BROADCAST BLOCKED AT 6:35 PM IST:*\n"
-                f"The daily PDFs for {today} have status '{current_status}'.\n"
-                f"They were NOT confirmed before 6:00 PM, so nothing was posted to the group.\n"
-                f"To approve and send now, reply 'APPROVE' on Telegram, then run broadcast."
-            )
-            print(f"\n{warning_msg}\n")
-            if self.wa.is_enabled and self.admin_wa_chat:
-                self.wa.send_text(warning_msg, target_chat=self.admin_wa_chat)
-            return False
-
-        # Status is APPROVED -> Ensure PDFs exist (re-render on clean cloud runners)
+        # Direct Broadcast: Ensure PDFs exist (compile if not already prepared)
         hindu_pdf = state[today].get("the_hindu_pdf")
         prajavani_pdf = state[today].get("prajavani_pdf")
 
@@ -311,7 +284,7 @@ class ApprovalManager:
                 state[today]["prajavani_pdf"] = candidate
 
         if not (hindu_pdf and os.path.exists(hindu_pdf) and prajavani_pdf and os.path.exists(prajavani_pdf)):
-            print("   Compiling fresh study PDFs for broadcast (cloud runner)...")
+            print("   Compiling fresh study PDFs for direct broadcast...")
             hindu_pdf, prajavani_pdf = self.pipeline.run_daily_generation()
             state[today]["the_hindu_pdf"] = hindu_pdf
             state[today]["prajavani_pdf"] = prajavani_pdf
