@@ -234,12 +234,10 @@ class ApprovalManager:
     # ════════════════════════════════════════════════════
     # STEP 3: BROADCAST AT 6:35 PM IST (IF APPROVED)
     # ════════════════════════════════════════════════════
-    def broadcast_at_635pm(self) -> bool:
+    def broadcast_at_635pm(self, force: bool = False) -> bool:
         """
         Executed at 6:35 PM IST (18:35 IST).
-        Checks approval status:
-        - If 'approved': Posts both PDFs to Telegram channel and WhatsApp group.
-        - If NOT approved: Aborts public posting and warns admin.
+        Directly broadcasts both study PDFs to Telegram and WhatsApp.
         """
         today = self.get_today_str()
         state = self.load_state()
@@ -253,17 +251,30 @@ class ApprovalManager:
 
         # Time Guard: Broadcast must ONLY happen in the evening window (18:15 to 23:30 IST)
         # Prevents delayed cron runs in early morning (e.g. 04:28 AM) from broadcasting
-        if cur_mins < 18 * 60 + 15 or cur_mins > 23 * 60 + 30:
+        if not force and (cur_mins < 18 * 60 + 15 or cur_mins > 23 * 60 + 30):
             print(f"⚠️ Broadcast blocked: current IST time ({now_time}) is outside evening window (18:15 - 23:30).")
             logger.warning(f"Broadcast blocked: current IST time ({now_time}) is outside evening window.")
             return False
+
+        # Sanity check: Purge anomalous overnight/early morning runs (< 12:00 PM)
+        if today in state:
+            posted_at = state[today].get("posted_at")
+            if posted_at:
+                try:
+                    posted_h = int(posted_at.split(":")[0])
+                    if posted_h < 12:
+                        logger.warning(f"Resetting invalid state for {today}: posted_at={posted_at} was an anomalous overnight run.")
+                        del state[today]
+                        self.save_state(state)
+                except Exception:
+                    pass
 
         if today not in state:
             state[today] = {"status": "ready"}
 
         current_status = state[today].get("status")
 
-        if current_status == "posted":
+        if current_status == "posted" and not force:
             print("✅ Already posted to public groups today.")
             return True
 

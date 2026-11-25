@@ -443,7 +443,7 @@ def job_newspaper_broadcast(force: bool = False):
 
     from approval_manager import ApprovalManager
     mgr = ApprovalManager()
-    success = mgr.broadcast_at_635pm()
+    success = mgr.broadcast_at_635pm(force=force)
     if success:
         mark_done('newspaper_broadcast')
 
