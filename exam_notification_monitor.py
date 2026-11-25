@@ -122,8 +122,10 @@ class KPSCAdapter(BaseAdapter):
                         "url": full_url,
                         "source_page": self.base_url
                     })
+        except requests.exceptions.Timeout:
+            logger.warning("KPSC connection timed out (portal may be slow or firewall blocking non-Indian cloud IPs). Skipping this cycle.")
         except Exception as e:
-            logger.error(f"KPSC adapter error: {e}")
+            logger.warning(f"KPSC adapter error: {e}")
         return items
 
 
@@ -157,8 +159,10 @@ class KEAAdapter(BaseAdapter):
                         "url": full_url,
                         "source_page": self.base_url
                     })
+        except requests.exceptions.Timeout:
+            logger.warning("KEA connection timed out (portal may be slow or firewall blocking non-Indian cloud IPs). Skipping this cycle.")
         except Exception as e:
-            logger.error(f"KEA adapter error: {e}")
+            logger.warning(f"KEA adapter error: {e}")
         return items
 
 

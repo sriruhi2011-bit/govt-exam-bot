@@ -74,10 +74,28 @@ class ApprovalManager:
         today = self.get_today_str()
         state = self.load_state()
 
+        # Sanity check for delayed cron runs:
+        # If today has status 'posted', but posted_at was recorded in early morning (e.g. before 12:00 PM),
+        # that was an anomalous delayed cron from yesterday running past midnight. Purge it!
+        if today in state:
+            posted_at = state[today].get("posted_at")
+            if posted_at:
+                try:
+                    posted_h = int(posted_at.split(":")[0])
+                    if posted_h < 12:
+                        logger.warning(f"Resetting invalid state for {today}: posted_at={posted_at} was an anomalous overnight run.")
+                        del state[today]
+                        self.save_state(state)
+                except Exception:
+                    pass
+
         if today in state and not force_regenerate:
             if state[today].get("status") in ["approved", "posted"]:
-                print(f"Today's PDFs already {state[today].get('status')}. Skipping.")
-                return state[today]
+                h_pdf = state[today].get("the_hindu_pdf")
+                p_pdf = state[today].get("prajavani_pdf")
+                if h_pdf and os.path.exists(h_pdf) and p_pdf and os.path.exists(p_pdf):
+                    print(f"Today's PDFs already {state[today].get('status')}. Skipping.")
+                    return state[today]
 
         print("\n" + "=" * 60)
         print("   📰 STEP 1: GENERATING DAILY STUDY MATERIAL (THE HINDU & PRAJAVANI)")
@@ -226,11 +244,20 @@ class ApprovalManager:
         """
         today = self.get_today_str()
         state = self.load_state()
-        now_time = self.get_ist_now().strftime("%H:%M:%S")
+        now_dt = self.get_ist_now()
+        now_time = now_dt.strftime("%H:%M:%S")
+        cur_mins = now_dt.hour * 60 + now_dt.minute
 
         print("\n" + "=" * 60)
         print(f"   📢 6:35 PM BROADCAST DISPATCHER ({now_time} IST)")
         print("=" * 60)
+
+        # Time Guard: Broadcast must ONLY happen in the evening window (18:15 to 23:30 IST)
+        # Prevents delayed cron runs in early morning (e.g. 04:28 AM) from broadcasting
+        if cur_mins < 18 * 60 + 15 or cur_mins > 23 * 60 + 30:
+            print(f"⚠️ Broadcast blocked: current IST time ({now_time}) is outside evening window (18:15 - 23:30).")
+            logger.warning(f"Broadcast blocked: current IST time ({now_time}) is outside evening window.")
+            return False
 
         if today not in state:
             state[today] = {"status": "pending_approval"}
@@ -270,6 +297,18 @@ class ApprovalManager:
         # Status is APPROVED -> Ensure PDFs exist (re-render on clean cloud runners)
         hindu_pdf = state[today].get("the_hindu_pdf")
         prajavani_pdf = state[today].get("prajavani_pdf")
+
+        # Cross-platform path check (e.g. Windows path on Linux runner)
+        if hindu_pdf and not os.path.exists(hindu_pdf):
+            candidate = os.path.join(DATA_DIR, "pdfs", os.path.basename(hindu_pdf.replace("\\", "/")))
+            if os.path.exists(candidate):
+                hindu_pdf = candidate
+                state[today]["the_hindu_pdf"] = candidate
+        if prajavani_pdf and not os.path.exists(prajavani_pdf):
+            candidate = os.path.join(DATA_DIR, "pdfs", os.path.basename(prajavani_pdf.replace("\\", "/")))
+            if os.path.exists(candidate):
+                prajavani_pdf = candidate
+                state[today]["prajavani_pdf"] = candidate
 
         if not (hindu_pdf and os.path.exists(hindu_pdf) and prajavani_pdf and os.path.exists(prajavani_pdf)):
             print("   Compiling fresh study PDFs for broadcast (cloud runner)...")

@@ -55,6 +55,10 @@ def get_ist_date():
     return datetime.now(ist_offset).strftime('%Y-%m-%d')
 
 
+def get_ist_time():
+    return datetime.now(ist_offset).strftime('%H:%M:%S')
+
+
 def get_local_time_for_ist(ist_time_str):
     try:
         hour, minute = map(int, ist_time_str.split(':'))
@@ -67,45 +71,62 @@ def get_local_time_for_ist(ist_time_str):
         return ist_time_str
 
 
+def is_within_time_window(start_hm: str, end_hm: str) -> bool:
+    """Check if current IST time is between start_hm and end_hm (e.g. '05:30', '10:00')"""
+    now = datetime.now(ist_offset)
+    cur_mins = now.hour * 60 + now.minute
+    sh, sm = map(int, start_hm.split(':'))
+    eh, em = map(int, end_hm.split(':'))
+    s_mins = sh * 60 + sm
+    e_mins = eh * 60 + em
+    return s_mins <= cur_mins <= e_mins
+
+
 def is_done_today(job_name):
-    if IS_GITHUB:
-        return False
     try:
         if os.path.exists(STATE_FILE):
-            with open(STATE_FILE, 'r') as f:
+            with open(STATE_FILE, 'r', encoding='utf-8') as f:
                 state = json.load(f)
             today = get_ist_date()
             return today in state and job_name in state[today]
-    except:
-        pass
+    except Exception as e:
+        logger.warning(f"Error reading state file {STATE_FILE}: {e}")
     return False
 
 
 def mark_done(job_name):
-    if IS_GITHUB:
-        return
     state = {}
     try:
         if os.path.exists(STATE_FILE):
-            with open(STATE_FILE, 'r') as f:
+            with open(STATE_FILE, 'r', encoding='utf-8') as f:
                 state = json.load(f)
-    except:
-        pass
+    except Exception as e:
+        logger.warning(f"Error reading state before mark_done: {e}")
     today = get_ist_date()
     if today not in state:
         state[today] = {}
     state[today][job_name] = datetime.now(ist_offset).strftime('%H:%M:%S')
-    with open(STATE_FILE, 'w') as f:
-        json.dump(state, f, indent=2)
+    try:
+        os.makedirs(os.path.dirname(STATE_FILE), exist_ok=True)
+        with open(STATE_FILE, 'w', encoding='utf-8') as f:
+            json.dump(state, f, indent=2)
+    except Exception as e:
+        logger.error(f"Error writing state to {STATE_FILE}: {e}")
 
 
 # ════════════════════════════════════════════════════
 #  PIPELINE JOBS
 # ════════════════════════════════════════════════════
 
-def job_morning_kickoff():
+def job_morning_kickoff(force: bool = False):
     """06:30 AM - Morning Motivation, Target Setting & Mindset"""
-    if is_done_today('morning_kickoff'):
+    if not force and not is_within_time_window("05:30", "10:00"):
+        msg = f"Morning kickoff dropped: current IST time ({get_ist_time()}) is outside allowed window (05:30 - 10:00)."
+        logger.warning(msg)
+        print(f"⚠️ {msg}")
+        return
+
+    if is_done_today('morning_kickoff') and not force:
         print('Morning kickoff already done today! Skipping.')
         return
 
@@ -139,9 +160,15 @@ def job_morning_kickoff():
     print("   DONE: Morning kickoff posted successfully!")
 
 
-def job_daily_dossier():
+def job_daily_dossier(force: bool = False):
     """08:30 AM - Daily 360° Issue Dossier (Syllabus Deep Dive)"""
-    if is_done_today('daily_dossier'):
+    if not force and not is_within_time_window("08:00", "12:30"):
+        msg = f"Daily 360 Dossier dropped: current IST time ({get_ist_time()}) is outside allowed window (08:00 - 12:30)."
+        logger.warning(msg)
+        print(f"⚠️ {msg}")
+        return
+
+    if is_done_today('daily_dossier') and not force:
         print('Daily dossier already done today! Skipping.')
         return
 
@@ -172,9 +199,15 @@ def job_daily_dossier():
     print("   DONE: Daily 360° Dossier posted successfully!")
 
 
-def job_prelims_drill():
+def job_prelims_drill(force: bool = False):
     """01:00 PM - Prelims & Objective MCQ Drill (Interactive Bilingual Telegram Polls)"""
-    if is_done_today('prelims_drill'):
+    if not force and not is_within_time_window("12:30", "17:00"):
+        msg = f"Prelims drill dropped: current IST time ({get_ist_time()}) is outside allowed window (12:30 - 17:00)."
+        logger.warning(msg)
+        print(f"⚠️ {msg}")
+        return
+
+    if is_done_today('prelims_drill') and not force:
         print('Prelims drill already done today! Skipping.')
         return
 
@@ -310,9 +343,15 @@ def job_model_answer():
     print("   DONE: Official Model Answer posted successfully!")
 
 
-def job_night_audit():
+def job_night_audit(force: bool = False):
     """09:30 PM - Night Revision Audit & Rest"""
-    if is_done_today('night_audit'):
+    if not force and not is_within_time_window("21:00", "23:59"):
+        msg = f"Night audit dropped: current IST time ({get_ist_time()}) is outside allowed window (21:00 - 23:59)."
+        logger.warning(msg)
+        print(f"⚠️ {msg}")
+        return
+
+    if is_done_today('night_audit') and not force:
         print('Night audit already done today! Skipping.')
         return
 
@@ -377,15 +416,27 @@ def job_publish_study_pdf(lang='both'):
     print("   DONE: Study Material PDF generated and posted successfully!")
 
 
-def job_newspaper_prep():
+def job_newspaper_prep(force: bool = False):
     """17:15 IST (Before 5:30 PM) - Generate The Hindu & Prajavani PDFs and send to admin for approval"""
+    if not force and not is_within_time_window("16:30", "20:30"):
+        msg = f"Newspaper prep dropped: current IST time ({get_ist_time()}) is outside allowed window (16:30 - 20:30)."
+        logger.warning(msg)
+        print(f"⚠️ {msg}")
+        return
+
     from approval_manager import ApprovalManager
     mgr = ApprovalManager()
-    mgr.prepare_and_send_for_approval()
+    mgr.prepare_and_send_for_approval(force_regenerate=force)
 
 
-def job_newspaper_broadcast():
+def job_newspaper_broadcast(force: bool = False):
     """18:35 IST (6:35 PM) - Broadcast confirmed PDFs to public channels"""
+    if not force and not is_within_time_window("18:15", "23:00"):
+        msg = f"Newspaper broadcast dropped: current IST time ({get_ist_time()}) is outside allowed evening window (18:15 - 23:00)."
+        logger.warning(msg)
+        print(f"⚠️ {msg}")
+        return
+
     from approval_manager import ApprovalManager
     mgr = ApprovalManager()
     mgr.broadcast_at_635pm()
@@ -524,6 +575,7 @@ def run_full_test():
 
 if __name__ == '__main__':
     command = sys.argv[1].lower() if len(sys.argv) > 1 else 'start'
+    force = '--force' in sys.argv or '-f' in sys.argv
 
     # Route commands
     if command in ['auto', 'cron']:
@@ -531,12 +583,12 @@ if __name__ == '__main__':
     elif command in ['test', 'full']:
         run_full_test()
     elif command in ['kickoff', 'greeting', 'morning']:
-        job_morning_kickoff()
+        job_morning_kickoff(force=force)
 
     elif command in ['dossier', 'news', 'morning-news']:
-        job_daily_dossier()
+        job_daily_dossier(force=force)
     elif command in ['drill', 'quiz', 'prelims']:
-        job_prelims_drill()
+        job_prelims_drill(force=force)
     elif command in ['mains', 'question']:
         job_mains_challenge()
     elif command in ['capsule', 'gk', 'flashcard']:
@@ -544,7 +596,7 @@ if __name__ == '__main__':
     elif command in ['model-answer', 'answer']:
         job_model_answer()
     elif command in ['night', 'goodnight', 'audit']:
-        job_night_audit()
+        job_night_audit(force=force)
     elif command in ['pdf', 'material', 'study-material']:
         job_publish_study_pdf('both')
     elif command in ['pdf-en', 'pdf-english']:
@@ -552,7 +604,7 @@ if __name__ == '__main__':
     elif command in ['pdf-kn', 'pdf-kannada']:
         job_publish_study_pdf('kannada')
     elif command in ['prep-pdf', 'prep-newspaper', 'prep']:
-        job_newspaper_prep()
+        job_newspaper_prep(force=force)
     elif command in ['approve', 'confirm']:
         arg = sys.argv[2] if len(sys.argv) > 2 else None
         if arg and arg.upper().startswith("NOTIF-"):
@@ -576,7 +628,7 @@ if __name__ == '__main__':
         from notification_approval import NotificationApprovalManager
         NotificationApprovalManager().list_notifications()
     elif command in ['broadcast', 'post-pdf']:
-        job_newspaper_broadcast()
+        job_newspaper_broadcast(force=force)
     elif command == 'start':
         start()
     elif command == 'reset':

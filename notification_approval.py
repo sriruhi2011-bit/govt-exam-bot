@@ -86,6 +86,14 @@ class NotificationApprovalManager:
         agency = item.get("agency")
         title = item.get("title")
 
+        # Cross-platform path resolution (e.g. Windows path on Linux runner)
+        if pdf_path and not os.path.exists(pdf_path):
+            filename = os.path.basename(pdf_path.replace("\\", "/"))
+            candidate = os.path.join(DATA_DIR, "notifications", filename)
+            if os.path.exists(candidate):
+                pdf_path = candidate
+                item["pdf_path"] = candidate
+
         if not pdf_path or not os.path.exists(pdf_path):
             url = item.get("url")
             if url:

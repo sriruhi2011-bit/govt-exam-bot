@@ -99,50 +99,21 @@ jobs:
           # If manual trigger from GitHub website
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             JOB="${{ github.event.inputs.job_type }}"
+            echo "Manual workflow dispatch trigger with job_type: $JOB"
             if [ "$JOB" = "all" ]; then
               python main.py test
             elif [ "$JOB" = "auto" ]; then
               python main.py auto
             else
-              python main.py "$JOB"
+              # Allow forced manual execution of specific jobs
+              python main.py "$JOB" --force
             fi
             exit 0
           fi
 
-          # Deterministic scheduled trigger routing (based on cron UTC)
+          # Scheduled triggers: Use intelligent time-governed auto-detection.
+          # This protects against GitHub cron queue delays (where 6:30 AM runs at 3 PM)
+          # by evaluating the exact real-time IST clock and checking persistent state.
           CRON="${{ github.event.schedule }}"
-          echo "Scheduled cron event: $CRON"
-          case "$CRON" in
-            "30 5 * * *"|"0 10 * * *")
-              echo "Executing Official Exam Notifications Scan..."
-              python main.py check-notifications
-              ;;
-            "45 11 * * *")
-              echo "Executing 05:15 PM IST Daily Newspaper Study Material Prep & Admin Review..."
-              python main.py prep
-              ;;
-            "5 13 * * *")
-              echo "Executing 06:35 PM IST Daily Newspaper Study Material Broadcast..."
-              python main.py broadcast
-              ;;
-            "0 1 * * *")
-              echo "Executing 06:30 AM IST Morning Kickoff..."
-              python main.py kickoff
-              ;;
-            "0 3 * * *")
-              echo "Executing 08:30 AM IST Daily 360 Dossier..."
-              python main.py dossier
-              ;;
-            "30 7 * * *")
-              echo "Executing 01:00 PM IST Prelims Drill..."
-              python main.py drill
-              ;;
-            "0 16 * * *")
-              echo "Executing 09:30 PM IST Night Revision Audit..."
-              python main.py night
-              ;;
-            *)
-              echo "Defaulting to auto-detection..."
-              python main.py auto
-              ;;
-          esac
+          echo "Scheduled cron event: $CRON (Running time-governed auto dispatcher)"
+          python main.py auto
