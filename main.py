@@ -408,8 +408,13 @@ def job_publish_study_pdf(lang='both'):
         kn_data = get_demo_kannada_data()
         kn_pdf = engine.generate_kannada_pdf(kn_data)
         kn_caption = "📚 <b>ದೈನಂದಿನ ಪರೀಕ್ಷಾ ಮಾರ್ಗದರ್ಶಿ PDF</b>\nಪ್ರಜಾವಾಣಿ & ಡೆಕ್ಕನ್ ಹೆರಾಲ್ಡ್ ಸಮಗ್ರ ಪರೀಕ್ಷಾ ವಿಶ್ಲೇಷಣೆ."
-        target_kn = KAN_CHANNEL_ID if (KAN_CHANNEL_ID and KAN_CHANNEL_ID != CHANNEL_ID) else CHANNEL_ID
-        run_async(poster.send_document(kn_pdf, caption=kn_caption, target_channel=target_kn))
+        # Always post to primary CHANNEL_ID
+        run_async(poster.send_document(kn_pdf, caption=kn_caption, target_channel=CHANNEL_ID))
+        if KAN_CHANNEL_ID and KAN_CHANNEL_ID != CHANNEL_ID:
+            try:
+                run_async(poster.send_document(kn_pdf, caption=kn_caption, target_channel=KAN_CHANNEL_ID))
+            except Exception as e:
+                logger.warning(f"Could not post to secondary channel {KAN_CHANNEL_ID}: {e}")
         if wa.is_enabled:
             wa.send_document(kn_pdf, caption="📚 *ದೈನಂದಿನ ಪ್ರಜಾವಾಣಿ ಪರೀಕ್ಷಾ ವಿಶ್ಲೇಷಣೆ PDF*")
 
@@ -417,20 +422,26 @@ def job_publish_study_pdf(lang='both'):
 
 
 def job_newspaper_prep(force: bool = False):
-    """17:15 IST (Before 5:30 PM) - Generate The Hindu & Prajavani PDFs and send to admin for approval"""
-    if not force and not is_within_time_window("16:30", "20:30"):
-        msg = f"Newspaper prep dropped: current IST time ({get_ist_time()}) is outside allowed window (16:30 - 20:30)."
+    """17:15 IST (Around 5:30 PM) - Generate The Hindu & Prajavani PDFs and post directly when ready"""
+    if not force and not is_within_time_window("16:30", "23:00"):
+        msg = f"Newspaper prep dropped: current IST time ({get_ist_time()}) is outside allowed window (16:30 - 23:00)."
         logger.warning(msg)
         print(f"⚠️ {msg}")
+        return
+
+    if is_done_today('newspaper_broadcast') and not force:
+        print("Newspaper study material PDFs already posted today! Skipping prep.")
         return
 
     from approval_manager import ApprovalManager
     mgr = ApprovalManager()
     mgr.prepare_and_send_for_approval(force_regenerate=force)
+    mark_done('newspaper_prep')
+    mark_done('newspaper_broadcast')
 
 
 def job_newspaper_broadcast(force: bool = False):
-    """18:35 IST (6:35 PM) - Directly broadcast newspaper study material PDFs to channels"""
+    """18:35 IST (6:35 PM) - Ensure newspaper study material PDFs are posted to channels"""
     if not force and not is_within_time_window("18:15", "23:00"):
         msg = f"Newspaper broadcast dropped: current IST time ({get_ist_time()}) is outside allowed evening window (18:15 - 23:00)."
         logger.warning(msg)
@@ -446,6 +457,7 @@ def job_newspaper_broadcast(force: bool = False):
     success = mgr.broadcast_at_635pm(force=force)
     if success:
         mark_done('newspaper_broadcast')
+        mark_done('newspaper_prep')
 
 
 # ════════════════════════════════════════════════════

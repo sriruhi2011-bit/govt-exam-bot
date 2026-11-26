@@ -62,14 +62,49 @@ class ApprovalManager:
         except Exception as e:
             logger.error(f"Error saving approval state: {e}")
 
+    def _send_daily_pdfs_to_channels(self, hindu_pdf: str, prajavani_pdf: str, today: str) -> bool:
+        """
+        Broadcast both The Hindu and Prajavani PDFs directly to the primary channel
+        (CHANNEL_ID) and WhatsApp group.
+        """
+        print("   Posting 'The Hindu' study material to group...")
+        hindu_caption = (
+            f"📰 <b>The Hindu — Daily Current Affairs & Editorial Analysis</b>\n"
+            f"📅 Date: {today}\n"
+            f"🌐 Bilingual Edition: English & ಕನ್ನಡ"
+        )
+        run_async(self.poster.send_document(hindu_pdf, caption=hindu_caption, target_channel=CHANNEL_ID))
+        if self.wa.is_enabled:
+            self.wa.send_document(hindu_pdf, caption=self.wa.html_to_whatsapp(hindu_caption))
+
+        print("   Posting 'Prajavani' study material to group...")
+        prajavani_caption = (
+            f"📰 <b>ಪ್ರಜಾವಾಣಿ — ದಿನಪತ್ರಿಕೆ ಸಮಗ್ರ ವಿಶ್ಲೇಷಣೆ</b>\n"
+            f"📅 ದಿನಾಂಕ: {today}\n"
+            f"🌐 Bilingual Edition: English & ಕನ್ನಡ"
+        )
+        # Always post Prajavani directly to primary CHANNEL_ID
+        run_async(self.poster.send_document(prajavani_pdf, caption=prajavani_caption, target_channel=CHANNEL_ID))
+
+        # If a secondary KAN_CHANNEL_ID is configured and distinct, send a copy there safely
+        if KAN_CHANNEL_ID and KAN_CHANNEL_ID != CHANNEL_ID:
+            try:
+                run_async(self.poster.send_document(prajavani_pdf, caption=prajavani_caption, target_channel=KAN_CHANNEL_ID))
+            except Exception as e:
+                logger.warning(f"Could not post Prajavani to secondary channel {KAN_CHANNEL_ID}: {e}")
+
+        if self.wa.is_enabled:
+            self.wa.send_document(prajavani_pdf, caption=self.wa.html_to_whatsapp(prajavani_caption))
+
+        return True
+
     # ════════════════════════════════════════════════════
-    # STEP 1: GENERATE & SEND PERSONALLY (BEFORE 5:30 PM)
+    # STEP 1: GENERATE & POST DIRECTLY WHEN READY
     # ════════════════════════════════════════════════════
     def prepare_and_send_for_approval(self, force_regenerate: bool = False) -> Dict[str, Any]:
         """
-        Executed before 5:30 PM IST (e.g., 17:15 IST).
-        Generates The Hindu and Prajavani PDFs and delivers them
-        privately to the admin for review.
+        Generates The Hindu and Prajavani PDFs and immediately posts them
+        to the group when ready (no advance admin preview notices).
         """
         today = self.get_today_str()
         state = self.load_state()
@@ -90,67 +125,37 @@ class ApprovalManager:
                     pass
 
         if today in state and not force_regenerate:
-            if state[today].get("status") in ["approved", "posted"]:
+            if state[today].get("status") == "posted":
                 h_pdf = state[today].get("the_hindu_pdf")
                 p_pdf = state[today].get("prajavani_pdf")
                 if h_pdf and os.path.exists(h_pdf) and p_pdf and os.path.exists(p_pdf):
-                    print(f"Today's PDFs already {state[today].get('status')}. Skipping.")
+                    print(f"Today's PDFs already posted. Skipping.")
                     return state[today]
 
         print("\n" + "=" * 60)
-        print("   📰 STEP 1: GENERATING DAILY STUDY MATERIAL (THE HINDU & PRAJAVANI)")
-        print("   ⏰ Target: Ready before 5:30 PM IST")
+        print("   📰 GENERATING DAILY STUDY MATERIAL (THE HINDU & PRAJAVANI)")
+        print("   ⏰ Mode: Direct post to group when ready")
         print("=" * 60)
 
         # Generate both bilingual PDFs
         hindu_pdf, prajavani_pdf = self.pipeline.run_daily_generation()
 
-        # Update state to ready for 6:35 PM broadcast
+        # Immediately post to group/channels
+        self._send_daily_pdfs_to_channels(hindu_pdf, prajavani_pdf, today)
+
+        # Update state to posted
         current_time_str = self.get_ist_now().strftime("%H:%M:%S")
         state[today] = {
             "the_hindu_pdf": hindu_pdf,
             "prajavani_pdf": prajavani_pdf,
-            "status": "ready",
+            "status": "posted",
             "generated_at": current_time_str,
             "approved_at": current_time_str,
-            "posted_at": None
+            "posted_at": current_time_str
         }
         self.save_state(state)
 
-        print("\n" + "=" * 60)
-        print("   📤 DELIVERING PREVIEW TO ADMIN (DIRECT BROADCAST AT 6:35 PM)")
-        print("=" * 60)
-
-        preview_caption = (
-            f"📑 *DAILY EXAM STUDY MATERIAL READY!*\n"
-            f"📅 Date: {today}\n\n"
-            f"1️⃣ *The Hindu* (Nordic Amber Focus — Bilingual)\n"
-            f"2️⃣ *Prajavani* (KPSC Royal Crimson — Bilingual)\n\n"
-            f"🚀 *Direct Broadcast Schedule:*\n"
-            f"Both PDFs will be directly posted to the group at *6:35 PM IST* automatically."
-        )
-
-        # 1. Send preview to WhatsApp Admin directly if enabled
-        if self.wa.is_enabled and self.admin_wa_chat:
-            try:
-                print(f"   Delivering PDFs to Admin WhatsApp ({self.admin_wa_chat})...")
-                self.wa.send_document(hindu_pdf, caption="📰 The Hindu (Bilingual Analysis)", target_chat=self.admin_wa_chat)
-                self.wa.send_document(prajavani_pdf, caption="📰 Prajavani (Bilingual Analysis)", target_chat=self.admin_wa_chat)
-                self.wa.send_text(preview_caption, target_chat=self.admin_wa_chat)
-            except Exception as e:
-                logger.warning(f"WhatsApp delivery error: {e}")
-
-        # 2. Send preview to Telegram Admin if configured
-        if self.admin_tg_chat:
-            try:
-                print(f"   Delivering PDFs to Admin Telegram ({self.admin_tg_chat})...")
-                run_async(self.poster.send_document(hindu_pdf, caption="📰 <b>The Hindu — Daily Current Affairs & Analysis</b>", target_channel=self.admin_tg_chat))
-                run_async(self.poster.send_document(prajavani_pdf, caption="📰 <b>Prajavani — Daily Analytical Digest</b>", target_channel=self.admin_tg_chat))
-                run_async(self.poster.send_text(preview_caption, target_channel=self.admin_tg_chat))
-            except Exception as e:
-                logger.warning(f"Telegram delivery error: {e}")
-
-        print("\n✅ PDFs pre-rendered and saved. Direct broadcast scheduled at 6:35 PM IST.")
+        print(f"\n✅ Both PDFs generated and posted to group successfully at {current_time_str} IST!")
         return state[today]
 
     # ════════════════════════════════════════════════════
@@ -299,35 +304,17 @@ class ApprovalManager:
             hindu_pdf, prajavani_pdf = self.pipeline.run_daily_generation()
             state[today]["the_hindu_pdf"] = hindu_pdf
             state[today]["prajavani_pdf"] = prajavani_pdf
-            self.save_state(state)
 
-        print("   Posting 'The Hindu' study material to group...")
-        hindu_caption = (
-            f"📰 <b>The Hindu — Daily Current Affairs & Editorial Analysis</b>\n"
-            f"📅 Date: {today}\n"
-            f"🌐 Bilingual Edition: English & ಕನ್ನಡ"
-        )
-        run_async(self.poster.send_document(hindu_pdf, caption=hindu_caption, target_channel=CHANNEL_ID))
-        if self.wa.is_enabled:
-            self.wa.send_document(hindu_pdf, caption=self.wa.html_to_whatsapp(hindu_caption))
-
-        print("   Posting 'Prajavani' study material to group...")
-        prajavani_caption = (
-            f"📰 <b>ಪ್ರಜಾವಾಣಿ — ದಿನಪತ್ರಿಕೆ ಸಮಗ್ರ ವಿಶ್ಲೇಷಣೆ</b>\n"
-            f"📅 ದಿನಾಂಕ: {today}\n"
-            f"🌐 Bilingual Edition: English & ಕನ್ನಡ"
-        )
-        target_kn = KAN_CHANNEL_ID if (KAN_CHANNEL_ID and KAN_CHANNEL_ID != CHANNEL_ID) else CHANNEL_ID
-        run_async(self.poster.send_document(prajavani_pdf, caption=prajavani_caption, target_channel=target_kn))
-        if self.wa.is_enabled:
-            self.wa.send_document(prajavani_pdf, caption=self.wa.html_to_whatsapp(prajavani_caption))
+        # Broadcast both PDFs to channels
+        self._send_daily_pdfs_to_channels(hindu_pdf, prajavani_pdf, today)
 
         # Mark as posted
+        current_time_str = self.get_ist_now().strftime("%H:%M:%S")
         state[today]["status"] = "posted"
-        state[today]["posted_at"] = self.get_ist_now().strftime("%H:%M:%S")
+        state[today]["posted_at"] = current_time_str
         self.save_state(state)
 
-        print("\n🎉 SUCCESS: Both daily study PDFs broadcasted to public group at 6:35 PM!")
+        print("\n🎉 SUCCESS: Both daily study PDFs broadcasted to public group!")
         return True
 
 
