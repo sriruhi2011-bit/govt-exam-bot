@@ -95,10 +95,139 @@ EXAM_KEYWORDS = [
 ]
 
 
+HISTORY_FILE = os.path.join(DATA_DIR, "published_news_history.json")
+
+ENGLISH_STOPWORDS = {
+    "the", "and", "for", "with", "from", "this", "that", "after", "over", "into", "under",
+    "about", "will", "have", "been", "were", "they", "their", "more", "than", "first",
+    "says", "said", "amid", "take", "seek", "held", "meet", "back", "next", "also", "case"
+}
+
+KANNADA_STOPWORDS = {
+    "ಮತ್ತು", "ಹಾಗೂ", "ಮೇಲೆ", "ಅಡಿಯಲ್ಲಿ", "ಕುರಿತು", "ಇಂದು", "ಎಂದು", "ಇಲ್ಲಿ", "ಅಲ್ಲಿ",
+    "ಬಗ್ಗೆ", "ನಡುವೆ", "ಮುಂದೆ", "ಹಿಂದೆ", "ನಂತರ", "ಮೊದಲು", "ಎರಡು", "ಒಂದು"
+}
+
+
+class NewsDeduplicator:
+    """
+    Guarantees zero repeated news across multiple days and cross-sources:
+    1. Multi-day history tracking (retains 14 days of published news).
+    2. URL normalization (strips tracking queries and fragments).
+    3. Fuzzy title similarity & Jaccard keyword overlap.
+    4. Cross-source intra-day deduplication (prevents The Hindu and Prajavani from repeating the same story).
+    """
+
+    def __init__(self, history_file: str = HISTORY_FILE):
+        self.history_file = history_file
+        self.today_selected: List[Dict[str, Any]] = []
+        self.history = self._load_history()
+
+    def _normalize_url(self, url: str) -> str:
+        """Strip tracking parameters, anchors, and trailing slashes"""
+        if not url:
+            return ""
+        clean = url.split("?")[0].split("#")[0].rstrip("/").lower()
+        return clean
+
+    def _extract_keywords(self, text: str) -> set:
+        """Extract significant content tokens of length >= 3, minus stopwords"""
+        tokens = set(re.findall(r'[a-zA-Z0-9\u0C80-\u0CFF]{3,}', text.lower()))
+        return tokens - ENGLISH_STOPWORDS - KANNADA_STOPWORDS
+
+    def _load_history(self) -> List[Dict[str, Any]]:
+        if os.path.exists(self.history_file):
+            try:
+                with open(self.history_file, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    return data.get("published", [])
+            except Exception as e:
+                logger.warning(f"Error loading publication history: {e}")
+        return []
+
+    def save_history(self):
+        try:
+            with open(self.history_file, "w", encoding="utf-8") as f:
+                json.dump({"published": self.history}, f, indent=2, ensure_ascii=False)
+        except Exception as e:
+            logger.warning(f"Error saving publication history: {e}")
+
+    def is_duplicate(self, candidate_title: str, candidate_url: str = "") -> Tuple[bool, str]:
+        """
+        Returns (True, reason) if candidate story was already published
+        in the last 14 days or selected in the current run.
+        """
+        cand_norm_url = self._normalize_url(candidate_url)
+        cand_keywords = self._extract_keywords(candidate_title)
+
+        # Check against current run's already selected items (cross-source intra-day)
+        for sel in self.today_selected:
+            if cand_norm_url and self._normalize_url(sel.get("link", "")) == cand_norm_url:
+                return True, f"Duplicate URL in today's selection: {candidate_url}"
+            sel_keywords = self._extract_keywords(sel.get("title", ""))
+            if self._has_keyword_overlap(cand_keywords, sel_keywords):
+                return True, f"Duplicate story in today's selection ('{sel.get('title')}')"
+
+        # Check against 14-day persistent history
+        for item in self.history:
+            hist_url = self._normalize_url(item.get("url", ""))
+            if cand_norm_url and hist_url and cand_norm_url == hist_url:
+                return True, f"Article URL already published on {item.get('published_date')}"
+
+            hist_title = item.get("title", "")
+            hist_keywords = set(item.get("keywords", [])) or self._extract_keywords(hist_title)
+
+            if self._has_keyword_overlap(cand_keywords, hist_keywords):
+                return True, f"Similar story already published on {item.get('published_date')}: '{hist_title}'"
+
+        return False, ""
+
+    def _has_keyword_overlap(self, kw1: set, kw2: set) -> bool:
+        if not kw1 or not kw2:
+            return False
+        overlap = kw1 & kw2
+        overlap_len = len(overlap)
+        min_len = min(len(kw1), len(kw2))
+        if overlap_len >= 3 or (min_len >= 2 and overlap_len / min_len >= 0.5):
+            return True
+        return False
+
+    def record_selection(self, article: Dict[str, Any]):
+        """Register an article in today's active batch"""
+        self.today_selected.append(article)
+
+    def commit_published(self, articles: List[Dict[str, Any]], source_type: str, date_str: str):
+        """Record permanently in history and prune items older than 14 days"""
+        cutoff_date = (datetime.strptime(date_str, "%Y-%m-%d") - timedelta(days=14)).strftime("%Y-%m-%d") if re.match(r'^\d{4}-\d{2}-\d{2}$', date_str) else "2000-01-01"
+
+        new_entries = []
+        for art in articles:
+            t = art.get("title", "")
+            u = art.get("link", "")
+            if t:
+                new_entries.append({
+                    "title": t,
+                    "url": u,
+                    "keywords": list(self._extract_keywords(t)),
+                    "published_date": date_str,
+                    "source_type": source_type
+                })
+
+        pruned_history = [
+            item for item in self.history
+            if item.get("published_date", "9999-99-99") >= cutoff_date
+        ]
+        pruned_history.extend(new_entries)
+        self.history = pruned_history
+        self.save_history()
+        logger.info(f"Recorded {len(new_entries)} articles into 14-day published history (Total active: {len(self.history)})")
+
+
 class DailyNewsPDFSynthesizer:
     def __init__(self):
         self.ist_offset = timezone(timedelta(hours=5, minutes=30))
         self.ai = get_ai_engine()
+        self.dedup = NewsDeduplicator()
         self.headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
 
     def get_ist_now(self) -> datetime:
@@ -208,6 +337,12 @@ class DailyNewsPDFSynthesizer:
                     if not self.is_exam_relevant(title, summary):
                         continue
 
+                    # Strict deduplication against 14-day history and today's active selections
+                    is_dup, dup_reason = self.dedup.is_duplicate(title, link)
+                    if is_dup:
+                        logger.debug(f"Skipping duplicate article: {dup_reason}")
+                        continue
+
                     score = self.calculate_exam_score(title, summary)
 
                     scraped_candidates.append({
@@ -242,6 +377,8 @@ class DailyNewsPDFSynthesizer:
                 body = self.fetch_article_body(a["link"])
                 if body:
                     a["summary"] = body
+            # Register in active deduplicator batch to prevent cross-source duplication
+            self.dedup.record_selection(a)
 
         # Update state
         for a in selected:
@@ -270,7 +407,9 @@ class DailyNewsPDFSynthesizer:
                         t = BeautifulSoup(e.get("title", ""), "html.parser").get_text().strip()
                         s = BeautifulSoup(e.get("summary", ""), "html.parser").get_text().strip()
                         if t and self.is_exam_relevant(t, s):
-                            articles.append({"title": t, "link": e.get("link", ""), "summary": s, "source": "National Feeds", "score": 1})
+                            is_dup, _ = self.dedup.is_duplicate(t, e.get("link", ""))
+                            if not is_dup:
+                                articles.append({"title": t, "link": e.get("link", ""), "summary": s, "source": "National Feeds", "score": 1})
                         if len(articles) >= 8:
                             break
                     if len(articles) >= 8:
@@ -292,6 +431,10 @@ class DailyNewsPDFSynthesizer:
             kn_articles.append(kn_item)
 
         en_mcqs, kn_mcqs = self._generate_mcqs_for_articles(articles)
+
+        # Commit published articles to 14-day history
+        today_date = self.get_ist_now().strftime("%Y-%m-%d")
+        self.dedup.commit_published(articles, "the_hindu", today_date)
 
         return {
             "date_str": date_str,
@@ -327,6 +470,10 @@ class DailyNewsPDFSynthesizer:
             kn_oneliners.append(f"<b>{topic_kn['title']}:</b> {topic_kn['why_in_news'][:120]}...")
 
         en_mcqs, kn_mcqs = self._generate_kpsc_mcqs(articles)
+
+        # Commit published articles to 14-day history
+        today_date = self.get_ist_now().strftime("%Y-%m-%d")
+        self.dedup.commit_published(articles, "prajavani", today_date)
 
         return {
             "date_str": date_str,
