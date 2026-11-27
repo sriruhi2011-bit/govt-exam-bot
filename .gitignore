@@ -6,6 +6,8 @@ data/pdfs/
 data/raw_news/
 data/job_state.json
 data/pdf_approval_state.json
+data/pdf_scraper_state.json
+data/daily_scraped/
 logs/
 __pycache__/
 *.pyc
